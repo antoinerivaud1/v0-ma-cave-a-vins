@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Mic, Search, UtensilsCrossed } from 'lucide-react'
+import { Mic, Search, UtensilsCrossed, Loader2 } from 'lucide-react'
 import { PageHeader } from './page-header'
 import { SuggestionCard } from './suggestion-card'
-import { getSuggestions, type SuggestResult } from '@/lib/suggest-helpers'
+import { suggestService, type SuggestResponse } from '@/lib/suggest-service'
 import type { Wine } from '@/data/apogee'
 
 interface SuggestProps {
@@ -13,8 +13,9 @@ interface SuggestProps {
 
 export function Suggest({ cave }: SuggestProps) {
   const [query, setQuery] = useState('')
-  const [result, setResult] = useState<SuggestResult | null>(null)
+  const [result, setResult] = useState<SuggestResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const [recording, setRecording] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -28,25 +29,40 @@ export function Suggest({ cave }: SuggestProps) {
     }
   }, [])
 
+  const runSearch = useCallback(
+    async (text: string) => {
+      setError(null)
+
+      const trimmed = text.trim()
+      if (!trimmed) {
+        setError('Decrivez un repas ou un plat pour obtenir un accord.')
+        setResult(null)
+        return
+      }
+
+      if (cave.length === 0) {
+        setError('Votre cave est vide. Importez des vins pour commencer.')
+        setResult(null)
+        return
+      }
+
+      setLoading(true)
+      try {
+        const response = await suggestService.getSuggestions(trimmed, cave)
+        setResult(response)
+      } catch {
+        setError('Une erreur est survenue. Veuillez reessayer.')
+        setResult(null)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [cave]
+  )
+
   const handleSearch = useCallback(() => {
-    setError(null)
-
-    const trimmed = query.trim()
-    if (!trimmed) {
-      setError('Decrivez un repas ou un plat pour obtenir un accord.')
-      setResult(null)
-      return
-    }
-
-    if (cave.length === 0) {
-      setError('Votre cave est vide. Importez des vins pour commencer.')
-      setResult(null)
-      return
-    }
-
-    const r = getSuggestions(trimmed, cave)
-    setResult(r)
-  }, [query, cave])
+    runSearch(query)
+  }, [query, runSearch])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -88,9 +104,7 @@ export function Suggest({ cave }: SuggestProps) {
       setTimeout(() => {
         const trimmed = transcript.trim()
         if (trimmed && cave.length > 0) {
-          setError(null)
-          const r = getSuggestions(trimmed, cave)
-          setResult(r)
+          runSearch(trimmed)
         }
       }, 100)
     }
@@ -106,7 +120,7 @@ export function Suggest({ cave }: SuggestProps) {
     recognitionRef.current = recognition
     recognition.start()
     setRecording(true)
-  }, [recording, cave])
+  }, [recording, cave, runSearch])
 
   return (
     <div className="pb-4">
@@ -132,6 +146,7 @@ export function Suggest({ cave }: SuggestProps) {
               placeholder="Ex : poulet roti, saumon..."
               className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               aria-label="Decrivez un repas"
+              disabled={loading}
             />
             <button
               onClick={startVoice}
@@ -141,6 +156,7 @@ export function Suggest({ cave }: SuggestProps) {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               aria-label={recording ? 'Arreter la dictee' : 'Dicter un plat'}
+              disabled={loading}
             >
               <Mic className="h-4 w-4" />
             </button>
@@ -149,34 +165,50 @@ export function Suggest({ cave }: SuggestProps) {
 
         <button
           onClick={handleSearch}
-          className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:opacity-80"
+          disabled={loading}
+          className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-60"
         >
-          <UtensilsCrossed className="h-4 w-4" />
-          Accorder
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <UtensilsCrossed className="h-4 w-4" />
+          )}
+          {loading ? 'Recherche...' : 'Accorder'}
         </button>
       </div>
 
       {/* Error state */}
-      {error && (
+      {error && !loading && (
         <div className="mx-4 mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3">
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
 
+      {/* Loading state */}
+      {loading && (
+        <div className="mx-4 mt-8 flex flex-col items-center gap-3 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Recherche des meilleurs accords...</p>
+        </div>
+      )}
+
       {/* Results */}
-      {result && (
+      {result && !loading && (
         <div className="mt-6 flex flex-col gap-4 px-4">
           <p className="text-sm text-muted-foreground">
             {'Accord pour : '}
-            <span className="font-medium text-foreground">{`"${query.trim()}"`}</span>
+            <span className="font-medium text-foreground">{`\u00AB ${query.trim()} \u00BB`}</span>
           </p>
 
-          {result.suggestions.length > 0 ? (
-            result.suggestions.map((wine, i) => (
+          {result.results.length > 0 ? (
+            result.results.map((sr, i) => (
               <SuggestionCard
-                key={`${wine.wine_name}-${wine.millesime_year}-${i}`}
-                wine={wine}
-                reason={result.accord.reason}
+                key={`${sr.wine.wine_name}-${sr.wine.millesime_year}-${i}`}
+                wine={sr.wine}
+                reason={sr.reason}
+                temperature={sr.temperature}
+                serving={sr.serving}
+                aiGenerated={sr.aiGenerated}
               />
             ))
           ) : (
@@ -191,7 +223,7 @@ export function Suggest({ cave }: SuggestProps) {
       )}
 
       {/* Empty state */}
-      {!result && !error && (
+      {!result && !error && !loading && (
         <div className="mx-4 mt-10 flex flex-col items-center gap-3 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
             <UtensilsCrossed className="h-6 w-6 text-primary" />

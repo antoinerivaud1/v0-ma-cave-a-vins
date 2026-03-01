@@ -1,6 +1,6 @@
 'use client'
 
-import { BookOpen } from 'lucide-react'
+import { Thermometer, Wine as WineGlass, Sparkles } from 'lucide-react'
 import { CaveBadge } from './cave-badge'
 import { getIcon, getLabel, getColor, formatRegion } from '@/lib/wine-helpers'
 import { getApogee } from '@/data/apogee'
@@ -9,6 +9,9 @@ import type { Wine } from '@/data/apogee'
 interface SuggestionCardProps {
   wine: Wine
   reason: string
+  temperature?: string
+  serving?: string
+  aiGenerated?: boolean
 }
 
 const colorBadgeVariant: Record<string, 'gold' | 'muted'> = {
@@ -18,7 +21,13 @@ const colorBadgeVariant: Record<string, 'gold' | 'muted'> = {
   unknown: 'muted',
 }
 
-export function SuggestionCard({ wine, reason }: SuggestionCardProps) {
+export function SuggestionCard({
+  wine,
+  reason,
+  temperature,
+  serving,
+  aiGenerated,
+}: SuggestionCardProps) {
   const apogee = getApogee(wine)
   const color = getColor(wine.wine_type || '')
   const icon = getIcon(wine.wine_type || '')
@@ -41,14 +50,22 @@ export function SuggestionCard({ wine, reason }: SuggestionCardProps) {
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="font-serif text-lg font-semibold leading-tight text-foreground">
-            {wine.wine_name || wine.wine_appellation || 'Vin inconnu'}
-            {wine.millesime_year ? (
-              <span className="ml-1.5 text-sm font-normal text-muted-foreground">
-                {wine.millesime_year}
+          <div className="flex items-start gap-2">
+            <p className="flex-1 font-serif text-lg font-semibold leading-tight text-foreground">
+              {wine.wine_name || wine.wine_appellation || 'Vin inconnu'}
+              {wine.millesime_year ? (
+                <span className="ml-1.5 text-sm font-normal text-muted-foreground">
+                  {wine.millesime_year}
+                </span>
+              ) : null}
+            </p>
+            {aiGenerated && (
+              <span className="flex shrink-0 items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                <Sparkles className="h-2.5 w-2.5" />
+                IA
               </span>
-            ) : null}
-          </p>
+            )}
+          </div>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
             {wine.wine_domain ? `${wine.wine_domain}` : ''}
             {wine.wine_domain && region ? ' \u00B7 ' : ''}
@@ -70,15 +87,23 @@ export function SuggestionCard({ wine, reason }: SuggestionCardProps) {
         <p className="text-sm leading-relaxed text-foreground">{reason}</p>
       </div>
 
-      {/* Expert opinion placeholder */}
-      <div className="border-t border-cave-border px-4 py-3">
-        <div className="flex items-center gap-2 rounded-lg border border-dashed border-primary/25 bg-primary/5 px-3 py-2">
-          <BookOpen className="h-3.5 w-3.5 shrink-0 text-primary/60" />
-          <span className="text-xs text-primary/70">
-            Avis expert — bientot disponible
-          </span>
+      {/* Temperature & Serving advice */}
+      {(temperature || serving) && (
+        <div className="flex flex-col gap-2 border-t border-cave-border px-4 py-3">
+          {temperature && (
+            <div className="flex items-center gap-2">
+              <Thermometer className="h-3.5 w-3.5 shrink-0 text-primary/70" />
+              <span className="text-xs text-muted-foreground">{temperature}</span>
+            </div>
+          )}
+          {serving && (
+            <div className="flex items-center gap-2">
+              <WineGlass className="h-3.5 w-3.5 shrink-0 text-primary/70" />
+              <span className="text-xs text-muted-foreground">{serving}</span>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   )
 }
