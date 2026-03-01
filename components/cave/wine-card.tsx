@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, MessageSquare, BookOpen } from 'lucide-react'
+import { ChevronDown, MessageSquare } from 'lucide-react'
 import { CaveBadge } from './cave-badge'
+import { WineExpertPanel } from './wine-expert-panel'
 import { getIcon, getLabel, getColor, formatRegion } from '@/lib/wine-helpers'
 import { getApogee } from '@/data/apogee'
 import type { Wine } from '@/data/apogee'
@@ -112,10 +113,13 @@ export function WineCard({ wine }: WineCardProps) {
               <p className="text-sm text-muted-foreground italic">Aucune note pour ce vin.</p>
             )}
 
-            {/* Expert opinion placeholder */}
-            <div className="mt-3 flex items-center gap-2 rounded-lg border border-dashed border-cave-border px-3 py-2">
-              <BookOpen className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Avis expert — bientot disponible</span>
+            {/* Expert tasting panel */}
+            <div className="mt-3">
+              <WineExpertPanel
+                region={wine.wine_region}
+                cepage={typeof wine.wine_classification === 'string' ? wine.wine_classification : undefined}
+                millesime={wine.millesime_year ? parseInt(String(wine.millesime_year)) : undefined}
+              />
             </div>
           </div>
         </div>
