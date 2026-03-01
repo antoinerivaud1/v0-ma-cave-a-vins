@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { BottomNav, type TabId } from './bottom-nav'
 import { Dashboard } from './dashboard'
 import { CaveList } from './cave-list'
+import type { CaveListProps } from './cave-list'
 import { MapView } from './map-view'
 import { Suggest } from './suggest'
 import { Settings } from './settings'
@@ -18,13 +19,20 @@ interface AppShellProps {
 
 export function AppShell({ cave, lastUpdated, onImport, onClear }: AppShellProps) {
   const [activeTab, setActiveTab] = useState<TabId>('cave')
+  const [listFilter, setListFilter] = useState<CaveListProps['initialFilter']>(undefined)
+
+  /** Navigate to a tab, optionally with a pre-set filter for the list */
+  const navigateTo = useCallback((tab: TabId, filter?: CaveListProps['initialFilter']) => {
+    setListFilter(tab === 'liste' ? filter : undefined)
+    setActiveTab(tab)
+  }, [])
 
   return (
     <div className="mx-auto min-h-dvh max-w-[480px]" style={{ paddingBottom: 'calc(76px + env(safe-area-inset-bottom, 0px))' }}>
       {/* Active Screen */}
-      {activeTab === 'cave' && <Dashboard cave={cave} onNavigate={setActiveTab} />}
+      {activeTab === 'cave' && <Dashboard cave={cave} onNavigate={navigateTo} />}
       {activeTab === 'carte' && <MapView cave={cave} />}
-      {activeTab === 'liste' && <CaveList cave={cave} />}
+      {activeTab === 'liste' && <CaveList cave={cave} initialFilter={listFilter} />}
       {activeTab === 'accords' && <Suggest cave={cave} />}
       {activeTab === 'reglages' && (
         <Settings
@@ -36,7 +44,7 @@ export function AppShell({ cave, lastUpdated, onImport, onClear }: AppShellProps
       )}
 
       {/* Bottom Navigation */}
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNav activeTab={activeTab} onTabChange={(tab) => navigateTo(tab)} />
     </div>
   )
 }

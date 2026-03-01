@@ -7,10 +7,11 @@ import { CaveBadge } from './cave-badge'
 import { getApogee } from '@/data/apogee'
 import type { Wine as WineType } from '@/data/apogee'
 import type { TabId } from './bottom-nav'
+import type { CaveListProps } from './cave-list'
 
 interface DashboardProps {
   cave: WineType[]
-  onNavigate: (tab: TabId) => void
+  onNavigate: (tab: TabId, filter?: CaveListProps['initialFilter']) => void
 }
 
 interface StatCard {
@@ -63,13 +64,13 @@ export function Dashboard({ cave, onNavigate }: DashboardProps) {
     return { total, reds, whites, sparkling, exceptional, toDrink }
   }, [cave])
 
-  const cards: StatCard[] = [
+  const cards: (StatCard & { filter?: CaveListProps['initialFilter'] })[] = [
     { label: 'Bouteilles', value: stats.total, icon: Wine, color: 'text-primary' },
-    { label: 'Rouges', value: stats.reds, icon: Wine, color: 'text-red-400' },
-    { label: 'Blancs', value: stats.whites, icon: GlassWater, color: 'text-amber-200' },
-    { label: 'Petillants', value: stats.sparkling, icon: Sparkles, color: 'text-sky-300' },
-    { label: 'Exceptionnels', value: stats.exceptional, icon: Star, color: 'text-primary' },
-    { label: 'A boire', value: stats.toDrink.length, icon: Clock, color: 'text-amber-400' },
+    { label: 'Rouges', value: stats.reds, icon: Wine, color: 'text-red-400', filter: { color: 'wine_red' } },
+    { label: 'Blancs', value: stats.whites, icon: GlassWater, color: 'text-amber-200', filter: { color: 'wine_white' } },
+    { label: 'Petillants', value: stats.sparkling, icon: Sparkles, color: 'text-sky-300', filter: { color: 'wine_white_sparkling' } },
+    { label: 'Exceptionnels', value: stats.exceptional, icon: Star, color: 'text-primary', filter: { level: 'exceptional' } },
+    { label: 'A boire', value: stats.toDrink.length, icon: Clock, color: 'text-amber-400', filter: { level: 'drink' } },
   ]
 
   return (
@@ -81,7 +82,7 @@ export function Dashboard({ cave, onNavigate }: DashboardProps) {
         {cards.map((card) => (
           <button
             key={card.label}
-            onClick={() => onNavigate('liste')}
+            onClick={() => onNavigate('liste', card.filter)}
             className="flex flex-col items-center gap-1.5 rounded-xl border border-cave-border bg-card p-3 transition-colors hover:border-primary/30"
           >
             <card.icon className={`h-5 w-5 ${card.color}`} />
@@ -125,7 +126,7 @@ export function Dashboard({ cave, onNavigate }: DashboardProps) {
             })}
             {stats.toDrink.length > 5 && (
               <button
-                onClick={() => onNavigate('liste')}
+                onClick={() => onNavigate('liste', { level: 'drink' })}
                 className="py-1 text-center text-xs text-primary"
               >
                 Voir les {stats.toDrink.length - 5} autres...
