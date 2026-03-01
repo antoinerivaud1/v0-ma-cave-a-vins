@@ -1,52 +1,209 @@
 'use client'
 
-import { UtensilsCrossed, ChefHat } from 'lucide-react'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { Mic, Search, UtensilsCrossed } from 'lucide-react'
 import { PageHeader } from './page-header'
+import { SuggestionCard } from './suggestion-card'
+import { getSuggestions, type SuggestResult } from '@/lib/suggest-helpers'
 import type { Wine } from '@/data/apogee'
 
 interface SuggestProps {
   cave: Wine[]
 }
 
-const SAMPLE_PAIRINGS = [
-  { dish: 'Boeuf bourguignon', type: 'Rouge', region: 'Bourgogne' },
-  { dish: 'Plateau de fromages', type: 'Rouge / Blanc', region: 'Toutes' },
-  { dish: 'Saumon grille', type: 'Blanc', region: 'Val de Loire' },
-  { dish: 'Foie gras', type: 'Blanc moelleux', region: 'Bordeaux / Alsace' },
-  { dish: 'Tarte tatin', type: 'Petillant', region: 'Val de Loire' },
-]
-
 export function Suggest({ cave }: SuggestProps) {
+  const [query, setQuery] = useState('')
+  const [result, setResult] = useState<SuggestResult | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [recording, setRecording] = useState(false)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  /** Cleanup recognition on unmount */
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort()
+      }
+    }
+  }, [])
+
+  const handleSearch = useCallback(() => {
+    setError(null)
+
+    const trimmed = query.trim()
+    if (!trimmed) {
+      setError('Decrivez un repas ou un plat pour obtenir un accord.')
+      setResult(null)
+      return
+    }
+
+    if (cave.length === 0) {
+      setError('Votre cave est vide. Importez des vins pour commencer.')
+      setResult(null)
+      return
+    }
+
+    const r = getSuggestions(trimmed, cave)
+    setResult(r)
+  }, [query, cave])
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        handleSearch()
+      }
+    },
+    [handleSearch]
+  )
+
+  const startVoice = useCallback(() => {
+    const SpeechRecognitionAPI =
+      typeof window !== 'undefined'
+        ? window.SpeechRecognition || window.webkitSpeechRecognition
+        : null
+
+    if (!SpeechRecognitionAPI) {
+      alert('La reconnaissance vocale necessite Chrome ou un navigateur compatible.')
+      return
+    }
+
+    if (recording && recognitionRef.current) {
+      recognitionRef.current.stop()
+      setRecording(false)
+      return
+    }
+
+    const recognition = new SpeechRecognitionAPI()
+    recognition.lang = 'fr-FR'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[0]?.[0]?.transcript || ''
+      setQuery(transcript)
+      setRecording(false)
+      // Auto-search after voice input
+      setTimeout(() => {
+        const trimmed = transcript.trim()
+        if (trimmed && cave.length > 0) {
+          setError(null)
+          const r = getSuggestions(trimmed, cave)
+          setResult(r)
+        }
+      }, 100)
+    }
+
+    recognition.onerror = () => {
+      setRecording(false)
+    }
+
+    recognition.onend = () => {
+      setRecording(false)
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+    setRecording(true)
+  }, [recording, cave])
+
   return (
     <div className="pb-4">
-      <PageHeader title="Accords Mets & Vins" subtitle="Trouvez le vin parfait pour chaque plat" />
+      <PageHeader title="Accords" subtitle="Mets & vins" />
 
-      <div className="mt-4 flex flex-col gap-2 px-4">
-        {SAMPLE_PAIRINGS.map((pairing) => (
+      {/* Search bar */}
+      <div className="mt-4 flex flex-col gap-3 px-4">
+        <div className="flex items-center gap-2">
           <div
-            key={pairing.dish}
-            className="flex items-center gap-3 rounded-lg border border-cave-border bg-card px-4 py-3"
+            className={`flex flex-1 items-center gap-2 rounded-xl border bg-card px-3 py-2.5 transition-colors ${
+              recording
+                ? 'animate-pulse border-destructive'
+                : 'border-cave-border focus-within:border-primary/50'
+            }`}
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <ChefHat className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">{pairing.dish}</p>
-              <p className="text-xs text-muted-foreground">
-                {pairing.type} - {pairing.region}
-              </p>
-            </div>
-            <UtensilsCrossed className="h-4 w-4 text-muted-foreground" />
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ex : poulet roti, saumon..."
+              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+              aria-label="Decrivez un repas"
+            />
+            <button
+              onClick={startVoice}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                recording
+                  ? 'bg-destructive/20 text-destructive'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              aria-label={recording ? 'Arreter la dictee' : 'Dicter un plat'}
+            >
+              <Mic className="h-4 w-4" />
+            </button>
           </div>
-        ))}
+        </div>
+
+        <button
+          onClick={handleSearch}
+          className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:opacity-80"
+        >
+          <UtensilsCrossed className="h-4 w-4" />
+          Accorder
+        </button>
       </div>
 
-      {cave.length > 0 && (
-        <div className="mt-6 mx-4 rounded-xl border border-cave-border bg-card p-5 text-center">
-          <p className="font-serif text-base text-foreground">Fonctionnalite a venir</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Les suggestions personnalisees basees sur votre cave seront disponibles prochainement.
+      {/* Error state */}
+      {error && (
+        <div className="mx-4 mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
+
+      {/* Results */}
+      {result && (
+        <div className="mt-6 flex flex-col gap-4 px-4">
+          <p className="text-sm text-muted-foreground">
+            {'Accord pour : '}
+            <span className="font-medium text-foreground">{`"${query.trim()}"`}</span>
           </p>
+
+          {result.suggestions.length > 0 ? (
+            result.suggestions.map((wine, i) => (
+              <SuggestionCard
+                key={`${wine.wine_name}-${wine.millesime_year}-${i}`}
+                wine={wine}
+                reason={result.accord.reason}
+              />
+            ))
+          ) : (
+            <div className="rounded-xl border border-cave-border bg-card p-5 text-center">
+              <p className="font-serif text-base text-foreground">Aucune correspondance</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Aucun vin de votre cave ne correspond a ce type d{"'"}accord.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!result && !error && (
+        <div className="mx-4 mt-10 flex flex-col items-center gap-3 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+            <UtensilsCrossed className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <p className="font-serif text-lg font-semibold text-foreground">
+              Quel est le menu ?
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              Decrivez un plat ou une occasion et nous vous suggererons les meilleurs vins de votre cave.
+            </p>
+          </div>
         </div>
       )}
     </div>
