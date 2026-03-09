@@ -1,6 +1,6 @@
 'use client'
 
-import { Thermometer, Clock, Droplets, Wind } from 'lucide-react'
+import { Thermometer, Clock, Droplets, Calendar } from 'lucide-react'
 import { getWineExpert } from '@/lib/wine-expert'
 import type { WineExpert } from '@/lib/wine-expert'
 
@@ -66,11 +66,11 @@ export function WineExpertPanel({ region, cepage, millesime }: WineExpertPanelPr
             Garde
           </h4>
           <div className="flex items-center gap-2">
-            <Clock className="h-3.5 w-3.5 shrink-0 text-primary/70" />
+            <Calendar className="h-3.5 w-3.5 shrink-0 text-primary/70" />
             <span className="text-xs text-foreground">{expert.apogeeRange}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Wind className="h-3.5 w-3.5 shrink-0 text-primary/70" />
+            <Clock className="h-3.5 w-3.5 shrink-0 text-primary/70" />
             <span
               className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${potentielStyles[expert.potentiel]}`}
             >
