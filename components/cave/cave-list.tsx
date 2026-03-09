@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Search, X, Wine as WineGlass } from 'lucide-react'
+import { Search, X, Wine as WineGlass, ChevronDown } from 'lucide-react'
 import { PageHeader } from './page-header'
 import { FilterBar } from './filter-bar'
 import { SortFilterDropdown, type SortFilterState } from './sort-filter-dropdown'
 import { WineCard } from './wine-card'
+import { useStockOverrides } from '@/hooks/use-stock-overrides'
 import { formatRegion } from '@/lib/wine-helpers'
 import { getApogee } from '@/data/apogee'
 import type { Wine } from '@/data/apogee'
@@ -79,9 +80,16 @@ export function CaveList({ cave, initialFilter }: CaveListProps) {
     selectedRegions: [],
     apogeeSort: null,
   })
+  const [showArchived, setShowArchived] = useState(false)
+  const { getOverride, isLoaded } = useStockOverrides()
 
   const filtered = useMemo(() => {
-    let result = cave
+    if (!isLoaded) return []
+    
+    let result = cave.filter((w) => {
+      const override = getOverride(w.wine_name, w.millesime_year)
+      return !override?.deleted
+    })
 
     // Text search — OR across 4 fields, AND with other filters
     if (searchQuery.trim()) {
@@ -139,12 +147,15 @@ export function CaveList({ cave, initialFilter }: CaveListProps) {
     }
 
     return result
-  }, [cave, colorFilter, levelFilter, searchQuery, sortFilterState])
+  }, [cave, colorFilter, levelFilter, searchQuery, sortFilterState, isLoaded, getOverride])
 
-  const totalBottles = filtered.reduce(
-    (sum, w) => sum + (Number(w.bottle_quantity) || 0),
-    0
-  )
+  const archivedWines = useMemo(() => {
+    if (!isLoaded) return []
+    return cave.filter((w) => {
+      const override = getOverride(w.wine_name, w.millesime_year)
+      return override?.archived === true && !override?.deleted
+    })
+  }, [cave, isLoaded, getOverride])
 
   return (
     <div className="pb-4">
@@ -211,6 +222,37 @@ export function CaveList({ cave, initialFilter }: CaveListProps) {
           <WineCard key={`${wine.wine_name}-${wine.millesime_year}-${i}`} wine={wine} />
         ))}
       </div>
+
+      {/* Archived wines section */}
+      {archivedWines.length > 0 && (
+        <>
+          <div className="mt-6 border-t border-cave-border" />
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className="mx-4 mt-4 flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+          >
+            <span>Cave archivée ({archivedWines.length})</span>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${showArchived ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {showArchived && (
+            <div className="mt-2 flex flex-col gap-2.5 px-4 pb-4">
+              {archivedWines.map((wine, i) => (
+                <div key={`archived-${wine.wine_name}-${wine.millesime_year}-${i}`} className="relative">
+                  <WineCard wine={wine} />
+                  <div className="absolute top-3 right-3 z-10">
+                    <span className="inline-block px-2 py-1 text-xs font-medium rounded-md bg-muted text-muted-foreground">
+                      Archivé
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }

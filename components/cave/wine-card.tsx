@@ -4,12 +4,15 @@ import { useState } from 'react'
 import { ChevronDown, MessageSquare } from 'lucide-react'
 import { CaveBadge } from './cave-badge'
 import { WineExpertPanel } from './wine-expert-panel'
+import { WineCardActions } from './wine-card-actions'
+import { useStockOverrides } from '@/hooks/use-stock-overrides'
 import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from '@/lib/wine-helpers'
 import { getApogee } from '@/data/apogee'
 import type { Wine } from '@/data/apogee'
 
 interface WineCardProps {
   wine: Wine
+  onWineUpdate?: (updates: Partial<Wine>) => void
 }
 
 const colorDotClasses: Record<string, string> = {
@@ -26,8 +29,11 @@ const colorBadgeVariant: Record<string, 'gold' | 'muted'> = {
   unknown: 'muted',
 }
 
-export function WineCard({ wine }: WineCardProps) {
+export function WineCard({ wine, onWineUpdate }: WineCardProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchX, setTouchX] = useState(0)
+  const { getOverride, setOverride } = useStockOverrides()
 
   const apogee = getApogee(wine)
   const color = getColor(wine.wine_type || '')
@@ -36,14 +42,77 @@ export function WineCard({ wine }: WineCardProps) {
   const region = formatRegion(wine.wine_region || '')
   const hasNote = !!(wine.bottle_comment || wine.wine_comment || wine.wine_notes)
   const note = wine.bottle_comment || wine.wine_comment || wine.wine_notes || ''
+  
+  const override = getOverride(wine.wine_name, wine.millesime_year)
+  const displayQuantity = override?.quantity !== undefined ? override.quantity : (wine.bottle_quantity || 1)
+  const isArchived = override?.archived || false
 
   const apogeeBadgeVariant = apogee
     ? (apogee.st as 'urgent' | 'ok' | 'wait' | 'late')
     : undefined
 
+  // Swipe gestures
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.touches[0].clientX)
+    setTouchX(0)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const delta = e.touches[0].clientX - touchStart
+    setTouchX(Math.min(0, delta))
+  }
+
+  const handleTouchEnd = () => {
+    if (touchX < -80) {
+      // Swiped left enough — trigger action
+      setTouchX(0)
+    } else {
+      setTouchX(0)
+    }
+  }
+
+  // Stock actions
+  const handleConsume = () => {
+    const newQty = Math.max(0, displayQuantity - 1)
+    setOverride(wine.wine_name, wine.millesime_year, {
+      ...override,
+      quantity: newQty,
+    })
+  }
+
+  const handleQuantityChange = (qty: number) => {
+    setOverride(wine.wine_name, wine.millesime_year, {
+      ...override,
+      quantity: qty,
+    })
+  }
+
+  const handleArchive = () => {
+    setOverride(wine.wine_name, wine.millesime_year, {
+      ...override,
+      archived: true,
+    })
+  }
+
+  const handleRestore = () => {
+    setOverride(wine.wine_name, wine.millesime_year, {
+      ...override,
+      archived: false,
+    })
+  }
+
+  const handleDelete = () => {
+    setOverride(wine.wine_name, wine.millesime_year, {
+      ...override,
+      deleted: true,
+    })
+  }
+
   return (
-    <div
-      className="overflow-hidden rounded-xl border border-cave-border bg-card transition-colors"
+    <div className="overflow-hidden rounded-xl border border-cave-border bg-card transition-colors"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Main row — tappable */}
       <button
@@ -74,17 +143,30 @@ export function WineCard({ wine }: WineCardProps) {
             {wine.wine_domain && region ? ' \u00B7 ' : ''}
             {region}
             {wine.bottle_quantity && wine.bottle_quantity > 1 ? (
-              <span className="ml-1 text-primary">{` \u00D7${wine.bottle_quantity}`}</span>
+              <span className="ml-1 text-primary">{` \u00D7${displayQuantity}`}</span>
             ) : null}
           </p>
         </div>
 
-        {/* Chevron */}
-        <ChevronDown
-          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
-            isOpen ? 'rotate-180' : ''
-          }`}
-        />
+        {/* Chevron + Actions */}
+        <div className="flex items-center gap-2">
+          <ChevronDown
+            className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
+              isOpen ? 'rotate-180' : ''
+            }`}
+          />
+          <WineCardActions
+            wineName={sanitizeWineName(wine.wine_name) || 'Vin inconnu'}
+            millesime={wine.millesime_year}
+            currentQuantity={displayQuantity}
+            isArchived={isArchived}
+            onConsume={handleConsume}
+            onQuantityChange={handleQuantityChange}
+            onArchive={handleArchive}
+            onRestore={handleRestore}
+            onDelete={handleDelete}
+          />
+        </div>
       </button>
 
       {/* Badges row */}
