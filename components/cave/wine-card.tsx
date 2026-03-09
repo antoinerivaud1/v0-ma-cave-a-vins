@@ -61,16 +61,11 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
         const absDeltaX = Math.abs(deltaX)
         const absDeltaY = Math.abs(deltaY)
 
-        if (absDeltaX > 10 || absDeltaY > 10) {
-          isHorizontalRef.current = absDeltaX > absDeltaY
-          if (!isHorizontalRef.current) {
-            // Vertical intent — don't prevent default, let scroll work
-            return
-          }
-        } else {
-          // Not enough movement yet
+        if (absDeltaX < 5 && absDeltaY < 5) {
+          // Not enough movement yet — stay neutral
           return
         }
+        isHorizontalRef.current = absDeltaX > absDeltaY
       }
 
       // Horizontal swipe confirmed — prevent scrolling
@@ -126,7 +121,7 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-cave-border bg-card transition-colors">
+    <div className="relative overflow-hidden rounded-xl border border-cave-border bg-card transition-colors" style={{ touchAction: 'pan-y' }}>
       {/* Action buttons revealed on swipe — behind the card */}
       <div className="absolute right-0 top-0 h-full w-36 flex items-center justify-end gap-1 px-2 bg-gradient-to-l from-black/5 to-transparent">
         <button
@@ -150,7 +145,7 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
         ref={cardRef}
         onTouchStart={handleTouchStart}
         className="transition-transform duration-200"
-        style={{ transform: `translateX(${touchX}px)` }}
+        style={{ touchAction: 'pan-y', transform: `translateX(${touchX}px)` }}
       >
         {/* Main row — tappable */}
         <button
