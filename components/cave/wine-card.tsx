@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, MessageSquare } from 'lucide-react'
 import { CaveBadge } from './cave-badge'
 import { WineExpertPanel } from './wine-expert-panel'
@@ -31,8 +31,11 @@ const colorBadgeVariant: Record<string, 'gold' | 'muted'> = {
 
 export function WineCard({ wine, onWineUpdate }: WineCardProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [touchStart, setTouchStart] = useState(0)
   const [touchX, setTouchX] = useState(0)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const touchStartRef = useRef(0)
+  const touchStartYRef = useRef(0)
+  const isHorizontalRef = useRef(false)
   const { getOverride, setOverride } = useStockOverrides()
 
   const apogee = getApogee(wine)
@@ -51,25 +54,68 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
     ? (apogee.st as 'urgent' | 'ok' | 'wait' | 'late')
     : undefined
 
-  // Swipe gestures
+  // Swipe gestures with direction detection and preventDefault
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.touches[0].clientX)
+    touchStartRef.current = e.touches[0].clientX
+    touchStartYRef.current = e.touches[0].clientY
+    isHorizontalRef.current = false
     setTouchX(0)
   }
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    const delta = e.touches[0].clientX - touchStart
-    setTouchX(Math.min(0, delta))
-  }
+  useEffect(() => {
+    const el = cardRef.current
+    if (!el) return
 
-  const handleTouchEnd = () => {
-    if (touchX < -80) {
-      // Swiped left enough — trigger action
-      setTouchX(0)
-    } else {
-      setTouchX(0)
+    const handleTouchMove = (e: TouchEvent) => {
+      const deltaX = e.touches[0].clientX - touchStartRef.current
+      const deltaY = e.touches[0].clientY - touchStartYRef.current
+
+      // Detect direction on first meaningful movement
+      if (!isHorizontalRef.current) {
+        const absDeltaX = Math.abs(deltaX)
+        const absDeltaY = Math.abs(deltaY)
+
+        if (absDeltaX > 10 || absDeltaY > 10) {
+          isHorizontalRef.current = absDeltaX > absDeltaY
+          if (!isHorizontalRef.current) {
+            // Vertical intent — don't prevent default, let scroll work
+            return
+          }
+        } else {
+          // Not enough movement yet
+          return
+        }
+      }
+
+      // Horizontal swipe confirmed — prevent scrolling
+      if (isHorizontalRef.current) {
+        e.preventDefault()
+        const constrainedX = Math.min(0, deltaX)
+        setTouchX(constrainedX)
+      }
     }
-  }
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const finalDelta = e.changedTouches[0].clientX - touchStartRef.current
+
+      if (isHorizontalRef.current && finalDelta < -72) {
+        // Swiped left past 72px threshold
+        setTouchX(-72)
+      } else {
+        // Snap back
+        setTouchX(0)
+      }
+      isHorizontalRef.current = false
+    }
+
+    el.addEventListener('touchmove', handleTouchMove, { passive: false })
+    el.addEventListener('touchend', handleTouchEnd)
+
+    return () => {
+      el.removeEventListener('touchmove', handleTouchMove)
+      el.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [])
 
   // Stock actions
   const handleConsume = () => {
@@ -110,9 +156,8 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
 
   return (
     <div className="overflow-hidden rounded-xl border border-cave-border bg-card transition-colors"
+      ref={cardRef}
       onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
     >
       {/* Main row — tappable */}
       <button
