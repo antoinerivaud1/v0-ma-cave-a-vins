@@ -21,6 +21,22 @@ interface StatCard {
   color: string
 }
 
+/* ── Classification helpers ──────────────────────── */
+
+function matchClassification(wine: WineType, ...tiers: string[]): boolean {
+  const val = String(wine.wine_classification || '').toLowerCase().trim()
+  return tiers.some((t) => val === t.toLowerCase().trim())
+}
+
+function isExceptional(wine: WineType): boolean {
+  // Primary: apogee-based (same logic as CaveList)
+  const a = getApogee(wine)
+  const year = parseInt(String(wine.millesime_year))
+  if (a && a.st === 'ok' && !isNaN(year) && year <= 2015) return true
+  // Secondary: classification field — case-insensitive
+  return matchClassification(wine, 'exceptionnel', 'grand cru', 'premier cru', '1er cru')
+}
+
 export function Dashboard({ cave, onNavigate }: DashboardProps) {
   const stats = useMemo(() => {
     const total = cave.reduce((sum, w) => sum + (Number(w.bottle_quantity) || 0), 0)
@@ -47,12 +63,7 @@ export function Dashboard({ cave, onNavigate }: DashboardProps) {
       .reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
 
     const exceptional = cave
-      .filter(
-        (w) =>
-          w.wine_classification === 'Grand Cru' ||
-          w.wine_classification === 'Premier Cru' ||
-          w.wine_classification === '1er Cru'
-      )
+      .filter(isExceptional)
       .reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
 
     // Wines that are past or near apogee
