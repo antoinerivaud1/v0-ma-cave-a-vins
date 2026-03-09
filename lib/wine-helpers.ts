@@ -23,6 +23,12 @@ export function getIcon(type: string): string {
   return '\u2728'
 }
 
+/** Sanitize a wine text field — replaces underscores with spaces and trims */
+export function sanitizeWineName(name: string | null | undefined): string {
+  if (!name) return ''
+  return String(name).replace(/_/g, ' ').trim()
+}
+
 /** Format a wine_region key to a nice label */
 export function formatRegion(key: string): string {
   const region = REGIONS[key]

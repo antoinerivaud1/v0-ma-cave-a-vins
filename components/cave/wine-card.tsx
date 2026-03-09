@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ChevronDown, MessageSquare } from 'lucide-react'
 import { CaveBadge } from './cave-badge'
 import { WineExpertPanel } from './wine-expert-panel'
-import { getIcon, getLabel, getColor, formatRegion } from '@/lib/wine-helpers'
+import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from '@/lib/wine-helpers'
 import { getApogee } from '@/data/apogee'
 import type { Wine } from '@/data/apogee'
 
@@ -62,7 +62,7 @@ export function WineCard({ wine }: WineCardProps) {
         {/* Text content */}
         <div className="min-w-0 flex-1">
           <p className="truncate font-serif text-base font-semibold text-foreground">
-            {wine.wine_name || wine.wine_appellation || 'Vin inconnu'}
+            {sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || 'Vin inconnu'}
             {wine.millesime_year ? (
               <span className="ml-1.5 text-sm font-normal text-muted-foreground">
                 {wine.millesime_year}
@@ -70,7 +70,7 @@ export function WineCard({ wine }: WineCardProps) {
             ) : null}
           </p>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {wine.wine_domain ? `${wine.wine_domain}` : ''}
+            {wine.wine_domain ? `${sanitizeWineName(wine.wine_domain)}` : ''}
             {wine.wine_domain && region ? ' \u00B7 ' : ''}
             {region}
             {wine.bottle_quantity && wine.bottle_quantity > 1 ? (

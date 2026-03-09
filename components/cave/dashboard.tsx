@@ -8,6 +8,7 @@ import { getApogee } from '@/data/apogee'
 import type { Wine as WineType } from '@/data/apogee'
 import type { TabId } from './bottom-nav'
 import type { CaveListProps } from './cave-list'
+import { sanitizeWineName } from '@/lib/wine-helpers'
 
 interface DashboardProps {
   cave: WineType[]
@@ -120,10 +121,10 @@ export function Dashboard({ cave, onNavigate }: DashboardProps) {
                 >
                   <div className="flex-1 pr-3">
                     <p className="text-sm font-medium text-foreground">
-                      {wine.wine_name || wine.wine_appellation || 'Vin inconnu'}
+                      {sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || 'Vin inconnu'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {wine.millesime_year} {wine.wine_region ? `- ${wine.wine_region}` : ''}
+                      {wine.millesime_year} {wine.wine_region ? `- ${sanitizeWineName(wine.wine_region)}` : ''}
                     </p>
                   </div>
                   {apogee && (
