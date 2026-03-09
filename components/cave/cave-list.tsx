@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Search, X, Wine as WineGlass } from 'lucide-react'
 import { PageHeader } from './page-header'
 import { FilterBar } from './filter-bar'
+import { SortBar, type SortKey } from './sort-bar'
 import { WineCard } from './wine-card'
 import { formatRegion } from '@/lib/wine-helpers'
 import { getApogee } from '@/data/apogee'
@@ -45,6 +46,36 @@ function isDrinkNow(wine: Wine): boolean {
   return !!(a && (a.st === 'urgent' || a.st === 'late'))
 }
 
+/** Normalize text for accent-insensitive sorting */
+function normalizeForSort(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
+/** Compare wines by sort key */
+function compareWines(a: Wine, b: Wine, key: SortKey, dir: 'asc' | 'desc'): number {
+  let cmp = 0
+
+  if (key === 'millesime') {
+    const aYear = parseInt(String(a.millesime_year)) || 0
+    const bYear = parseInt(String(b.millesime_year)) || 0
+    cmp = aYear - bYear
+  } else if (key === 'region') {
+    const aRegion = normalizeForSort(formatRegion(String(a.wine_region || '')))
+    const bRegion = normalizeForSort(formatRegion(String(b.wine_region || '')))
+    cmp = aRegion.localeCompare(bRegion, 'fr')
+  } else if (key === 'apogee') {
+    const statusOrder = { urgent: 0, late: 1, ok: 2, wait: 3 }
+    const aStatus = getApogee(a)?.st || 'wait'
+    const bStatus = getApogee(b)?.st || 'wait'
+    cmp = statusOrder[aStatus as keyof typeof statusOrder] - statusOrder[bStatus as keyof typeof statusOrder]
+  }
+
+  return dir === 'asc' ? cmp : -cmp
+}
+
 /* ── Component ───────────────────────────────────── */
 
 export interface CaveListProps {
@@ -56,6 +87,13 @@ export function CaveList({ cave, initialFilter }: CaveListProps) {
   const [colorFilter, setColorFilter] = useState(initialFilter?.color || 'all')
   const [levelFilter, setLevelFilter] = useState(initialFilter?.level || 'all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [sortKey, setSortKey] = useState<SortKey>(null)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+
+  const handleSort = (key: SortKey, dir?: 'asc' | 'desc') => {
+    setSortKey(key)
+    if (dir) setSortDir(dir)
+  }
 
   const filtered = useMemo(() => {
     let result = cave
@@ -91,8 +129,13 @@ export function CaveList({ cave, initialFilter }: CaveListProps) {
       result = result.filter(isDrinkNow)
     }
 
+    // Apply sort
+    if (sortKey) {
+      result = [...result].sort((a, b) => compareWines(a, b, sortKey, sortDir))
+    }
+
     return result
-  }, [cave, colorFilter, levelFilter, searchQuery])
+  }, [cave, colorFilter, levelFilter, searchQuery, sortKey, sortDir])
 
   const totalBottles = filtered.reduce(
     (sum, w) => sum + (Number(w.bottle_quantity) || 0),
@@ -142,6 +185,9 @@ export function CaveList({ cave, initialFilter }: CaveListProps) {
         activeKey={levelFilter}
         onSelect={setLevelFilter}
       />
+
+      {/* Sort bar */}
+      <SortBar sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
 
       {/* Wine cards */}
       <div className="mt-2 flex flex-col gap-2.5 px-4">
