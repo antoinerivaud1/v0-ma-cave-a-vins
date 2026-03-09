@@ -157,6 +157,14 @@ export function CaveList({ cave, initialFilter }: CaveListProps) {
     })
   }, [cave, isLoaded, getOverride])
 
+  const totalBottles = useMemo(() => {
+    return filtered.reduce((sum, w) => {
+      const override = getOverride(w.wine_name, w.millesime_year)
+      const qty = override?.quantity ?? Number(w.bottle_quantity) ?? 0
+      return sum + qty
+    }, 0)
+  }, [filtered, getOverride])
+
   return (
     <div className="pb-4">
       <PageHeader
