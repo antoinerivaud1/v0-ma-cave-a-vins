@@ -234,6 +234,7 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
                   region={wine.wine_region}
                   cepage={typeof wine.wine_classification === 'string' ? wine.wine_classification : undefined}
                   millesime={wine.millesime_year ? parseInt(String(wine.millesime_year)) : undefined}
+                  wineName={wine.wine_name}
                 />
               </div>
             </div>
