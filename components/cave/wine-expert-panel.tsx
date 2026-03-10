@@ -82,7 +82,6 @@ export function WineExpertPanel({ region, cepage, millesime, wineName }: WineExp
             </span>
           </div>
         </div>
-        </div>
       </div>
 
       {/* Find online button */}
@@ -101,5 +100,6 @@ export function WineExpertPanel({ region, cepage, millesime, wineName }: WineExp
         isOpen={searchSheetOpen}
         onOpenChange={setSearchSheetOpen}
       />
+    </div>
   )
 }
