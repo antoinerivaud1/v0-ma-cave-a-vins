@@ -2,12 +2,14 @@
 
 import { Thermometer, Clock, Droplets, Calendar } from 'lucide-react'
 import { getWineExpert } from '@/lib/wine-expert'
+import { FindWineOnline } from './find-wine-online'
 import type { WineExpert } from '@/lib/wine-expert'
 
 interface WineExpertPanelProps {
   region?: string
   cepage?: string
   millesime?: number
+  wineName?: string
 }
 
 const potentielStyles: Record<WineExpert['potentiel'], string> = {
@@ -17,7 +19,7 @@ const potentielStyles: Record<WineExpert['potentiel'], string> = {
   urgent: 'bg-destructive/15 text-destructive border-destructive/30',
 }
 
-export function WineExpertPanel({ region, cepage, millesime }: WineExpertPanelProps) {
+export function WineExpertPanel({ region, cepage, millesime, wineName }: WineExpertPanelProps) {
   const expert = getWineExpert(region, cepage, millesime)
 
   return (
@@ -78,6 +80,11 @@ export function WineExpertPanel({ region, cepage, millesime }: WineExpertPanelPr
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Find Online Button */}
+      <div className="border-t border-cave-border px-3.5 py-3">
+        <FindWineOnline wineName={wineName} millesime={millesime} />
       </div>
     </div>
   )

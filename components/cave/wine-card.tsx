@@ -277,6 +277,7 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
 
               <div className="mt-3">
                 <WineExpertPanel
+                  wineName={sanitizeWineName(wine.wine_name) || 'Vin inconnu'}
                   region={wine.wine_region}
                   cepage={typeof wine.wine_classification === 'string' ? wine.wine_classification : undefined}
                   millesime={wine.millesime_year ? parseInt(String(wine.millesime_year)) : undefined}
