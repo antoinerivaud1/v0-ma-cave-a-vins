@@ -1,13 +1,13 @@
-‘use client’
-import { useState, useRef, useEffect } from ‘react’
-import { ChevronDown, MessageSquare } from ‘lucide-react’
-import { CaveBadge } from ‘./cave-badge’
-import { WineExpertPanel } from ‘./wine-expert-panel’
-import { WineCardActions } from ‘./wine-card-actions’
-import { useStockOverrides } from ‘@/hooks/use-stock-overrides’
-import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from ‘@/lib/wine-helpers’
-import { getApogee } from ‘@/data/apogee’
-import type { Wine } from ‘@/data/apogee’
+'use client'
+import { useState, useRef, useEffect } from 'react'
+import { ChevronDown, MessageSquare } from ‘lucide-react'
+import { CaveBadge } from ‘./cave-badge'
+import { WineExpertPanel } from ‘./wine-expert-panel'
+import { WineCardActions } from ‘./wine-card-actions'
+import { useStockOverrides } from ‘@/hooks/use-stock-overrides'
+import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from ‘@/lib/wine-helpers'
+import { getApogee } from ‘@/data/apogee'
+import type { Wine } from ‘@/data/apogee'
 
 interface WineCardProps {
 wine: Wine
@@ -15,17 +15,17 @@ onWineUpdate?: (updates: Partial<Wine>) => void
 }
 
 const colorDotClasses: Record<string, string> = {
-red: ‘bg-red-500’,
-white: ‘bg-amber-200’,
-sparkling: ‘bg-sky-300’,
-unknown: ‘bg-muted-foreground’,
+red: ‘bg-red-500',
+white: ‘bg-amber-200',
+sparkling: ‘bg-sky-300',
+unknown: ‘bg-muted-foreground',
 }
 
-const colorBadgeVariant: Record<string, ‘gold’ | ‘muted’> = {
-red: ‘gold’,
-white: ‘muted’,
-sparkling: ‘muted’,
-unknown: ‘muted’,
+const colorBadgeVariant: Record<string, ‘gold' | ‘muted'> = {
+red: ‘gold',
+white: ‘muted',
+sparkling: ‘muted',
+unknown: ‘muted',
 }
 
 const SWIPE_THRESHOLD = 72
@@ -42,17 +42,17 @@ const isHorizontalRef = useRef<boolean | null>(null)
 const { getOverride, setOverride } = useStockOverrides()
 
 const apogee = getApogee(wine)
-const color = getColor(wine.wine_type || ‘’)
-const icon = getIcon(wine.wine_type || ‘’)
-const label = getLabel(wine.wine_type || ‘’)
-const region = formatRegion(wine.wine_region || ‘’)
+const color = getColor(wine.wine_type || ‘')
+const icon = getIcon(wine.wine_type || ‘')
+const label = getLabel(wine.wine_type || ‘')
+const region = formatRegion(wine.wine_region || ‘')
 const hasNote = !!(wine.bottle_comment || wine.wine_comment || wine.wine_notes)
-const note = wine.bottle_comment || wine.wine_comment || wine.wine_notes || ‘’
+const note = wine.bottle_comment || wine.wine_comment || wine.wine_notes || ‘'
 const override = getOverride(wine.wine_name, wine.millesime_year)
 const displayQuantity = override?.quantity !== undefined ? override.quantity : (wine.bottle_quantity || 1)
 const isArchived = override?.archived || false
 const apogeeBadgeVariant = apogee
-? (apogee.st as ‘urgent’ | ‘ok’ | ‘wait’ | ‘late’)
+? (apogee.st as ‘urgent' | ‘ok' | ‘wait' | ‘late')
 : undefined
 
 const handleCardTap = () => {
@@ -158,7 +158,7 @@ setOverride(wine.wine_name, wine.millesime_year, { …override, deleted: true })
 return (
 <div
 className=“relative overflow-hidden rounded-xl border border-cave-border bg-card”
-style={{ touchAction: ‘pan-y’ }}
+style={{ touchAction: ‘pan-y' }}
 >
 {/* Swipe action buttons */}
 <div
