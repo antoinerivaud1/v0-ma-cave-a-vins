@@ -43,7 +43,7 @@ const region = formatRegion(wine.wine_region || '')
 const hasNote = !!(wine.bottle_comment || wine.wine_comment || wine.wine_notes)
 const note = wine.bottle_comment || wine.wine_comment || wine.wine_notes || ''
 const override = getOverride(wine.wine_name, wine.millesime_year)
-const displayQuantity = override?.quantity !== undefined ? override.quantity : (wine.bottle
+const displayQuantity = override?.quantity !== undefined ? override.quantity : (wine.bottle_quantity || 1)
 const isArchived = override?.archived || false
 const apogeeBadgeVariant = apogee
 ? (apogee.st as 'urgent' | 'ok' | 'wait' | 'late')
