@@ -5,7 +5,7 @@ import { CaveBadge } from './cave-badge'
 import { WineExpertPanel } from './wine-expert-panel'
 import { WineCardActions } from './wine-card-actions'
 import { useStockOverrides } from '@/hooks/use-stock-overrides'
-import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from '@/lib/wine-helpe
+import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from '@/lib/wine-helpers'
 import { getApogee } from '@/data/apogee'
 import type { Wine } from '@/data/apogee'
 interface WineCardProps {
