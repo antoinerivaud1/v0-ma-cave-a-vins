@@ -28,7 +28,7 @@ export function AppShell({ cave, lastUpdated, onImport, onClear, onAddWine }: Ap
   }, [])
 
   return (
-    <div className="mx-auto min-h-dvh max-w-[480px]" style={{ paddingBottom: "calc(76px + env(safe-area-inset-bottom, 0px))" }}>
+    <div className="mx-auto min-h-dvh max-w-[480px]" style={{ paddingBottom: "calc(76px + env(safe-area-inset-bottom, 20px))" }}>
       {activeTab === "cave" && <Dashboard cave={cave} onNavigate={navigateTo} onAddWine={onAddWine} />}
       {activeTab === "carte" && <MapView cave={cave} />}
       {activeTab === "liste" && <CaveList cave={cave} initialFilter={listFilter} onAddWine={onAddWine} />}
