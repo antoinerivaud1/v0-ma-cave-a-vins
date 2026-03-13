@@ -62,7 +62,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
   }
 
   return (
-    <div className="pb-24">
+    <div>
       <div style={{ paddingTop: "env(safe-area-inset-top, 0px)" }} />
 
       {/* Header salutation */}
@@ -253,4 +253,5 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
     </div>
   )
 }
+
 
