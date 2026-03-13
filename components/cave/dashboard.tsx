@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Wine, GlassWater, Sparkles, Clock, Plus, Lightbulb, Sparkle, ChevronRight, Minus, Camera, PenLine, X } from "lucide-react"
+import { Wine, GlassWater, Sparkles, Clock, Plus, Lightbulb, Sparkle, ChevronRight, Minus, PenLine, X } from "lucide-react"
 import { CaveBadge } from "./cave-badge"
 import { AddWineSheet } from "./add-wine-sheet"
 import { ScanLabelSheet } from "./scan-label-sheet"
@@ -127,25 +127,16 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
       </button>
 
-      {/* Actions rapides */}
-      <div className="mx-4 mt-3 grid grid-cols-2 gap-2">
-        <div className="flex cursor-not-allowed items-center gap-2.5 rounded-xl border border-cave-border bg-card px-3.5 py-3 opacity-50">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
-            <Camera className="h-3.5 w-3.5 text-primary" />
-          </div>
-          <span className="text-sm font-medium text-foreground">Scanner</span>
-          <span className="ml-auto text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Bientot</span>
+      {/* Action rapide Consommee */}
+      <button
+        onClick={() => onNavigate("liste")}
+        className="mx-4 mt-3 flex w-[calc(100%-2rem)] items-center gap-2.5 rounded-xl border border-cave-border bg-card px-3.5 py-3 transition-colors hover:border-primary/30"
+      >
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted">
+          <Minus className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
-        <button
-          onClick={() => onNavigate("liste")}
-          className="flex items-center gap-2.5 rounded-xl border border-cave-border bg-card px-3.5 py-3 transition-colors hover:border-primary/30"
-        >
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted">
-            <Minus className="h-3.5 w-3.5 text-muted-foreground" />
-          </div>
-          <span className="text-sm font-medium text-foreground">Consommee</span>
-        </button>
-      </div>
+        <span className="text-sm font-medium text-foreground">Marquer une bouteille comme consommee</span>
+      </button>
 
       {/* A boire maintenant */}
       {stats.toDrink.length > 0 && (
