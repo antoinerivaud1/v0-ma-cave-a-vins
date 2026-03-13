@@ -148,6 +148,7 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
                 region={wine.wine_region}
                 cepage={typeof wine.wine_classification === "string" ? wine.wine_classification : undefined}
                 millesime={wine.millesime_year ? parseInt(String(wine.millesime_year)) : undefined}
+                wineName={sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || undefined}
               />
             </div>
           </div>
@@ -156,3 +157,4 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
     </div>
   )
 }
+
