@@ -215,13 +215,11 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
       {/* FAB menu */}
       {fabOpen && (
         <div className="fixed bottom-[calc(160px+env(safe-area-inset-bottom,0px))] right-4 z-30 flex flex-col items-end gap-2">
-          <button
-            onClick={() => handleFabAction("scan")}
-            className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
-          >
+          <div className="flex cursor-not-allowed items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg opacity-50">
             <span className="text-sm font-medium text-foreground">Scanner une etiquette</span>
             <Camera className="h-4 w-4 text-primary" />
-          </button>
+            <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Bientot</span>
+          </div>
           <button
             onClick={() => handleFabAction("manual")}
             className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
