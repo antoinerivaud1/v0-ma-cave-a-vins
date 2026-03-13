@@ -62,7 +62,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
   }
 
   return (
-    <div>
+    <div className="min-h-dvh flex flex-col">
       <div style={{ paddingTop: "env(safe-area-inset-top, 0px)" }} />
 
       {/* Header salutation */}
@@ -140,7 +140,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
 
       {/* A boire maintenant */}
       {stats.toDrink.length > 0 && (
-        <section className="mt-5 px-4">
+        <section className="mt-5 px-4 flex-1">
           <div className="mb-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-400" />
@@ -214,7 +214,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
 
       {/* FAB menu */}
       {fabOpen && (
-        <div className="fixed bottom-[calc(100px+env(safe-area-inset-bottom,0px))] right-4 z-30 flex flex-col items-end gap-2">
+        <div className="fixed bottom-[calc(90px+env(safe-area-inset-bottom,0px))] right-4 z-30 flex flex-col items-end gap-2 pr-1">
           <button
             onClick={() => handleFabAction("scan")}
             className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
