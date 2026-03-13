@@ -1,14 +1,14 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { MoreVertical, Trash2, Archive, Edit, Wine } from 'lucide-react'
+import { useState } from "react"
+import { MoreVertical, Trash2, Archive, Edit, Wine, ShoppingCart } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +18,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+} from "@/components/ui/alert-dialog"
+import { WineSearchSheet } from "./wine-search-sheet"
 
 export interface WineCardActionsProps {
   wineName: string
@@ -48,6 +49,7 @@ export function WineCardActions({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isEditingQuantity, setIsEditingQuantity] = useState(false)
   const [tempQuantity, setTempQuantity] = useState(String(currentQuantity))
+  const [showSearchSheet, setShowSearchSheet] = useState(false)
 
   const handleQuantitySave = () => {
     const qty = Math.max(0, parseInt(tempQuantity) || 0)
@@ -108,6 +110,13 @@ export function WineCardActions({
                 <Archive className="h-4 w-4" />
                 Archiver
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setShowSearchSheet(true)}
+                className="gap-2"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                Acheter en ligne
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
           ) : (
@@ -129,6 +138,14 @@ export function WineCardActions({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Buy online sheet */}
+      <WineSearchSheet
+        wineName={wineName}
+        millesime={millesime}
+        isOpen={showSearchSheet}
+        onOpenChange={setShowSearchSheet}
+      />
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
