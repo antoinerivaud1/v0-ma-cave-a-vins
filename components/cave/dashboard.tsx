@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Wine, GlassWater, Sparkles, Clock, Plus, Lightbulb, Sparkle, ChevronRight, Minus, PenLine, X } from "lucide-react"
+import { Wine, GlassWater, Sparkles, Clock, Plus, Lightbulb, Sparkle, ChevronRight, Minus, Camera, PenLine, X } from "lucide-react"
 import { CaveBadge } from "./cave-badge"
 import { AddWineSheet } from "./add-wine-sheet"
 import { ScanLabelSheet } from "./scan-label-sheet"
@@ -215,11 +215,13 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
       {/* FAB menu */}
       {fabOpen && (
         <div className="fixed bottom-[calc(100px+env(safe-area-inset-bottom,0px))] right-4 z-30 flex flex-col items-end gap-2">
-          <div className="flex cursor-not-allowed items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg opacity-50">
+          <button
+            onClick={() => handleFabAction("scan")}
+            className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
+          >
             <span className="text-sm font-medium text-foreground">Scanner une etiquette</span>
             <Camera className="h-4 w-4 text-primary" />
-            <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Bientot</span>
-          </div>
+          </button>
           <button
             onClick={() => handleFabAction("manual")}
             className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
