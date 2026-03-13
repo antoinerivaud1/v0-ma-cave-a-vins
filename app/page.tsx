@@ -1,23 +1,27 @@
-'use client'
+"use client"
 
-import { useCallback } from 'react'
-import { useCave } from '@/hooks/use-cave'
-import { Onboarding } from '@/components/cave/onboarding'
-import { AppShell } from '@/components/cave/app-shell'
-import type { Wine } from '@/data/apogee'
+import { useCallback } from "react"
+import { useCave } from "@/hooks/use-cave"
+import { useManualWines } from "@/hooks/use-manual-wines"
+import { Onboarding } from "@/components/cave/onboarding"
+import { AppShell } from "@/components/cave/app-shell"
+import type { Wine } from "@/data/apogee"
 
 export default function Page() {
   const { cave, saveCave, clearCave, lastUpdated, isLoaded } = useCave()
+  const { manualWines, isLoaded: manualLoaded, addWine, clearManualWines } = useManualWines()
 
   const handleImport = useCallback(
-    (data: Wine[]) => {
-      saveCave(data)
-    },
+    (data: Wine[]) => { saveCave(data) },
     [saveCave]
   )
 
-  // Wait for localStorage to load before rendering
-  if (!isLoaded) {
+  const handleClear = useCallback(() => {
+    clearCave()
+    clearManualWines()
+  }, [clearCave, clearManualWines])
+
+  if (!isLoaded || !manualLoaded) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -25,18 +29,19 @@ export default function Page() {
     )
   }
 
-  // If no cave data, show onboarding
-  if (cave.length === 0) {
-    return <Onboarding onImport={handleImport} />
+  const allWines = [...manualWines, ...cave]
+
+  if (allWines.length === 0) {
+    return <Onboarding onImport={handleImport} onAddManual={addWine} />
   }
 
-  // Otherwise, show the app shell
   return (
     <AppShell
-      cave={cave}
+      cave={allWines}
       lastUpdated={lastUpdated}
       onImport={handleImport}
-      onClear={clearCave}
+      onClear={handleClear}
+      onAddWine={addWine}
     />
   )
 }
