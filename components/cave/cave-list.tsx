@@ -1,15 +1,16 @@
-'use client'
+"use client"
 
-import { useState, useMemo } from 'react'
-import { Search, X, Wine as WineGlass, ChevronDown } from 'lucide-react'
-import { PageHeader } from './page-header'
-import { FilterBar } from './filter-bar'
-import { SortFilterDropdown, type SortFilterState } from './sort-filter-dropdown'
-import { WineCard } from './wine-card'
-import { useStockOverrides } from '@/hooks/use-stock-overrides'
-import { formatRegion } from '@/lib/wine-helpers'
-import { getApogee } from '@/data/apogee'
-import type { Wine } from '@/data/apogee'
+import { useState, useMemo } from "react"
+import { Search, X, Wine as WineGlass, ChevronDown, Plus } from "lucide-react"
+import { AddWineSheet } from "./add-wine-sheet"
+import { PageHeader } from "./page-header"
+import { FilterBar } from "./filter-bar"
+import { SortFilterDropdown, type SortFilterState } from "./sort-filter-dropdown"
+import { WineCard } from "./wine-card"
+import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { formatRegion } from "@/lib/wine-helpers"
+import { getApogee } from "@/data/apogee"
+import type { Wine } from "@/data/apogee"
 
 /* ── Filter options ──────────────────────────────── */
 
@@ -68,10 +69,11 @@ function compareApogee(a: Wine, b: Wine, dir: 'asc' | 'desc'): number {
 
 export interface CaveListProps {
   cave: Wine[]
+  onAddWine?: (wine: Wine) => void
   initialFilter?: { color?: string; level?: string }
 }
 
-export function CaveList({ cave, initialFilter }: CaveListProps) {
+export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
   const [colorFilter, setColorFilter] = useState(initialFilter?.color || 'all')
   const [levelFilter, setLevelFilter] = useState(initialFilter?.level || 'all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -81,6 +83,7 @@ export function CaveList({ cave, initialFilter }: CaveListProps) {
     apogeeSort: null,
   })
   const [showArchived, setShowArchived] = useState(false)
+  const [showAddSheet, setShowAddSheet] = useState(false)
   const { getOverride, isLoaded } = useStockOverrides()
 
   const filtered = useMemo(() => {
@@ -167,10 +170,21 @@ export function CaveList({ cave, initialFilter }: CaveListProps) {
 
   return (
     <div className="pb-4">
-      <PageHeader
-        title="Mes Vins"
-        subtitle={`${totalBottles} bouteille${totalBottles !== 1 ? 's' : ''}`}
-      />
+      <div className="flex items-start justify-between px-4" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}>
+        <div className="pb-2">
+          <h1 className="font-serif text-2xl font-semibold text-foreground">Mes Vins</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">{totalBottles} bouteille{totalBottles !== 1 ? "s" : ""}</p>
+        </div>
+        {onAddWine && (
+          <button
+            onClick={() => setShowAddSheet(true)}
+            className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-transform active:scale-95"
+            aria-label="Ajouter un vin"
+          >
+            <Plus className="h-5 w-5" />
+          </button>
+        )}
+      </div>
 
       {/* Sticky search bar */}
       <div className="sticky top-0 z-20 bg-background/80 px-4 pb-2 pt-1 backdrop-blur-md">
@@ -261,6 +275,14 @@ export function CaveList({ cave, initialFilter }: CaveListProps) {
           )}
         </>
       )}
+      {onAddWine && (
+        <AddWineSheet
+          isOpen={showAddSheet}
+          onOpenChange={setShowAddSheet}
+          onAdd={onAddWine}
+        />
+      )}
     </div>
   )
 }
+
