@@ -1,40 +1,39 @@
-'use client'
+"use client"
 
-import { useState, useCallback } from 'react'
-import { BottomNav, type TabId } from './bottom-nav'
-import { Dashboard } from './dashboard'
-import { CaveList } from './cave-list'
-import type { CaveListProps } from './cave-list'
-import { MapView } from './map-view'
-import { Suggest } from './suggest'
-import { Settings } from './settings'
-import type { Wine } from '@/data/apogee'
+import { useState, useCallback } from "react"
+import { BottomNav, type TabId } from "./bottom-nav"
+import { Dashboard } from "./dashboard"
+import { CaveList } from "./cave-list"
+import type { CaveListProps } from "./cave-list"
+import { MapView } from "./map-view"
+import { Suggest } from "./suggest"
+import { Settings } from "./settings"
+import type { Wine } from "@/data/apogee"
 
 interface AppShellProps {
   cave: Wine[]
   lastUpdated: string | null
   onImport: (data: Wine[]) => void
   onClear: () => void
+  onAddWine: (wine: Wine) => void
 }
 
-export function AppShell({ cave, lastUpdated, onImport, onClear }: AppShellProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('cave')
-  const [listFilter, setListFilter] = useState<CaveListProps['initialFilter']>(undefined)
+export function AppShell({ cave, lastUpdated, onImport, onClear, onAddWine }: AppShellProps) {
+  const [activeTab, setActiveTab] = useState<TabId>("cave")
+  const [listFilter, setListFilter] = useState<CaveListProps["initialFilter"]>(undefined)
 
-  /** Navigate to a tab, optionally with a pre-set filter for the list */
-  const navigateTo = useCallback((tab: TabId, filter?: CaveListProps['initialFilter']) => {
-    setListFilter(tab === 'liste' ? filter : undefined)
+  const navigateTo = useCallback((tab: TabId, filter?: CaveListProps["initialFilter"]) => {
+    setListFilter(tab === "liste" ? filter : undefined)
     setActiveTab(tab)
   }, [])
 
   return (
-    <div className="mx-auto min-h-dvh max-w-[480px]" style={{ paddingBottom: 'calc(76px + env(safe-area-inset-bottom, 0px))' }}>
-      {/* Active Screen */}
-      {activeTab === 'cave' && <Dashboard cave={cave} onNavigate={navigateTo} />}
-      {activeTab === 'carte' && <MapView cave={cave} />}
-      {activeTab === 'liste' && <CaveList cave={cave} initialFilter={listFilter} />}
-      {activeTab === 'accords' && <Suggest cave={cave} />}
-      {activeTab === 'reglages' && (
+    <div className="mx-auto min-h-dvh max-w-[480px]" style={{ paddingBottom: "calc(76px + env(safe-area-inset-bottom, 0px))" }}>
+      {activeTab === "cave" && <Dashboard cave={cave} onNavigate={navigateTo} onAddWine={onAddWine} />}
+      {activeTab === "carte" && <MapView cave={cave} />}
+      {activeTab === "liste" && <CaveList cave={cave} initialFilter={listFilter} onAddWine={onAddWine} />}
+      {activeTab === "accords" && <Suggest cave={cave} />}
+      {activeTab === "reglages" && (
         <Settings
           cave={cave}
           lastUpdated={lastUpdated}
@@ -42,8 +41,6 @@ export function AppShell({ cave, lastUpdated, onImport, onClear }: AppShellProps
           onClear={onClear}
         />
       )}
-
-      {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={(tab) => navigateTo(tab)} />
     </div>
   )
