@@ -129,15 +129,13 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
 
       {/* Actions rapides */}
       <div className="mx-4 mt-3 grid grid-cols-2 gap-2">
-        <button
-          onClick={() => handleFabAction("scan")}
-          className="flex items-center gap-2.5 rounded-xl border border-cave-border bg-card px-3.5 py-3 transition-colors hover:border-primary/30"
-        >
+        <div className="flex cursor-not-allowed items-center gap-2.5 rounded-xl border border-cave-border bg-card px-3.5 py-3 opacity-50">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
             <Camera className="h-3.5 w-3.5 text-primary" />
           </div>
           <span className="text-sm font-medium text-foreground">Scanner</span>
-        </button>
+          <span className="ml-auto text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Bientot</span>
+        </div>
         <button
           onClick={() => onNavigate("liste")}
           className="flex items-center gap-2.5 rounded-xl border border-cave-border bg-card px-3.5 py-3 transition-colors hover:border-primary/30"
@@ -226,13 +224,11 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
       {/* FAB menu */}
       {fabOpen && (
         <div className="fixed bottom-[calc(100px+env(safe-area-inset-bottom,0px))] right-4 z-30 flex flex-col items-end gap-2">
-          <button
-            onClick={() => handleFabAction("scan")}
-            className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
-          >
+          <div className="flex cursor-not-allowed items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg opacity-50">
             <span className="text-sm font-medium text-foreground">Scanner une etiquette</span>
             <Camera className="h-4 w-4 text-primary" />
-          </button>
+            <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Bientot</span>
+          </div>
           <button
             onClick={() => handleFabAction("manual")}
             className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
@@ -257,3 +253,4 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
     </div>
   )
 }
+
