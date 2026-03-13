@@ -214,7 +214,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
 
       {/* FAB menu */}
       {fabOpen && (
-        <div className="fixed bottom-[calc(90px+env(safe-area-inset-bottom,0px))] right-4 z-30 flex flex-col items-end gap-2 pr-1">
+        <div className="fixed bottom-[calc(160px+env(safe-area-inset-bottom,0px))] right-4 z-30 flex flex-col items-end gap-2">
           <button
             onClick={() => handleFabAction("scan")}
             className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
