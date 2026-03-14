@@ -36,7 +36,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
 
   const stats = useMemo(() => {
     const active = cave.filter((w) => {
-      const o = getOverride(w.wine_name, w.millesime_year)
+      const o = getOverride(w.wine_name ?? null, w.millesime_year ?? null)
       return !o?.deleted && !o?.archived
     })
     const total = active.reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)

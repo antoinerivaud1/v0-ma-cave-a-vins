@@ -90,7 +90,7 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
     if (!isLoaded) return []
     
     let result = cave.filter((w) => {
-      const override = getOverride(w.wine_name, w.millesime_year)
+      const override = getOverride(w.wine_name ?? null, w.millesime_year ?? null)
       return !override?.deleted
     })
 
@@ -155,14 +155,14 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
   const archivedWines = useMemo(() => {
     if (!isLoaded) return []
     return cave.filter((w) => {
-      const override = getOverride(w.wine_name, w.millesime_year)
+      const override = getOverride(w.wine_name ?? null, w.millesime_year ?? null)
       return override?.archived === true && !override?.deleted
     })
   }, [cave, isLoaded, getOverride])
 
   const totalBottles = useMemo(() => {
     return filtered.reduce((sum, w) => {
-      const override = getOverride(w.wine_name, w.millesime_year)
+      const override = getOverride(w.wine_name ?? null, w.millesime_year ?? null)
       const qty = override?.quantity ?? Number(w.bottle_quantity) ?? 0
       return sum + qty
     }, 0)

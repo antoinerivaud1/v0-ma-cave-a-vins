@@ -17,7 +17,8 @@ export function Suggest({ cave }: SuggestProps) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [recording, setRecording] = useState(false)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   /** Cleanup recognition on unmount */
@@ -96,7 +97,7 @@ export function Suggest({ cave }: SuggestProps) {
     recognition.interimResults = false
     recognition.maxAlternatives = 1
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       const transcript = event.results[0]?.[0]?.transcript || ''
       setQuery(transcript)
       setRecording(false)
