@@ -38,8 +38,8 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
   const label = getLabel(wine.wine_type || "")
   const region = formatRegion(wine.wine_region || "")
   const hasNote = !!(wine.bottle_comment || wine.wine_comment || wine.wine_notes)
-  const note = wine.bottle_comment || wine.wine_comment || wine.wine_notes || ""
-  const override = getOverride(wine.wine_name, wine.millesime_year)
+  const note = String(wine.bottle_comment || wine.wine_comment || wine.wine_notes || "")
+  const override = getOverride(wine.wine_name ?? null, wine.millesime_year ?? null)
   const displayQuantity = override?.quantity !== undefined ? override.quantity : (wine.bottle_quantity || 1)
   const isArchived = override?.archived || false
   const apogeeBadgeVariant = apogee
@@ -48,23 +48,23 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
 
   const handleConsume = () => {
     const newQty = Math.max(0, displayQuantity - 1)
-    setOverride(wine.wine_name, wine.millesime_year, { ...override, quantity: newQty })
+    setOverride(wine.wine_name ?? null, wine.millesime_year ?? null, { ...override, quantity: newQty })
   }
 
   const handleArchive = () => {
-    setOverride(wine.wine_name, wine.millesime_year, { ...override, archived: true })
+    setOverride(wine.wine_name ?? null, wine.millesime_year ?? null, { ...override, archived: true })
   }
 
   const handleQuantityChange = (qty: number) => {
-    setOverride(wine.wine_name, wine.millesime_year, { ...override, quantity: qty })
+    setOverride(wine.wine_name ?? null, wine.millesime_year ?? null, { ...override, quantity: qty })
   }
 
   const handleRestore = () => {
-    setOverride(wine.wine_name, wine.millesime_year, { ...override, archived: false })
+    setOverride(wine.wine_name ?? null, wine.millesime_year ?? null, { ...override, archived: false })
   }
 
   const handleDelete = () => {
-    setOverride(wine.wine_name, wine.millesime_year, { ...override, deleted: true })
+    setOverride(wine.wine_name ?? null, wine.millesime_year ?? null, { ...override, deleted: true })
   }
 
   return (
@@ -108,7 +108,7 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
           />
           <WineCardActions
             wineName={sanitizeWineName(wine.wine_name) || "Vin inconnu"}
-            millesime={wine.millesime_year}
+            millesime={wine.millesime_year ?? ""}
             currentQuantity={displayQuantity}
             isArchived={isArchived}
             onConsume={handleConsume}
