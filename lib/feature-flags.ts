@@ -13,7 +13,7 @@ export const FEATURE_FLAGS: Record<string, FeatureFlag> = {
     key: "SCAN_LABEL",
     label: "Scanner une étiquette",
     description: "Identifiez instantanément un vin en photographiant son étiquette.",
-    status: "coming-soon",
+    status: "enabled",
     icon: "Camera",
   },
   ENRICH_WINE: {
