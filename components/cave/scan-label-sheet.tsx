@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react"
 import { Camera, ImagePlus, Loader2, X, Check, AlertCircle } from "lucide-react"
+import { ComingSoonBadge } from "./coming-soon-badge"
 import type { Wine } from "@/data/apogee"
 import type { ScanLabelResult } from "@/app/api/scan-label/route"
 
@@ -126,7 +127,10 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3">
-          <h2 className="font-serif text-lg font-semibold text-foreground">Scanner une etiquette</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-serif text-lg font-semibold text-foreground">Scanner une etiquette</h2>
+            <ComingSoonBadge />
+          </div>
           <button onClick={handleClose} className="rounded-full p-1.5 hover:bg-secondary">
             <X className="h-4 w-4 text-muted-foreground" />
           </button>

@@ -1,11 +1,15 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { Database, Trash2, CheckCircle } from 'lucide-react'
+import { Database, Trash2, CheckCircle, Camera, Globe, Layers, type LucideIcon } from 'lucide-react'
 import { PageHeader } from './page-header'
 import { ImportZone } from './import-zone'
+import { ComingSoonBadge } from "./coming-soon-badge"
+import { getComingSoonFeatures } from "@/lib/feature-flags"
 import { useFileParser } from '@/hooks/use-file-parser'
 import type { Wine } from '@/data/apogee'
+
+const ICON_MAP: Record<string, LucideIcon> = { Camera, Globe, Layers }
 
 interface SettingsProps {
   cave: Wine[]
@@ -87,6 +91,41 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
           <p className="mt-2 text-xs text-destructive">{error}</p>
         )}
       </section>
+
+      {/* Prochainement */}
+      {getComingSoonFeatures().length > 0 && (
+        <section className="mx-4 mt-6">
+          <h2 className="mb-3 font-serif text-base font-medium text-foreground">
+            Prochainement
+          </h2>
+          <div className="flex flex-col gap-2">
+            {getComingSoonFeatures().map((feature) => {
+              const Icon = feature.icon ? ICON_MAP[feature.icon] : null
+              return (
+                <div
+                  key={feature.key}
+                  className="flex items-start gap-3 rounded-xl border border-cave-border bg-card px-4 py-3"
+                >
+                  {Icon && (
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-foreground">{feature.label}</p>
+                      <ComingSoonBadge />
+                    </div>
+                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Reset Section */}
       {cave.length > 0 && (

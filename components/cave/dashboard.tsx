@@ -5,6 +5,7 @@ import { Wine, GlassWater, Sparkles, Clock, Plus, Lightbulb, Sparkle, ChevronRig
 import { CaveBadge } from "./cave-badge"
 import { AddWineSheet } from "./add-wine-sheet"
 import { ScanLabelSheet } from "./scan-label-sheet"
+import { ComingSoonOverlay } from "./coming-soon-badge"
 import { getApogee } from "@/data/apogee"
 import { getDailyTip } from "@/data/wine-tips"
 import { useUserProfile } from "@/hooks/use-user-profile"
@@ -215,11 +216,15 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
       {/* FAB menu */}
       {fabOpen && (
         <div className="fixed bottom-[calc(160px+env(safe-area-inset-bottom,0px))] right-4 z-30 flex flex-col items-end gap-2">
-          <div className="flex cursor-not-allowed items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg opacity-50">
-            <span className="text-sm font-medium text-foreground">Scanner une etiquette</span>
-            <Camera className="h-4 w-4 text-primary" />
-            <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Bientot</span>
-          </div>
+          <ComingSoonOverlay featureKey="SCAN_LABEL">
+            <button
+              onClick={() => handleFabAction("scan")}
+              className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
+            >
+              <span className="text-sm font-medium text-foreground">Scanner une etiquette</span>
+              <Camera className="h-4 w-4 text-primary" />
+            </button>
+          </ComingSoonOverlay>
           <button
             onClick={() => handleFabAction("manual")}
             className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
