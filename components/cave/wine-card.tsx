@@ -7,6 +7,8 @@ import { WineCardActions } from "./wine-card-actions"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from "@/lib/wine-helpers"
 import { getApogee } from "@/data/apogee"
+import { useWineEnrichment } from "@/hooks/use-wine-enrichment"
+import { WineEnrichmentPanel } from "./wine-enrichment-panel"
 import type { Wine } from "@/data/apogee"
 
 interface WineCardProps {
@@ -31,6 +33,15 @@ const colorBadgeVariant: Record<string, "gold" | "muted"> = {
 export function WineCard({ wine, onWineUpdate }: WineCardProps) {
   const [isOpen, setIsOpen] = useState(false)
   const { getOverride, setOverride } = useStockOverrides()
+
+  const isManual = !!(wine._manual as boolean | undefined)
+  const { getEnrichment, isEnriching } = useWineEnrichment()
+  const enrichment = isManual
+    ? getEnrichment(wine.wine_name ?? "", wine.millesime_year)
+    : null
+  const enrichmentLoading = isManual
+    ? isEnriching(wine.wine_name ?? "", wine.millesime_year)
+    : false
 
   const apogee = getApogee(wine)
   const color = getColor(wine.wine_type || "")
@@ -151,6 +162,13 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
                 wineName={sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || undefined}
               />
             </div>
+
+            {isManual && (
+              <WineEnrichmentPanel
+                enrichment={enrichment}
+                isLoading={enrichmentLoading}
+              />
+            )}
           </div>
         </div>
       </div>
