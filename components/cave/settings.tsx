@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { Database, Trash2, CheckCircle, Camera, Globe, Layers, type LucideIcon } from 'lucide-react'
+import Link from 'next/link'
+import { Database, Trash2, CheckCircle, Camera, Globe, Layers, ShieldCheck, type LucideIcon } from 'lucide-react'
 import { PageHeader } from './page-header'
 import { ImportZone } from './import-zone'
 import { ComingSoonBadge } from "./coming-soon-badge"
@@ -164,6 +165,23 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
           )}
         </section>
       )}
+      {/* À propos */}
+      <section className="mx-4 mt-6">
+        <h2 className="mb-3 font-serif text-base font-medium text-foreground">
+          À propos
+        </h2>
+        <Link
+          href="/confidentialite"
+          className="flex items-center gap-3 rounded-xl border border-cave-border bg-card px-4 py-3 transition-colors hover:border-primary/30"
+        >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <span className="text-sm font-medium text-foreground">
+            Politique de confidentialité
+          </span>
+        </Link>
+      </section>
     </div>
   )
 }
