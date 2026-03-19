@@ -9,6 +9,10 @@ import { ComingSoonBadge } from "./coming-soon-badge"
 import { getComingSoonFeatures } from "@/lib/feature-flags"
 import { useFileParser } from '@/hooks/use-file-parser'
 import type { Wine } from '@/data/apogee'
+import { useAuth } from "@/hooks/use-auth"
+import { AuthSheet } from "@/components/cave/auth-sheet"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 
 const ICON_MAP: Record<string, LucideIcon> = { Camera, Globe, Layers }
 
@@ -22,6 +26,8 @@ interface SettingsProps {
 export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps) {
   const { parseFile, isParsing, error } = useFileParser()
   const [showConfirm, setShowConfirm] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
+  const { user, signOut } = useAuth()
 
   const totalBottles = cave.reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
 
@@ -127,6 +133,53 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
           </div>
         </section>
       )}
+
+      {/* Compte */}
+      <section className="mx-4 mt-6">
+        <h2 className="mb-3 font-serif text-base font-medium text-foreground">
+          Compte
+        </h2>
+        {user ? (
+          <div className="flex flex-col gap-3 rounded-xl border border-cave-border bg-card p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-foreground">{user.email}</p>
+              <Badge
+                variant="outline"
+                className="border-emerald-800/40 bg-emerald-950/40 text-emerald-400"
+              >
+                <CheckCircle className="mr-1 h-3 w-3" />
+                Cave synchronisée
+              </Badge>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => signOut()}
+            >
+              Se déconnecter
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 rounded-xl border border-cave-border bg-card p-4">
+            <div>
+              <p className="text-sm font-medium text-foreground">Synchronisez votre cave</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Accédez à votre cave sur tous vos appareils
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setAuthOpen(true)}
+            >
+              Se connecter / Créer un compte
+            </Button>
+          </div>
+        )}
+        <AuthSheet open={authOpen} onOpenChange={setAuthOpen} />
+      </section>
 
       {/* Reset Section */}
       {cave.length > 0 && (
