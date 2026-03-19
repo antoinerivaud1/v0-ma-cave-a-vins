@@ -2,12 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react"
 import type { Wine } from "@/data/apogee"
+import { useAuth } from "@/hooks/use-auth"
+import { syncWineToSupabase } from "@/hooks/use-cave-sync"
 
 const STORAGE_KEY = "cave-manual-wines"
 
 export function useManualWines() {
   const [manualWines, setManualWines] = useState<Wine[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const { user } = useAuth()
 
   useEffect(() => {
     try {
@@ -25,9 +28,15 @@ export function useManualWines() {
     }
   }, [manualWines, isLoaded])
 
-  const addWine = useCallback((wine: Wine) => {
-    setManualWines((prev) => [wine, ...prev])
-  }, [])
+  const addWine = useCallback(
+    (wine: Wine) => {
+      setManualWines((prev) => [wine, ...prev])
+      if (user?.id) {
+        syncWineToSupabase(wine, user.id)
+      }
+    },
+    [user]
+  )
 
   const clearManualWines = useCallback(() => {
     setManualWines([])
