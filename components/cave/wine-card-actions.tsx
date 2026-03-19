@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { MoreVertical, Trash2, Archive, Edit, Wine, ShoppingCart } from "lucide-react"
+import { MoreVertical, Trash2, Archive, Edit, Wine, ShoppingCart, ArrowRightLeft } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { WineSearchSheet } from "./wine-search-sheet"
+import { WineMoveSheet } from "./wine-move-sheet"
+import { useAuth } from "@/hooks/use-auth"
+import { useCaves } from "@/hooks/use-caves"
 
 export interface WineCardActionsProps {
   wineName: string
@@ -32,6 +35,12 @@ export interface WineCardActionsProps {
   onRestore?: () => void
   onDelete: () => void
   onEditClick?: () => void
+  /** Supabase wine id — enables "Déplacer vers..." when provided */
+  wineId?: string
+  /** Current cave_id of the wine in Supabase */
+  wineCaveId?: string | null
+  /** Callback fired after the wine has been moved to another cave */
+  onMoved?: () => void
 }
 
 export function WineCardActions({
@@ -44,12 +53,21 @@ export function WineCardActions({
   onArchive,
   onRestore,
   onDelete,
-  onEditClick,
+  onEditClick: _onEditClick,
+  wineId,
+  wineCaveId,
+  onMoved,
 }: WineCardActionsProps) {
+  const { user } = useAuth()
+  const { caves } = useCaves()
+
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isEditingQuantity, setIsEditingQuantity] = useState(false)
   const [tempQuantity, setTempQuantity] = useState(String(currentQuantity))
   const [showSearchSheet, setShowSearchSheet] = useState(false)
+  const [showMoveSheet, setShowMoveSheet] = useState(false)
+
+  const canMove = !!user && !!wineId && caves.length > 1 && !isArchived
 
   const handleQuantitySave = () => {
     const qty = Math.max(0, parseInt(tempQuantity) || 0)
@@ -110,6 +128,15 @@ export function WineCardActions({
                 <Archive className="h-4 w-4" />
                 Archiver
               </DropdownMenuItem>
+              {canMove && (
+                <DropdownMenuItem
+                  onClick={() => setShowMoveSheet(true)}
+                  className="gap-2"
+                >
+                  <ArrowRightLeft className="h-4 w-4" />
+                  Déplacer vers...
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 onClick={() => setShowSearchSheet(true)}
                 className="gap-2"
@@ -146,6 +173,18 @@ export function WineCardActions({
         isOpen={showSearchSheet}
         onOpenChange={setShowSearchSheet}
       />
+
+      {/* Move to another cave sheet */}
+      {canMove && wineId && (
+        <WineMoveSheet
+          wine={{ id: wineId, cave_id: wineCaveId ?? null, name: wineName, vintage: String(millesime) }}
+          open={showMoveSheet}
+          onOpenChange={setShowMoveSheet}
+          onMoved={() => {
+            onMoved?.()
+          }}
+        />
+      )}
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
