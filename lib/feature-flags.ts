@@ -27,7 +27,7 @@ export const FEATURE_FLAGS: Record<string, FeatureFlag> = {
     key: "MULTI_CAVE",
     label: "Multi-cave",
     description: "Gérez plusieurs caves (ex: Paris, La Baule) depuis une seule app.",
-    status: "coming-soon",
+    status: "enabled",
     icon: "Layers",
   },
 }

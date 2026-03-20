@@ -49,3 +49,13 @@ export function ComingSoonOverlay({ children, featureKey }: ComingSoonOverlayPro
   // status: "disabled" → rien n'est rendu
   return null
 }
+
+/* ── PremiumBadge ────────────────────────────────── */
+
+export function PremiumBadge() {
+  return (
+    <span className="inline-flex items-center rounded-full border border-[#722F37]/50 bg-[#722F37]/15 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-[#C0956C]">
+      Premium
+    </span>
+  )
+}

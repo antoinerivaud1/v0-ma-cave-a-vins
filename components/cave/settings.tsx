@@ -11,8 +11,10 @@ import { useFileParser } from '@/hooks/use-file-parser'
 import type { Wine } from '@/data/apogee'
 import { useAuth } from "@/hooks/use-auth"
 import { AuthSheet } from "@/components/cave/auth-sheet"
+import { CaveManagerSheet } from "@/components/cave/cave-manager-sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useCaves } from "@/hooks/use-caves"
 
 const ICON_MAP: Record<string, LucideIcon> = { Camera, Globe, Layers }
 
@@ -27,7 +29,9 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
   const { parseFile, isParsing, error } = useFileParser()
   const [showConfirm, setShowConfirm] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
+  const [caveManagerOpen, setCaveManagerOpen] = useState(false)
   const { user, signOut } = useAuth()
+  const { caves } = useCaves()
 
   const totalBottles = cave.reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
 
@@ -151,6 +155,13 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
                 Cave synchronisée
               </Badge>
             </div>
+            <button
+              onClick={() => setCaveManagerOpen(true)}
+              className="flex w-full items-center justify-between rounded-lg border border-cave-border bg-background/50 px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted/50"
+            >
+              <span>Mes caves</span>
+              <span className="text-muted-foreground">({caves.length})</span>
+            </button>
             <Button
               variant="outline"
               size="sm"
@@ -179,6 +190,7 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
           </div>
         )}
         <AuthSheet open={authOpen} onOpenChange={setAuthOpen} />
+        <CaveManagerSheet open={caveManagerOpen} onOpenChange={setCaveManagerOpen} />
       </section>
 
       {/* Reset Section */}
