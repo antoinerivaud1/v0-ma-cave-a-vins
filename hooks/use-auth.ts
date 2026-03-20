@@ -5,18 +5,36 @@ import type { User, Session, Provider } from "@supabase/supabase-js"
 import { createClient } from "@/lib/supabase/client"
 import { migrateLocalToSupabase } from "@/hooks/use-cave-sync"
 
+export type UserPlan = "free" | "premium"
+
+async function fetchUserPlan(userId: string): Promise<UserPlan> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from("profiles")
+    .select("plan")
+    .eq("id", userId)
+    .single()
+  const raw = (data as { plan?: string } | null)?.plan
+  return raw === "premium" ? "premium" : "free"
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [plan, setPlan] = useState<UserPlan>("free")
 
   useEffect(() => {
     const supabase = createClient()
 
     // Get initial session
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session)
       setUser(data.session?.user ?? null)
+      if (data.session?.user?.id) {
+        const userPlan = await fetchUserPlan(data.session.user.id)
+        setPlan(userPlan)
+      }
       setLoading(false)
     })
 
@@ -29,6 +47,12 @@ export function useAuth() {
 
         if (event === "SIGNED_IN" && newSession?.user?.id) {
           await migrateLocalToSupabase(newSession.user.id)
+          const userPlan = await fetchUserPlan(newSession.user.id)
+          setPlan(userPlan)
+        }
+
+        if (event === "SIGNED_OUT") {
+          setPlan("free")
         }
       }
     )
@@ -81,6 +105,7 @@ export function useAuth() {
     user,
     session,
     loading,
+    plan,
     signIn,
     signUp,
     signOut,

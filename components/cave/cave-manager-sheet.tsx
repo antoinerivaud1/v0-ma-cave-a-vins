@@ -31,6 +31,7 @@ import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/hooks/use-auth"
 import { useCaves } from "@/hooks/use-caves"
 import type { Cave } from "@/hooks/use-caves"
+import { PremiumBadge } from "./coming-soon-badge"
 
 const CAVE_LIMIT_SOFT = 5
 
@@ -40,8 +41,10 @@ interface CaveManagerSheetProps {
 }
 
 export function CaveManagerSheet({ open, onOpenChange }: CaveManagerSheetProps) {
-  const { user } = useAuth()
+  const { user, plan } = useAuth()
   const { caves, activeCaveId, createCave, renameCave, deleteCave, setActiveCave } = useCaves()
+
+  const isPremiumGated = plan === "free" && caves.length >= 1
 
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState("")
@@ -230,7 +233,23 @@ export function CaveManagerSheet({ open, onOpenChange }: CaveManagerSheetProps) 
                 className="px-5 py-4"
                 style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
               >
-                {showNewInput ? (
+                {isPremiumGated ? (
+                  <div className="flex items-center gap-3 rounded-xl border border-[#722F37]/20 bg-[#722F37]/10 px-4 py-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-foreground">Nouvelle cave</span>
+                        <PremiumBadge />
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        Gérez plusieurs caves avec un abonnement Premium
+                      </p>
+                    </div>
+                    <Button size="sm" disabled className="shrink-0 gap-1.5 opacity-50">
+                      <Plus className="h-4 w-4" />
+                      Créer
+                    </Button>
+                  </div>
+                ) : showNewInput ? (
                   <div className="flex items-center gap-2">
                     <Input
                       placeholder="Nom de la cave"
