@@ -11,11 +11,13 @@ async function fetchUserPlan(userId: string): Promise<UserPlan> {
   const supabase = createClient()
   const { data } = await supabase
     .from("profiles")
-    .select("plan")
+    .select("plan, role")
     .eq("id", userId)
     .single()
-  const raw = (data as { plan?: string } | null)?.plan
-  return raw === "premium" ? "premium" : "free"
+  const raw = data as { plan?: string; role?: string } | null
+  // Les beta testeurs et admins ont accès premium complet
+  if (raw?.role === "beta" || raw?.role === "admin") return "premium"
+  return raw?.plan === "premium" ? "premium" : "free"
 }
 
 export function useAuth() {
@@ -96,7 +98,9 @@ export function useAuth() {
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+        redirectTo: typeof window !== "undefined"
+          ? `${window.location.origin}/auth/callback`
+          : undefined,
       },
     })
   }, [])

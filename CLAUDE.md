@@ -81,7 +81,7 @@ Analyse → Proposition → Validation Antoine → Code
 app/
   page.tsx                    → fusion cave Excel + vins manuels (SEUL point)
   layout.tsx                  → metadata + PWA config
-  auth/callback/route.ts      → callback OAuth Supabase
+  auth/callback/route.ts      → callback OAuth Supabase (PKCE — OBLIGATOIRE pour Google/Apple)
   api/scan-label/route.ts     → endpoint Claude Vision
 
 components/cave/
@@ -99,7 +99,7 @@ hooks/
   use-user-profile.ts         → localStorage cave-user-profile
 
 lib/
-  feature-flags.ts            → SCAN_LABEL=enabled, ENRICHISSEMENT_WEB=enabled
+  feature-flags.ts            → SCAN_LABEL=enabled, ENRICH_WINE=enabled
 ```
 
 ---
@@ -107,7 +107,7 @@ lib/
 ## 8. Auth — règles de sécurité
 
 - **Apple Sign In** ✅ fonctionnel — **NE PAS TOUCHER** sans raison explicite, risque de régression
-- **Google Sign In** ⚠️ bug actif en prod — en cours d'investigation
+- **Google Sign In** ✅ corrigé — route `/auth/callback` créée, `redirectTo` corrigé (flux PKCE)
 - `isPremium` est centralisé dans `useAuth` — ne pas le recalculer ailleurs
 - `role = 'beta'` → `isPremium = true` (accès complet pour testeurs)
 

@@ -20,7 +20,7 @@ export const FEATURE_FLAGS: Record<string, FeatureFlag> = {
     key: "ENRICH_WINE",
     label: "Enrichissement web",
     description: "Récupérez automatiquement la description, l'apogée et le prix moyen d'un vin.",
-    status: "coming-soon",
+    status: "enabled",
     icon: "Globe",
   },
   MULTI_CAVE: {

@@ -9,6 +9,7 @@ export interface Wine {
   wine_domain?: string
   wine_classification?: string
   wine_notes?: string
+  _manual?: boolean
   [key: string]: unknown
 }
 

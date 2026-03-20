@@ -1,10 +1,10 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Thermometer, Clock, Droplets, Calendar, ExternalLink } from 'lucide-react'
-import { WineSearchSheet } from './wine-search-sheet'
-import { getWineExpert } from '@/lib/wine-expert'
-import type { WineExpert } from '@/lib/wine-expert'
+import { useState } from "react"
+import { Thermometer, Clock, Droplets, Calendar, ExternalLink } from "lucide-react"
+import { WineSearchSheet } from "./wine-search-sheet"
+import { getWineExpert } from "@/lib/wine-expert"
+import type { WineExpert } from "@/lib/wine-expert"
 
 interface WineExpertPanelProps {
   region?: string
