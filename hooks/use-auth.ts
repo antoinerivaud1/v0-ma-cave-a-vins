@@ -29,25 +29,14 @@ export function useAuth() {
   useEffect(() => {
     const supabase = createClient()
 
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data }) => {
-      setSession(data.session)
-      setUser(data.session?.user ?? null)
-      if (data.session?.user?.id) {
-        const userPlan = await fetchUserPlan(data.session.user.id)
-        setPlan(userPlan)
-      }
-      setLoading(false)
-    })
-
-    // Listen for auth state changes
+    // Listen for auth state changes (registered first, handles INITIAL_SESSION)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         setSession(newSession)
         setUser(newSession?.user ?? null)
         setLoading(false)
 
-        if (event === "SIGNED_IN" && newSession?.user?.id) {
+        if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && newSession?.user?.id) {
           await migrateLocalToSupabase(newSession.user.id)
           const userPlan = await fetchUserPlan(newSession.user.id)
           setPlan(userPlan)
