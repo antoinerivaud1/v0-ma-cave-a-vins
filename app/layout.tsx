@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next"
 import { Inter, Cormorant_Garamond } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { cookies } from "next/headers"
+import { createServerClient } from "@supabase/ssr"
+import { AuthProvider } from "@/components/providers/auth-provider"
 import "./globals.css"
 
 const inter = Inter({
@@ -49,15 +52,38 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = await cookies()
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll() {
+          // layout.tsx is read-only — cookie refreshes are handled by middleware
+        },
+      },
+    }
+  )
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
     <html lang="fr">
       <body className={`${inter.variable} ${cormorant.variable} font-sans antialiased`}>
-        {children}
+        <AuthProvider initialUser={user}>
+          {children}
+        </AuthProvider>
         <Analytics />
       </body>
     </html>
