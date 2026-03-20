@@ -29,28 +29,37 @@ export function useAuth() {
   useEffect(() => {
     const supabase = createClient()
 
-    // Listen for auth state changes (registered first, handles INITIAL_SESSION)
+    // 1. Read initial session from cookies immediately (needed for server-side PKCE / Google OAuth)
+    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
+      if (initialSession?.user?.id) {
+        setSession(initialSession)
+        setUser(initialSession.user)
+        const userPlan = await fetchUserPlan(initialSession.user.id)
+        setPlan(userPlan)
+      }
+      setLoading(false)
+    })
+
+    // 2. Listen for subsequent auth changes (sign out, token refresh, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        setSession(newSession)
-        setUser(newSession?.user ?? null)
-        setLoading(false)
-
         if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && newSession?.user?.id) {
+          setSession(newSession)
+          setUser(newSession.user)
           await migrateLocalToSupabase(newSession.user.id)
           const userPlan = await fetchUserPlan(newSession.user.id)
           setPlan(userPlan)
-        }
-
-        if (event === "SIGNED_OUT") {
+          setLoading(false)
+        } else if (event === "SIGNED_OUT") {
+          setUser(null)
+          setSession(null)
           setPlan("free")
+          setLoading(false)
         }
       }
     )
 
-    return () => {
-      subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
   const signIn = useCallback(
