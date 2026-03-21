@@ -20,10 +20,10 @@ const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-cave-border bg-cave-bg/95 backdrop-blur-md"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-cave-border bg-cave-bg/95 backdrop-blur-md pointer-events-none"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}
     >
-      <div className="mx-auto flex max-w-[480px] items-center justify-around">
+      <div className="mx-auto flex max-w-[480px] items-center justify-around pointer-events-auto">
         {tabs.map(({ id, label, icon: Icon }) => {
           const isActive = activeTab === id
           return (
