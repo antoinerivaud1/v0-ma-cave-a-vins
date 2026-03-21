@@ -58,9 +58,9 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
     try {
       await signOut()
     } catch {
-      setSignOutError("Erreur lors de la deconnexion. Reessayez.")
-      setIsSigningOut(false)
+      // ignore, on force le reload de toute façon
     }
+    window.location.href = "/"
   }, [signOut])
 
   const formattedDate = lastUpdated
@@ -184,9 +184,6 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
             >
               {isSigningOut ? "Deconnexion..." : "Se déconnecter"}
             </Button>
-            {signOutError && (
-              <p className="text-xs text-destructive">{signOutError}</p>
-            )}
           </div>
         ) : (
           <div className="flex flex-col gap-3 rounded-xl border border-cave-border bg-card p-4">
