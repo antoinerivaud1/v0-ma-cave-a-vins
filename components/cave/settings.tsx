@@ -32,6 +32,8 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
   const [caveManagerOpen, setCaveManagerOpen] = useState(false)
   const { user, signOut } = useAuth()
   const { caves } = useCaves()
+  const [isSigningOut, setIsSigningOut] = useState(false)
+  const [signOutError, setSignOutError] = useState<string | null>(null)
 
   const totalBottles = cave.reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
 
@@ -49,6 +51,17 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
     onClear()
     setShowConfirm(false)
   }, [onClear])
+
+  const handleSignOut = useCallback(async () => {
+    setIsSigningOut(true)
+    setSignOutError(null)
+    try {
+      await signOut()
+    } catch {
+      setSignOutError("Erreur lors de la deconnexion. Reessayez.")
+      setIsSigningOut(false)
+    }
+  }, [signOut])
 
   const formattedDate = lastUpdated
     ? new Date(lastUpdated).toLocaleDateString('fr-FR', {
@@ -166,10 +179,14 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
               variant="outline"
               size="sm"
               className="w-full"
-              onClick={() => signOut()}
+              onClick={handleSignOut}
+              disabled={isSigningOut}
             >
-              Se déconnecter
+              {isSigningOut ? "Deconnexion..." : "Se déconnecter"}
             </Button>
+            {signOutError && (
+              <p className="text-xs text-destructive">{signOutError}</p>
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-3 rounded-xl border border-cave-border bg-card p-4">
