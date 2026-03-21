@@ -95,8 +95,7 @@ export function AuthProvider({ initialUser, children }: AuthProviderProps) {
   )
 
   const signOut = useCallback(async (): Promise<void> => {
-    const supabase = createClient()
-    await supabase.auth.signOut({ scope: "local" })
+    await fetch("/api/auth/signout", { method: "POST" })
   }, [])
 
   const signInWithOAuth = useCallback(async (provider: Provider): Promise<void> => {
