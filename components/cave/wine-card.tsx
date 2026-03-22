@@ -93,10 +93,10 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate font-serif text-base font-semibold text-foreground">
+          <p className="truncate font-cormorant text-base font-normal text-foreground">
             {sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || "Vin inconnu"}
             {wine.millesime_year ? (
-              <span className="ml-1.5 text-sm font-normal text-muted-foreground">
+              <span className="ml-1.5 font-sans font-semibold tabular-nums text-sm text-muted-foreground">
                 {wine.millesime_year}
               </span>
             ) : null}

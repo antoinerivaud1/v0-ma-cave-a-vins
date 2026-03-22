@@ -173,7 +173,10 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
       <div className="flex items-start justify-between px-4" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}>
         <div className="pb-2">
           <h1 className="font-serif text-2xl font-semibold text-foreground">Mes Vins</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">{totalBottles} bouteille{totalBottles !== 1 ? "s" : ""}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            <span className="font-sans font-semibold tabular-nums">{totalBottles}</span>
+            {" "}bouteille{totalBottles !== 1 ? "s" : ""}
+          </p>
         </div>
         {onAddWine && (
           <button
