@@ -54,6 +54,7 @@ Analyse → Proposition → Validation Antoine → Code
 - ✅ Fallback `safe-area-inset-bottom = 20px` dans `app-shell.tsx`
 - ✅ `WineExpertPanel` doit toujours recevoir `wineName` en prop
 - ✅ Vérifier les imports `lucide-react` après toute refacto de `dashboard.tsx` (Camera disparaît)
+- ✅ Tout bottom sheet avec des champs de formulaire ou contenu dynamique doit avoir `max-h-[90dvh] flex flex-col` sur le conteneur et `overflow-y-auto flex-1` sur la zone de contenu
 - ✅ Double quotes partout dans le JSX
 
 ---
@@ -124,6 +125,7 @@ lib/
 | Marge bas premier rendu | Fallback 20px dans `app-shell.tsx` |
 | Camera retiré par erreur | Vérifier imports `lucide-react` après refacto `dashboard.tsx` |
 | Scan badge "Bientôt" après merge | Flag `SCAN_LABEL` resté `coming-soon` → mis à `enabled` |
+| Scroll impossible dans ScanLabelSheet (step result) | `overflow-hidden` remplacé par `max-h-[90dvh] flex flex-col` + zone de contenu `overflow-y-auto flex-1` |
 
 ---
 

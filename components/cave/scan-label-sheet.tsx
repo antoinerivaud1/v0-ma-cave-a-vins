@@ -119,7 +119,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-background border-t border-cave-border overflow-hidden">
+      <div className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-background border-t border-cave-border max-h-[90dvh] flex flex-col">
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="h-1 w-10 rounded-full bg-cave-border" />
@@ -136,7 +136,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
           </button>
         </div>
 
-        <div className="px-4 pb-6">
+        <div className="px-4 pb-6 overflow-y-auto flex-1">
 
           {/* STEP: capture */}
           {step === "capture" && (
