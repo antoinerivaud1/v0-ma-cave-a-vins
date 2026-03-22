@@ -34,15 +34,15 @@ export function WineExpertPanel({ region, cepage, millesime, wineName }: WineExp
         <div className="flex flex-col gap-2">
           <div>
             <span className="text-[10px] font-medium uppercase tracking-wide text-primary/70">Aromes</span>
-            <p className="mt-0.5 text-sm leading-relaxed text-foreground">{expert.aromes}</p>
+            <p className="mt-0.5 font-cormorant text-sm leading-relaxed text-foreground">{expert.aromes}</p>
           </div>
           <div>
             <span className="text-[10px] font-medium uppercase tracking-wide text-primary/70">Bouche</span>
-            <p className="mt-0.5 text-sm leading-relaxed text-foreground">{expert.bouche}</p>
+            <p className="mt-0.5 font-cormorant text-sm leading-relaxed text-foreground">{expert.bouche}</p>
           </div>
           <div>
             <span className="text-[10px] font-medium uppercase tracking-wide text-primary/70">Finale</span>
-            <p className="mt-0.5 text-sm leading-relaxed text-foreground">{expert.finale}</p>
+            <p className="mt-0.5 font-cormorant text-sm leading-relaxed text-foreground">{expert.finale}</p>
           </div>
         </div>
       </div>
