@@ -42,7 +42,6 @@
 @theme inline {
   --font-sans: 'Inter', sans-serif;
   --font-serif: 'Cormorant Garamond', serif;
-  --font-cormorant: var(--font-cormorant);
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -79,6 +78,10 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+}
+
+@utility font-cormorant {
+  font-family: var(--font-cormorant);
 }
 
 @keyframes scan {
