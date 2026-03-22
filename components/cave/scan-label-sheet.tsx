@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
-import { Camera, ImagePlus, Loader2, X, Check, AlertCircle, Wine } from "lucide-react"
+import { Camera, ImagePlus, Loader2, X, Check, AlertCircle } from "lucide-react"
 import type { Wine as WineType } from "@/data/apogee"
 import type { ScanLabelResult } from "@/app/api/scan-label/route"
 
@@ -21,28 +21,28 @@ function ScanViewfinder() {
       <div className="absolute inset-0">
         {/* Top-left corner */}
         <div className="absolute left-0 top-0 h-8 w-8">
-          <div className="absolute left-0 top-0 h-full w-0.5 animate-pulse bg-gradient-to-b from-[#C0956C] to-transparent" />
-          <div className="absolute left-0 top-0 h-0.5 w-full animate-pulse bg-gradient-to-r from-[#C0956C] to-transparent" />
+          <div className="absolute left-0 top-0 h-full w-0.5 animate-pulse bg-gradient-to-b from-cave-gold to-transparent" />
+          <div className="absolute left-0 top-0 h-0.5 w-full animate-pulse bg-gradient-to-r from-cave-gold to-transparent" />
         </div>
         {/* Top-right corner */}
         <div className="absolute right-0 top-0 h-8 w-8">
-          <div className="absolute right-0 top-0 h-full w-0.5 animate-pulse bg-gradient-to-b from-[#C0956C] to-transparent" />
-          <div className="absolute right-0 top-0 h-0.5 w-full animate-pulse bg-gradient-to-l from-[#C0956C] to-transparent" />
+          <div className="absolute right-0 top-0 h-full w-0.5 animate-pulse bg-gradient-to-b from-cave-gold to-transparent" />
+          <div className="absolute right-0 top-0 h-0.5 w-full animate-pulse bg-gradient-to-l from-cave-gold to-transparent" />
         </div>
         {/* Bottom-left corner */}
         <div className="absolute bottom-0 left-0 h-8 w-8">
-          <div className="absolute bottom-0 left-0 h-full w-0.5 animate-pulse bg-gradient-to-t from-[#C0956C] to-transparent" />
-          <div className="absolute bottom-0 left-0 h-0.5 w-full animate-pulse bg-gradient-to-r from-[#C0956C] to-transparent" />
+          <div className="absolute bottom-0 left-0 h-full w-0.5 animate-pulse bg-gradient-to-t from-cave-gold to-transparent" />
+          <div className="absolute bottom-0 left-0 h-0.5 w-full animate-pulse bg-gradient-to-r from-cave-gold to-transparent" />
         </div>
         {/* Bottom-right corner */}
         <div className="absolute bottom-0 right-0 h-8 w-8">
-          <div className="absolute bottom-0 right-0 h-full w-0.5 animate-pulse bg-gradient-to-t from-[#C0956C] to-transparent" />
-          <div className="absolute bottom-0 right-0 h-0.5 w-full animate-pulse bg-gradient-to-l from-[#C0956C] to-transparent" />
+          <div className="absolute bottom-0 right-0 h-full w-0.5 animate-pulse bg-gradient-to-t from-cave-gold to-transparent" />
+          <div className="absolute bottom-0 right-0 h-0.5 w-full animate-pulse bg-gradient-to-l from-cave-gold to-transparent" />
         </div>
       </div>
 
       {/* Inner frame with subtle border */}
-      <div className="absolute inset-4 rounded-lg border border-[#722F37]/30 bg-[#722F37]/5" />
+      <div className="absolute inset-4 rounded-lg border border-cave-bordeaux/30 bg-cave-bordeaux/5" />
 
       {/* Wine bottle silhouette */}
       <div className="relative flex flex-col items-center gap-3">
@@ -72,7 +72,7 @@ function ScanViewfinder() {
         </svg>
 
         {/* Scan line animation */}
-        <div className="absolute inset-x-4 top-8 h-0.5 animate-[scan_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-[#C0956C]/60 to-transparent" />
+        <div className="absolute inset-x-4 top-8 h-0.5 animate-[scan_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-cave-gold/60 to-transparent" />
       </div>
     </div>
   )
@@ -178,201 +178,169 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
   if (!isOpen) return null
 
   return (
-    <>
-      {/* Custom keyframes for scan animation */}
-      <style jsx global>{`
-        @keyframes scan {
-          0%, 100% { transform: translateY(0); opacity: 0.3; }
-          50% { transform: translateY(180px); opacity: 0.8; }
-        }
-      `}</style>
+    <div className="fixed inset-0 z-[60] flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleClose} />
 
-      <div className="fixed inset-0 z-[60] flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleClose} />
+      {/* Sheet */}
+      <div className="absolute bottom-0 left-0 right-0 flex min-h-[65dvh] flex-col rounded-t-2xl border-t border-cave-bordeaux/30 bg-background">
+        {/* Drag Handle */}
+        <div className="flex justify-center pt-3 pb-2">
+          <div className="h-1 w-10 rounded-full bg-neutral-600" />
+        </div>
 
-        {/* Sheet - Custom positioned div */}
-        <div 
-          className="absolute bottom-0 left-0 right-0 flex min-h-[65dvh] flex-col rounded-t-2xl border-t border-[#722F37]/30"
-          style={{ backgroundColor: "#0a0a0a" }}
-        >
-          {/* Drag Handle */}
-          <div className="flex justify-center pt-3 pb-2">
-            <div className="h-1 w-10 rounded-full bg-neutral-600" />
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3">
+          <div className="flex items-center gap-3">
+            <h2 className="font-serif text-xl font-semibold text-white">
+              Scanner une etiquette
+            </h2>
+            <span className="inline-flex items-center rounded-full bg-cave-bordeaux px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cave-gold">
+              Bientôt
+            </span>
           </div>
+          <button
+            onClick={handleClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-white/10"
+          >
+            <X className="h-5 w-5 text-neutral-400" />
+          </button>
+        </div>
 
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 py-3">
-            <div className="flex items-center gap-3">
-              <h2 className="font-serif text-xl font-semibold text-white">
-                Scanner une etiquette
-              </h2>
-              <span className="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
-                style={{ backgroundColor: "#722F37", color: "#C0956C" }}
-              >
-                Bientot
-              </span>
-            </div>
-            <button 
-              onClick={handleClose} 
-              className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-white/10"
-            >
-              <X className="h-5 w-5 text-neutral-400" />
-            </button>
-          </div>
-
-          <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-8">
-            {/* STEP: capture */}
-            {step === "capture" && (
-              <div className="flex flex-1 flex-col">
-                {/* Viewfinder Zone */}
-                <div className="flex-1 py-4">
-                  <ScanViewfinder />
-                </div>
-
-                {/* Subtitle */}
-                <p className="mb-6 text-center text-sm text-neutral-400">
-                  Cadrez l'etiquette dans la zone pour une meilleure reconnaissance
-                </p>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col gap-3">
-                  {/* Primary Button */}
-                  <button
-                    onClick={() => cameraInputRef.current?.click()}
-                    className="flex items-center justify-center gap-3 rounded-xl py-4 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
-                    style={{ backgroundColor: "#722F37" }}
-                  >
-                    <Camera className="h-5 w-5" />
-                    Prendre une photo
-                  </button>
-
-                  {/* Secondary Button */}
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center justify-center gap-3 rounded-xl border py-4 text-sm font-medium text-neutral-300 transition-all hover:bg-white/5 active:scale-[0.98]"
-                    style={{ borderColor: "#722F37" }}
-                  >
-                    <ImagePlus className="h-5 w-5" />
-                    Choisir depuis la galerie
-                  </button>
-                </div>
-
-                <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+        <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-8">
+          {/* STEP: capture */}
+          {step === "capture" && (
+            <div className="flex flex-1 flex-col">
+              {/* Viewfinder Zone */}
+              <div className="flex-1 py-4">
+                <ScanViewfinder />
               </div>
-            )}
 
-            {/* STEP: scanning */}
-            {step === "scanning" && (
-              <div className="flex flex-1 flex-col items-center justify-center gap-6 py-8">
-                {preview && (
-                  <img 
-                    src={preview} 
-                    alt="Etiquette" 
-                    className="h-48 w-auto rounded-xl object-contain"
-                    style={{ border: "1px solid #722F37" }}
-                  />
-                )}
-                <div className="flex items-center gap-3 text-sm text-neutral-400">
-                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#C0956C" }} />
-                  Analyse en cours...
-                </div>
-              </div>
-            )}
+              {/* Subtitle */}
+              <p className="mb-6 text-center text-sm text-neutral-400">
+                Cadrez l'etiquette dans la zone pour une meilleure reconnaissance
+              </p>
 
-            {/* STEP: error */}
-            {step === "error" && (
-              <div className="flex flex-1 flex-col items-center justify-center gap-5 py-8">
-                <div 
-                  className="flex h-14 w-14 items-center justify-center rounded-full"
-                  style={{ backgroundColor: "rgba(166, 61, 47, 0.15)" }}
-                >
-                  <AlertCircle className="h-7 w-7" style={{ color: "#a63d2f" }} />
-                </div>
-                <p className="max-w-xs text-center text-sm text-neutral-400">{errorMsg}</p>
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3">
+                {/* Primary Button */}
                 <button
-                  onClick={reset}
-                  className="rounded-xl border px-8 py-3 text-sm font-medium text-white transition-all hover:bg-white/5"
-                  style={{ borderColor: "#722F37" }}
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex items-center justify-center gap-3 rounded-xl bg-cave-bordeaux py-4 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
                 >
-                  Reessayer
+                  <Camera className="h-5 w-5" />
+                  Prendre une photo
+                </button>
+
+                {/* Secondary Button */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center justify-center gap-3 rounded-xl border border-cave-bordeaux py-4 text-sm font-medium text-neutral-300 transition-all hover:bg-white/5 active:scale-[0.98]"
+                >
+                  <ImagePlus className="h-5 w-5" />
+                  Choisir depuis la galerie
                 </button>
               </div>
-            )}
 
-            {/* STEP: result */}
-            {step === "result" && (
-              <div className="flex flex-col gap-5">
-                {preview && (
-                  <img 
-                    src={preview} 
-                    alt="Etiquette" 
-                    className="mx-auto h-36 w-auto rounded-xl object-contain"
-                    style={{ border: "1px solid #722F37" }}
-                  />
-                )}
+              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+            </div>
+          )}
 
-                {result?.confidence === "low" && (
-                  <div 
-                    className="flex items-center gap-2 rounded-lg px-4 py-3"
-                    style={{ backgroundColor: "rgba(180, 120, 60, 0.1)", border: "1px solid rgba(192, 149, 108, 0.3)" }}
-                  >
-                    <AlertCircle className="h-4 w-4 shrink-0" style={{ color: "#C0956C" }} />
-                    <p className="text-xs" style={{ color: "#C0956C" }}>
-                      Lecture partielle — verifiez les informations.
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-3">
-                  {[
-                    { label: "Domaine", value: domaine, setter: setDomaine },
-                    { label: "Nom du vin", value: wineName, setter: setWineName },
-                    { label: "Millesime", value: millesime, setter: setMillesime, type: "number" },
-                    { label: "Region", value: region, setter: setRegion },
-                    { label: "Appellation", value: appellation, setter: setAppellation },
-                  ].map(({ label, value, setter, type }) => (
-                    <div key={label}>
-                      <label className="mb-1 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
-                        {label}
-                      </label>
-                      <input
-                        type={type || "text"}
-                        value={value}
-                        onChange={(e) => setter(e.target.value)}
-                        className="w-full rounded-lg px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-1"
-                        style={{ 
-                          backgroundColor: "#141414",
-                          border: "1px solid #2a2a2a",
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={reset}
-                    className="flex-1 rounded-xl border py-3.5 text-sm font-medium text-white transition-all hover:bg-white/5"
-                    style={{ borderColor: "#722F37" }}
-                  >
-                    Rescanner
-                  </button>
-                  <button
-                    onClick={handleConfirm}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
-                    style={{ backgroundColor: "#722F37" }}
-                  >
-                    <Check className="h-4 w-4" />
-                    Ajouter
-                  </button>
-                </div>
+          {/* STEP: scanning */}
+          {step === "scanning" && (
+            <div className="flex flex-1 flex-col items-center justify-center gap-6 py-8">
+              {preview && (
+                <img
+                  src={preview}
+                  alt="Etiquette"
+                  className="h-48 w-auto rounded-xl object-contain border border-cave-bordeaux"
+                />
+              )}
+              <div className="flex items-center gap-3 text-sm text-neutral-400">
+                <Loader2 className="h-5 w-5 animate-spin text-cave-gold" />
+                Analyse en cours...
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* STEP: error */}
+          {step === "error" && (
+            <div className="flex flex-1 flex-col items-center justify-center gap-5 py-8">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/15">
+                <AlertCircle className="h-7 w-7 text-destructive" />
+              </div>
+              <p className="max-w-xs text-center text-sm text-neutral-400">{errorMsg}</p>
+              <button
+                onClick={reset}
+                className="rounded-xl border border-cave-bordeaux px-8 py-3 text-sm font-medium text-white transition-all hover:bg-white/5"
+              >
+                Reessayer
+              </button>
+            </div>
+          )}
+
+          {/* STEP: result */}
+          {step === "result" && (
+            <div className="flex flex-col gap-5">
+              {preview && (
+                <img
+                  src={preview}
+                  alt="Etiquette"
+                  className="mx-auto h-36 w-auto rounded-xl object-contain border border-cave-bordeaux"
+                />
+              )}
+
+              {result?.confidence === "low" && (
+                <div className="flex items-center gap-2 rounded-lg border border-cave-gold/30 bg-cave-gold/10 px-4 py-3">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-cave-gold" />
+                  <p className="text-xs text-cave-gold">
+                    Lecture partielle — verifiez les informations.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3">
+                {[
+                  { label: "Domaine", value: domaine, setter: setDomaine },
+                  { label: "Nom du vin", value: wineName, setter: setWineName },
+                  { label: "Millesime", value: millesime, setter: setMillesime, type: "number" },
+                  { label: "Region", value: region, setter: setRegion },
+                  { label: "Appellation", value: appellation, setter: setAppellation },
+                ].map(({ label, value, setter, type }) => (
+                  <div key={label}>
+                    <label className="mb-1 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                      {label}
+                    </label>
+                    <input
+                      type={type || "text"}
+                      value={value}
+                      onChange={(e) => setter(e.target.value)}
+                      className="w-full rounded-lg border border-cave-border bg-card px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-1"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={reset}
+                  className="flex-1 rounded-xl border border-cave-bordeaux py-3.5 text-sm font-medium text-white transition-all hover:bg-white/5"
+                >
+                  Rescanner
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-cave-bordeaux py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
+                >
+                  <Check className="h-4 w-4" />
+                  Ajouter
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </>
+    </div>
   )
 }
