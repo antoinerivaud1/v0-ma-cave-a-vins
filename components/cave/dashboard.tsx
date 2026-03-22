@@ -68,7 +68,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
 
       {/* Header salutation */}
       <div className="flex items-center justify-between px-4 pt-5 pb-1">
-        <h1 className="font-cormorant text-3xl font-normal text-foreground">
+        <h1 className="font-cormorant text-4xl font-normal leading-tight text-foreground">
           {getGreeting(profile?.firstName)}
         </h1>
         {profile?.firstName && (
@@ -145,7 +145,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
           <div className="mb-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-400" />
-              <h2 className="font-cormorant text-xl font-normal text-foreground">A boire maintenant</h2>
+              <h2 className="font-cormorant text-2xl font-normal text-foreground">A boire maintenant</h2>
             </div>
             {stats.toDrink.length > 3 && (
               <button onClick={() => onNavigate("liste", { level: "drink" })} className="text-xs text-primary">
@@ -182,7 +182,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
         <section className="mt-5 px-4">
           <div className="mb-2.5 flex items-center gap-2">
             <GlassWater className="h-4 w-4 text-primary" />
-            <h2 className="font-cormorant text-xl font-normal text-foreground">Ajouts recents</h2>
+            <h2 className="font-cormorant text-2xl font-normal text-foreground">Ajouts recents</h2>
           </div>
           <div className="flex flex-col gap-2">
             {stats.recent.map((wine, i) => (
