@@ -114,7 +114,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+    <div className="fixed inset-0 z-[60] flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
