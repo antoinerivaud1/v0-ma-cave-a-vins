@@ -19,7 +19,7 @@ export function MapView({ cave }: MapViewProps) {
 
   return (
     <div className="pb-4">
-      <PageHeader title="Carte des Regions" subtitle="Vos vins par region viticole" />
+      <PageHeader title="Carte des Vins" subtitle="Vos vins par region viticole" />
 
       <div className="mt-4 flex flex-col gap-2 px-4">
         {Object.entries(REGIONS).map(([key, region]) => {

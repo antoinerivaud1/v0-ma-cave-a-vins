@@ -148,7 +148,7 @@ export const ACCORDS: Accord[] = [
   {
     k: ['boeuf grille', 'bœuf grillé', 'boeuf grillé', 'entrecote', 'entrecôte', 'steak', 'cote de boeuf', 'côte de boeuf'],
     t: ['wine_red'],
-    r: ['bordeaux', 'vallee_du_rhone'],
+    r: ['bordeaux', 'vallee_du_rhone', 'toscane', 'rioja', 'napa'],
     reason:
       "La viande de boeuf grillee, avec ses sucs caramelises et sa mache genereuse, exige un rouge puissant et tannique. Un Saint-Emilion ou un Chateauneuf-du-Pape, avec leurs tanins murs et leur profondeur, sont des compagnons ideaux.",
     temperature: '16-18\u00B0C',
@@ -166,7 +166,7 @@ export const ACCORDS: Accord[] = [
   {
     k: ['boeuf', 'bœuf', 'rosbif'],
     t: ['wine_red'],
-    r: ['bordeaux', 'bourgogne', 'vallee_du_rhone'],
+    r: ['bordeaux', 'bourgogne', 'vallee_du_rhone', 'toscane', 'rioja', 'napa', 'piemont'],
     reason:
       "Le boeuf, quelle que soit sa preparation, appelle un rouge structure. Les tanins d'un grand rouge de Bordeaux, Bourgogne ou du Rhone s'accordent avec la mache et le gout prononce de la viande rouge.",
     temperature: '16-18\u00B0C',
@@ -175,7 +175,7 @@ export const ACCORDS: Accord[] = [
   {
     k: ['agneau roti', 'agneau rôti', 'gigot', 'carre d agneau', 'carré d\'agneau'],
     t: ['wine_red'],
-    r: ['bordeaux', 'vallee_du_rhone'],
+    r: ['bordeaux', 'vallee_du_rhone', 'toscane', 'rioja'],
     reason:
       "L'agneau roti developpe des saveurs intenses qui s'accordent parfaitement avec un Pauillac ou un Hermitage. Les tanins fermes et les notes epices du vin enveloppent la viande et prolongent ses aromes en bouche.",
     temperature: '17-18\u00B0C',
@@ -193,7 +193,7 @@ export const ACCORDS: Accord[] = [
   {
     k: ['agneau'],
     t: ['wine_red'],
-    r: ['bordeaux', 'vallee_du_rhone'],
+    r: ['bordeaux', 'vallee_du_rhone', 'toscane', 'rioja'],
     reason:
       "L'agneau merite un rouge elegant et epice qui sublime la tendrete de la viande. Un Bordeaux de qualite ou un Cotes-du-Rhone villages feront toujours un bel accord.",
     temperature: '16-18\u00B0C',
@@ -336,7 +336,7 @@ export const ACCORDS: Accord[] = [
   {
     k: ['fromage', 'plateau de fromage', 'plateau fromage', 'plateau'],
     t: ['wine_red', 'wine_white'],
-    r: ['bourgogne', 'vallee_de_la_loire'],
+    r: ['bourgogne', 'vallee_de_la_loire', 'napa', 'barossa'],
     reason:
       "Pour un plateau de fromages varies, misez sur un rouge souple et fruité de Bourgogne ou un blanc sec de Loire. Leur polyvalence permet d'accompagner aussi bien les pates pressees que les pates molles.",
     temperature: 'Rouge : 15\u00B0C \u00B7 Blanc : 10\u00B0C',
@@ -401,6 +401,24 @@ export const FALLBACK_ACCORDS: Record<string, Accord> = {
       "Les cuisines asiatiques, riches en umami et en epices, appellent des blancs aromatiques. Un Gewurztraminer d'Alsace ou un Vouvray offrent le gras et la douceur necessaires pour contrebalancer les saveurs relevees.",
     temperature: '8-10\u00B0C',
     serving: 'Servir bien frais',
+  },
+  spanish: {
+    k: [],
+    t: ["wine_red"],
+    r: ["rioja", "ribera_del_duero", "priorat"],
+    reason:
+      "La cuisine espagnole, riche en saveurs mediteraneennes et en charcuteries, se marie idealement avec les rouges de la Rioja ou du Priorat. Leurs tanins fondus et leurs notes de vanille et de fruits rouges accompagnent parfaitement tapas, paella et plats a base de chorizo.",
+    temperature: "16-17\u00B0C",
+    serving: "Carafer 30 min pour un Reserva",
+  },
+  american: {
+    k: [],
+    t: ["wine_red"],
+    r: ["napa", "sonoma"],
+    reason:
+      "Les plats americains genereux — burgers, BBQ, cotes de boeuf — appellent les grands Cabernet Sauvignon de Napa Valley. Leur fruit mur, leurs tanins fondus et leur boise enveloppant font echo aux saveurs caramelisees et fumees de la cuisine au grill.",
+    temperature: "17-18\u00B0C",
+    serving: "Carafer 1h recommande",
   },
   default: {
     k: [],
