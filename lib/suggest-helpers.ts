@@ -22,6 +22,8 @@ function normalize(s: string): string {
 
 const ITALIAN_HINTS = ['italien', 'italienne', 'pizza', 'pasta', 'pates', 'lasagne', 'bolognaise', 'risotto', 'osso']
 const ASIAN_HINTS = ['asiatique', 'epice', 'curry', 'thai', 'japonais', 'sushi', 'sashimi', 'chinois', 'wok', 'dim sum', 'pad thai', 'maki']
+const SPANISH_HINTS = ["espagnol", "espagnole", "tapas", "paella", "chorizo", "jambon iberico", "tortilla"]
+const AMERICAN_HINTS = ["americain", "burger", "bbq", "barbecue", "cote de boeuf americaine", "steak"]
 
 /**
  * Find the best matching Accord for a free-text query.
@@ -52,6 +54,8 @@ export function findAccord(query: string): Accord {
   // Fallback by cuisine category detection
   if (ITALIAN_HINTS.some((h) => q.includes(h))) return FALLBACK_ACCORDS.italian
   if (ASIAN_HINTS.some((h) => q.includes(h))) return FALLBACK_ACCORDS.asian
+  if (SPANISH_HINTS.some((h) => q.includes(h))) return FALLBACK_ACCORDS.spanish
+  if (AMERICAN_HINTS.some((h) => q.includes(h))) return FALLBACK_ACCORDS.american
 
   return FALLBACK_ACCORDS.default
 }
