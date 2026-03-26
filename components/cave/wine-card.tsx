@@ -80,56 +80,56 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-cave-border bg-card">
-      <button
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="flex w-full items-center gap-3 px-3.5 py-3 text-left"
-        aria-expanded={isOpen}
-      >
-        <span
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg ${colorDotClasses[color]}/15`}
-          aria-hidden="true"
+      <div className="flex w-full items-center gap-3 px-3.5 py-3">
+        <button
+          onClick={() => setIsOpen((prev) => !prev)}
+          className="flex flex-1 items-center gap-3 text-left min-w-0"
+          aria-expanded={isOpen}
         >
-          {icon}
-        </span>
+          <span
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg ${colorDotClasses[color]}/15`}
+            aria-hidden="true"
+          >
+            {icon}
+          </span>
 
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-cormorant text-base font-normal text-foreground">
-            {sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || "Vin inconnu"}
-            {wine.millesime_year ? (
-              <span className="ml-1.5 font-sans font-semibold tabular-nums text-lg text-muted-foreground">
-                {wine.millesime_year}
-              </span>
-            ) : null}
-          </p>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {wine.wine_domain ? sanitizeWineName(wine.wine_domain) : ""}
-            {wine.wine_domain && region ? " · " : ""}
-            {region}
-            {displayQuantity > 1 ? (
-              <span className="ml-1 text-primary">{` x${displayQuantity}`}</span>
-            ) : null}
-          </p>
-        </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-cormorant text-base font-normal text-foreground">
+              {sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || "Vin inconnu"}
+              {wine.millesime_year ? (
+                <span className="ml-1.5 font-sans font-semibold tabular-nums text-lg text-muted-foreground">
+                  {wine.millesime_year}
+                </span>
+              ) : null}
+            </p>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {wine.wine_domain ? sanitizeWineName(wine.wine_domain) : ""}
+              {wine.wine_domain && region ? " · " : ""}
+              {region}
+              {displayQuantity > 1 ? (
+                <span className="ml-1 text-primary">{` x${displayQuantity}`}</span>
+              ) : null}
+            </p>
+          </div>
 
-        <div className="flex items-center gap-2">
           <ChevronDown
             className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
               isOpen ? "rotate-180" : ""
             }`}
           />
-          <WineCardActions
-            wineName={sanitizeWineName(wine.wine_name) || "Vin inconnu"}
-            millesime={wine.millesime_year ?? ""}
-            currentQuantity={displayQuantity}
-            isArchived={isArchived}
-            onConsume={handleConsume}
-            onQuantityChange={handleQuantityChange}
-            onArchive={handleArchive}
-            onRestore={handleRestore}
-            onDelete={handleDelete}
-          />
-        </div>
-      </button>
+        </button>
+        <WineCardActions
+          wineName={sanitizeWineName(wine.wine_name) || "Vin inconnu"}
+          millesime={wine.millesime_year ?? ""}
+          currentQuantity={displayQuantity}
+          isArchived={isArchived}
+          onConsume={handleConsume}
+          onQuantityChange={handleQuantityChange}
+          onArchive={handleArchive}
+          onRestore={handleRestore}
+          onDelete={handleDelete}
+        />
+      </div>
 
       <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-3">
         <CaveBadge label={`${icon} ${label}`} variant={colorBadgeVariant[color]} />
