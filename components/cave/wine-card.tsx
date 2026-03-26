@@ -10,6 +10,16 @@ import { getApogee } from "@/data/apogee"
 import { useWineEnrichment } from "@/hooks/use-wine-enrichment"
 import { WineEnrichmentPanel } from "./wine-enrichment-panel"
 import type { Wine } from "@/data/apogee"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface WineCardProps {
   wine: Wine
@@ -32,6 +42,7 @@ const colorBadgeVariant: Record<string, "gold" | "muted"> = {
 
 export function WineCard({ wine, onWineUpdate }: WineCardProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
   const { getOverride, setOverride } = useStockOverrides()
 
   const isManual = !!(wine._manual as boolean | undefined)
@@ -79,6 +90,7 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
   }
 
   return (
+    <>
     <div className="relative overflow-hidden rounded-xl border border-cave-border bg-card">
       <div className="flex w-full items-center gap-3 px-3.5 py-3">
         <button
@@ -124,6 +136,7 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
           currentQuantity={displayQuantity}
           isArchived={isArchived}
           onConsume={handleConsume}
+          onLastBottleConsume={() => setShowLastBottleDialog(true)}
           onQuantityChange={handleQuantityChange}
           onArchive={handleArchive}
           onRestore={handleRestore}
@@ -173,6 +186,41 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
         </div>
       </div>
     </div>
+
+    <AlertDialog open={showLastBottleDialog} onOpenChange={setShowLastBottleDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Derniere bouteille</AlertDialogTitle>
+          <AlertDialogDescription>
+            Vous avez consomme votre derniere bouteille de{" "}
+            {sanitizeWineName(wine.wine_name) || "ce vin"}.
+            Que souhaitez-vous faire ?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              handleArchive()
+              setShowLastBottleDialog(false)
+            }}
+            className="bg-muted text-foreground hover:bg-muted/80"
+          >
+            Archiver
+          </AlertDialogAction>
+          <AlertDialogAction
+            onClick={() => {
+              handleDelete()
+              setShowLastBottleDialog(false)
+            }}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Supprimer
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }
 

@@ -30,6 +30,7 @@ export interface WineCardActionsProps {
   currentQuantity: number
   isArchived?: boolean
   onConsume: () => void
+  onLastBottleConsume?: () => void
   onQuantityChange: (qty: number) => void
   onArchive: () => void
   onRestore?: () => void
@@ -49,6 +50,7 @@ export function WineCardActions({
   currentQuantity,
   isArchived = false,
   onConsume,
+  onLastBottleConsume,
   onQuantityChange,
   onArchive,
   onRestore,
@@ -113,7 +115,10 @@ export function WineCardActions({
         <DropdownMenuContent align="end" className="w-48">
           {!isArchived ? (
             <>
-              <DropdownMenuItem onClick={onConsume} className="gap-2">
+              <DropdownMenuItem
+                onClick={currentQuantity === 1 ? (onLastBottleConsume ?? onConsume) : onConsume}
+                className="gap-2"
+              >
                 <Wine className="h-4 w-4" />
                 Consommée
               </DropdownMenuItem>

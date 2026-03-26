@@ -91,7 +91,10 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
     
     let result = cave.filter((w) => {
       const override = getOverride(w.wine_name ?? null, w.millesime_year ?? null)
-      return !override?.deleted
+      if (override?.deleted) return false
+      if (override?.archived) return false
+      if (override?.quantity === 0) return false
+      return true
     })
 
     // Text search — OR across 4 fields, AND with other filters
