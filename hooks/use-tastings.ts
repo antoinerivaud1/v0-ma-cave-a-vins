@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/hooks/use-auth"
 
 const STORAGE_KEY = "cave-tastings"
+const supabase = createClient()
 
 export interface Tasting {
   id: string
@@ -53,7 +54,6 @@ export function useTastings() {
   const [tastings, setTastings] = useState<Tasting[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
   const { user } = useAuth()
-  const supabase = createClient()
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -85,13 +85,6 @@ export function useTastings() {
         }
       })
   }, [user?.id])
-
-  // Persist cache to localStorage on change
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tastings))
-    }
-  }, [tastings, isLoaded])
 
   const getTastingForWine = useCallback(
     (
@@ -177,7 +170,7 @@ export function useTastings() {
         return inserted
       }
     },
-    [user?.id, tastings, supabase]
+    [user?.id, tastings]
   )
 
   const deleteTasting = useCallback(
@@ -190,7 +183,7 @@ export function useTastings() {
       setTastings((prev) => prev.filter((t) => t.id !== id))
       return true
     },
-    [supabase]
+    []
   )
 
   const listTastings = useCallback((): Tasting[] => {
