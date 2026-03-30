@@ -82,21 +82,26 @@ export function TastingSheet({ open, onOpenChange, onSave }: TastingSheetProps) 
   const handleSave = async () => {
     if (!wineData || stars === 0) return
     setIsSaving(true)
-    await onSave({
-      wine_name: wineData.wine_name,
-      millesime: wineData.millesime,
-      region: wineData.region,
-      appellation: wineData.appellation,
-      wine_type: wineData.wine_type,
-      stars,
-      comment,
-      web_score: null,
-      web_source: null,
-      web_summary: null,
-      cave_wine_ref: null,
-    })
-    setIsSaving(false)
-    handleOpenChange(false)
+    try {
+      await onSave({
+        wine_name: wineData.wine_name,
+        millesime: wineData.millesime,
+        region: wineData.region,
+        appellation: wineData.appellation,
+        wine_type: wineData.wine_type,
+        stars,
+        comment,
+        web_score: null,
+        web_source: null,
+        web_summary: null,
+        cave_wine_ref: null,
+      })
+      handleOpenChange(false)
+    } catch (error) {
+      console.error("[TastingSheet] Failed to save tasting:", error)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
