@@ -1,154 +1,64 @@
-# Ma Cave à Vins — Instructions Claude Code
+# Ma Cave à Vins — CLAUDE.md
 
-> Lis ce fichier en entier avant toute action. Ce sont les règles non-négociables du projet.
-
----
-
-## 1. Contexte produit
-
-**Ma Cave à Vins** est une web app (cible finale : app mobile native) de gestion de cave personnelle.
-- Cible : amateurs éclairés de vins français (CSP+), téléphone en main devant leur cave physique
-- Positionnement : extension de mémoire, pas une app de découverte ni un réseau social
-- Scan étiquette via Claude Vision (Anthropic) — différenciateur clé, pas de base de données externe
-- Freemium : 20 vins gratuit, illimité premium (prix non encore défini)
+## Stack & Infra
+- **Framework :** Next.js App Router, TypeScript strict
+- **UI :** shadcn/ui, Tailwind CSS, lucide-react
+- **Backend :** Supabase (postgres + RLS)
+- **Cache :** localStorage
+- **Package manager :** pnpm UNIQUEMENT — jamais npm/yarn
+- **Repo :** antoinerivaud1/v0-ma-cave-a-vins
+- **Deploy :** Vercel (auto-deploy sur push main)
+- **Supabase project :** chriywwlnihmclbrjmta.supabase.co
 
 ---
 
-## 2. Stack technique
+## Règles non-négociables
 
-| Élément | Valeur |
-|---|---|
-| Framework | Next.js App Router (jamais Pages Router) |
-| UI | shadcn/ui + Tailwind CSS |
-| Langage | TypeScript strict |
-| Package manager | **pnpm** — toujours synchroniser pnpm-lock.yaml |
-| Déploiement | Vercel — auto-deploy sur push main |
-| Repo | antoinerivaud1/v0-ma-cave-a-vins |
-| Base de données | Supabase (https://chriywwlnihmclbrjmta.supabase.co) |
-| Auth | Supabase Auth |
+### Code
+- **Jamais de single quotes** dans le code — iOS Safari les convertit en guillemets typographiques. Double quotes partout, y compris dans JSX et les strings CSS-in-JS.
+- `sanitizeWineName()` sur TOUS les affichages de noms de vins — import depuis `@/lib/wine-helpers`
+- `env(safe-area-inset-top)` / `env(safe-area-inset-bottom)` sur tout nouveau header/footer iOS
 
----
+### UI mobile
+- `max-h-[90dvh] flex flex-col` + `overflow-y-auto flex-1` sur tout bottom sheet contenant un formulaire
+- `z-[60]` minimum sur tout sheet custom (bottom nav est à z-50)
 
-## 3. Flux de travail obligatoire
-
-```
-Analyse → Proposition → Validation Antoine → Code
-```
-
-**Ne jamais écrire une ligne de code sans validation explicite d'Antoine.**
+### Package management
+- Si `package.json` modifié : `pnpm install --no-frozen-lockfile` puis push `pnpm-lock.yaml`
 
 ---
 
-## 4. Règles de code non-négociables
-
-### Interdits absolus
-- ❌ Jamais de **single quotes** dans le code — iOS Safari les convertit en guillemets typographiques
-- ❌ Jamais de **swipe iOS** — abandonné définitivement (bugs Safari). Menu 3 points uniquement.
-- ❌ Pas de refonte architecturale non sollicitée
-- ❌ Pas de feature en avance de phase sans le signaler
-- ❌ Jamais de base de données externe de vins
-
-### Obligations
-- ✅ `sanitizeWineName()` obligatoire sur **tous** les affichages de noms de vins
-- ✅ `env(safe-area-inset-top/bottom)` sur **tous** les headers et footers iOS
-- ✅ Fallback `safe-area-inset-bottom = 20px` dans `app-shell.tsx`
-- ✅ `WineExpertPanel` doit toujours recevoir `wineName` en prop
-- ✅ Vérifier les imports `lucide-react` après toute refacto de `dashboard.tsx` (Camera disparaît)
-- ✅ Tout bottom sheet avec des champs de formulaire ou contenu dynamique doit avoir `max-h-[90dvh] flex flex-col` sur le conteneur et `overflow-y-auto flex-1` sur la zone de contenu
-- ✅ Double quotes partout dans le JSX
+## Fichiers à ne JAMAIS toucher (sauf demande explicite)
+- `components/providers/auth-provider.tsx` — Apple Sign In + Google Sign In
+- `hooks/use-auth.ts` — authentification
+- `hooks/use-stock-overrides.ts` — gestion stock
+- `app/page.tsx` — SEUL point de fusion Excel + vins manuels
 
 ---
 
-## 5. Architecture des données
+## Architecture clé
 
-- **Source de vérité authentifié** : Supabase
-- **Cache offline / non-auth** : localStorage (à conserver)
-- **Migration** : one-shot au premier login via `useCaveSync`
-- **Point de fusion unique** : `app/page.tsx` est le SEUL endroit qui fusionne Excel + vins manuels — ne jamais dupliquer cette logique
+### Points d'entrée
+- `app/page.tsx` — page principale, fusion des sources de données
+- `components/cave/app-shell.tsx` — shell de navigation, routing entre onglets
+- `components/cave/bottom-nav.tsx` — navigation bas de page (4 onglets)
 
----
+### Wine card
+- `components/cave/wine-card.tsx` — carte principale
+- `components/cave/wine-card-actions.tsx` — menu 3 points (NE PAS modifier sans raison explicite)
+- **Règle critique :** `WineCardActions` doit toujours être EN DEHORS du `<button>` de toggle
+- Après toute modif de `wine-card.tsx` : vérifier les imports lucide-react dans `dashboard.tsx` (import Camera !)
 
-## 6. Pièges build Vercel
-
-- **Cause #1 d'échec** : `pnpm-lock.yaml` désynchronisé
-- Après tout ajout dans `package.json` : exécuter `pnpm install --no-frozen-lockfile` en local, puis push
-- Vercel MCP ne permet pas de modifier les variables d'env — passer par le dashboard Vercel
-
----
-
-## 7. Fichiers critiques
-
-```
-app/
-  page.tsx                    → fusion cave Excel + vins manuels (SEUL point)
-  layout.tsx                  → metadata + PWA config
-  auth/callback/route.ts      → callback OAuth Supabase (PKCE — OBLIGATOIRE pour Google/Apple)
-  api/scan-label/route.ts     → endpoint Claude Vision
-
-components/cave/
-  app-shell.tsx               → shell principal, safe-area fallback 20px
-  auth-sheet.tsx              → Apple + Google Sign In ⚠️ (bug Google actif)
-  wine-card.tsx               → menu 3 points, JAMAIS swipe
-  wine-expert-panel.tsx       → exige wineName en prop OBLIGATOIREMENT
-  dashboard.tsx               → attention imports Camera après toute refacto
-
-hooks/
-  use-auth.ts                 → useAuth + isPremium
-  use-cave-sync.ts            → migration localStorage → Supabase
-  use-manual-wines.ts         → localStorage cave-manual-wines
-  use-stock-overrides.ts      → localStorage cave-stock-overrides
-  use-user-profile.ts         → localStorage cave-user-profile
-
-lib/
-  feature-flags.ts            → SCAN_LABEL=enabled, ENRICH_WINE=enabled
-```
+### Enrichissement
+- `app/api/enrich-wine/route.ts` — enrichissement IA des vins
+- `components/cave/wine-enrichment-panel.tsx` — panel d'affichage enrichissement
 
 ---
 
-## 8. Auth — règles de sécurité
-
-- **Apple Sign In** ✅ fonctionnel — **NE PAS TOUCHER** sans raison explicite, risque de régression
-- **Google Sign In** ✅ corrigé — route `/auth/callback` créée, `redirectTo` corrigé (flux PKCE)
-- `isPremium` est centralisé dans `useAuth` — ne pas le recalculer ailleurs
-- `role = 'beta'` → `isPremium = true` (accès complet pour testeurs)
-
----
-
-## 9. Bugs résolus — ne pas régresser
-
-| Bug | Résolution |
-|---|---|
-| Swipe iOS Safari | Swipe abandonné → menu 3 points. Double quotes partout. |
-| "Acheter en ligne" → "Vin inconnu" | `wineName` manquait dans `WineExpertPanel` |
-| Build Vercel échoue | `pnpm-lock.yaml` désynchronisé |
-| Safe area iOS | `env(safe-area-inset-top)` sur tous les headers |
-| Marge bas premier rendu | Fallback 20px dans `app-shell.tsx` |
-| Camera retiré par erreur | Vérifier imports `lucide-react` après refacto `dashboard.tsx` |
-| Scan badge "Bientôt" après merge | Flag `SCAN_LABEL` resté `coming-soon` → mis à `enabled` |
-| Scroll impossible dans ScanLabelSheet (step result) | `overflow-hidden` remplacé par `max-h-[90dvh] flex flex-col` + zone de contenu `overflow-y-auto flex-1` |
-
----
-
-## 10. Modèle freemium (Supabase profiles)
-
-```sql
-plan        TEXT DEFAULT 'free'    -- 'free' | 'premium'
-role        TEXT DEFAULT 'user'    -- 'user' | 'beta' | 'admin'
-scan_count  INT  DEFAULT 0
-reset_at    TIMESTAMPTZ
-```
-
-Paiement via **RevenueCat** (décision prise, intégration non démarrée).
-
----
-
-## 11. Communication
-
-- Toujours en **français**
-- Une tâche à la fois — ne pas proposer la suite avant validation
-- Demande floue = une seule question ciblée avant d'avancer
-- En fin de session : mettre à jour le document Notion de passation
-
----
-
-*Basé sur le document de passation Notion — 20 mars 2026*
+## Conventions de fichiers
+- Plans de sprint : `docs/superpowers/plans/`
+- Specs de design : `docs/superpowers/specs/`
+- Migrations Supabase : `supabase/migrations/`
+- Hooks : `hooks/`
+- Composants cave : `components/cave/`
+- Feature flags : `lib/feature-flags.ts`
