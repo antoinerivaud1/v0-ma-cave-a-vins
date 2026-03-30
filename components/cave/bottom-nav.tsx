@@ -1,8 +1,8 @@
 'use client'
 
-import { Home, Map, Wine, UtensilsCrossed, Settings } from 'lucide-react'
+import { Home, BookOpen, Wine, UtensilsCrossed, Settings } from 'lucide-react'
 
-export type TabId = 'cave' | 'carte' | 'liste' | 'accords' | 'reglages'
+export type TabId = 'cave' | 'carnet' | 'liste' | 'accords' | 'reglages'
 
 interface BottomNavProps {
   activeTab: TabId
@@ -11,7 +11,7 @@ interface BottomNavProps {
 
 const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'cave', label: 'Cave', icon: Home },
-  { id: 'carte', label: 'Carte', icon: Map },
+  { id: 'carnet', label: 'Carnet', icon: BookOpen },
   { id: 'liste', label: 'Liste', icon: Wine },
   { id: 'accords', label: 'Accords', icon: UtensilsCrossed },
   { id: 'reglages', label: 'Reglages', icon: Settings },
