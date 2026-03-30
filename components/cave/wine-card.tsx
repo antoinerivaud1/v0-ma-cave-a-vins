@@ -9,6 +9,8 @@ import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from "@/l
 import { getApogee } from "@/data/apogee"
 import { useWineEnrichment } from "@/hooks/use-wine-enrichment"
 import { WineEnrichmentPanel } from "./wine-enrichment-panel"
+import { useTastings } from "@/hooks/use-tastings"
+import { TastingPanel } from "./tasting-panel"
 import type { Wine } from "@/data/apogee"
 import {
   AlertDialog,
@@ -53,6 +55,37 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
   const enrichmentLoading = isManual
     ? isEnriching(wine.wine_name ?? "", wine.millesime_year)
     : false
+
+  const { getTastingForWine, saveTasting, deleteTasting } = useTastings()
+  const [isSavingTasting, setIsSavingTasting] = useState(false)
+  const tasting = getTastingForWine(wine.wine_name, wine.millesime_year)
+
+  const caveWineRef = `${wine.wine_name ?? "unknown"}_${wine.millesime_year ?? ""}`
+
+  const handleSaveTasting = async (input: { stars: number; comment: string }) => {
+    setIsSavingTasting(true)
+    await saveTasting({
+      wine_name: sanitizeWineName(wine.wine_name) || "Vin inconnu",
+      millesime: wine.millesime_year ? String(wine.millesime_year) : null,
+      region: wine.wine_region ?? null,
+      appellation: wine.wine_appellation ?? null,
+      wine_type: wine.wine_type ?? null,
+      stars: input.stars,
+      comment: input.comment,
+      web_score: enrichment?.notes ?? null,
+      web_source: enrichment?.source ?? null,
+      web_summary: enrichment?.noteSummary ?? null,
+      cave_wine_ref: caveWineRef,
+    })
+    setIsSavingTasting(false)
+  }
+
+  const handleDeleteTasting = async () => {
+    if (!tasting) return
+    setIsSavingTasting(true)
+    await deleteTasting(tasting.id)
+    setIsSavingTasting(false)
+  }
 
   const apogee = getApogee(wine)
   const color = getColor(wine.wine_type || "")
@@ -158,6 +191,13 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
       >
         <div className="overflow-hidden">
           <div className="border-t border-cave-border px-3.5 py-3">
+            <TastingPanel
+              tasting={tasting}
+              isSaving={isSavingTasting}
+              onSave={handleSaveTasting}
+              onDelete={handleDeleteTasting}
+            />
+
             {hasNote ? (
               <div className="flex items-start gap-2">
                 <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />

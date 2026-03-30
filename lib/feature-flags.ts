@@ -30,6 +30,13 @@ export const FEATURE_FLAGS: Record<string, FeatureFlag> = {
     status: "enabled",
     icon: "Layers",
   },
+  TASTING_CARNET: {
+    key: "TASTING_CARNET",
+    label: "Carnet de dégustation",
+    description: "Notez vos vins, consultez les avis critiques et gardez un historique de vos dégustations.",
+    status: "enabled",
+    icon: "BookOpen",
+  },
 }
 
 export function isEnabled(key: string): boolean {

@@ -7,21 +7,23 @@ export interface WineEnrichment {
   apogee: { debut: number; fin: number } | null
   prixMoyen: string | null
   notes: string | null
+  noteSummary: string | null
   source: string
   enrichedAt: number
 }
 
 const client = new Anthropic()
 
-const SYSTEM_PROMPT = `Tu es un expert sommelier français. Recherche des informations fiables sur le vin français indiqué.
+const SYSTEM_PROMPT = `Tu es un expert sommelier international. Recherche des informations fiables sur le vin indiqué.
 Utilise la recherche web pour trouver des données précises et récentes.
 Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks, avec exactement ces champs :
 {
-  "description": "2-3 phrases concises sur le domaine et le vin",
+  "description": "2-3 phrases concises sur le domaine, le terroir et le style du vin",
   "cepages": ["cépage1", "cépage2"],
   "apogee": { "debut": 2025, "fin": 2035 },
   "prixMoyen": "18-25€",
-  "notes": "92/100 RVF",
+  "notes": "Score et source (ex: 94/100 · RVF, ou 92pts · Wine Spectator, ou 17/20 · Bettane+Desseauve). OBLIGATOIRE si trouvable — ne pas retourner null si une note existe en ligne.",
+  "noteSummary": "1-2 phrases résumant l'avis du critique (ex: Tanins soyeux, grande complexité aromatique, apogée dans 5 ans). Null si aucune note trouvée.",
   "source": "nom ou URL de la source principale"
 }
 Si une information est introuvable, utilise null pour les champs string et [] pour cepages. apogee doit être null si inconnu.`
