@@ -2,13 +2,7 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from 'react'
 import type { Wine } from '@/data/apogee'
-import { getWineIdentityKey } from '@/lib/stock-overrides'
-
-export interface StockOverride {
-  quantity?: number
-  archived?: boolean
-  deleted?: boolean
-}
+import { getWineIdentityKey, type StockOverride } from '@/lib/stock-overrides'
 
 const STORAGE_KEY = 'cave-stock-overrides'
 

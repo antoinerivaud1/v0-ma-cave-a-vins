@@ -1,7 +1,12 @@
 "use client"
 
 import type { Wine } from "@/data/apogee"
-import type { StockOverride } from "@/hooks/use-stock-overrides"
+
+export interface StockOverride {
+  quantity?: number
+  archived?: boolean
+  deleted?: boolean
+}
 
 export interface WineIdentity {
   id?: string | null
