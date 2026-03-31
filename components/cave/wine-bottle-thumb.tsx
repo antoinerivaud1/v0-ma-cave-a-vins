@@ -6,20 +6,17 @@ interface WineBottleThumbProps {
   size?: "sm" | "md"
 }
 
-const TYPE_COLORS: Record<string, { bg: string; bottle: string; label: string }> = {
-  "Rouge": { bg: "from-[#1a0505] to-[#5c1a1a]", bottle: "#7a2020", label: "Rouge" },
-  "Blanc": { bg: "from-[#2a2810] to-[#6b6020]", bottle: "#7a7020", label: "Blanc" },
-  "Rosé": { bg: "from-[#3a1018] to-[#7a2035]", bottle: "#b05070", label: "Rosé" },
-  "Pétillant": { bg: "from-[#0a1a2a] to-[#1a3a5a]", bottle: "#2a5a8a", label: "Pétillant" },
+const TYPE_COLORS: Record<string, { bg: string; bottle: string }> = {
+  wine_red:             { bg: "from-[#1a0505] to-[#5c1a1a]", bottle: "#7a2020" },
+  wine_white:           { bg: "from-[#2a2810] to-[#6b6020]", bottle: "#7a7020" },
+  wine_white_sparkling: { bg: "from-[#0a1a2a] to-[#1a3a5a]", bottle: "#2a5a8a" },
+  wine_rose:            { bg: "from-[#3a1018] to-[#7a2035]", bottle: "#b05070" },
 }
 
-const DEFAULT_COLORS = { bg: "from-[#1a0505] to-[#5c1a1a]", bottle: "#7a2020", label: "Vin" }
+const DEFAULT_COLORS = { bg: "from-[#1a0505] to-[#5c1a1a]", bottle: "#7a2020" }
 
 export function WineBottleThumb({ imageUrl, wineType, size = "md" }: WineBottleThumbProps) {
-  const normalized = wineType
-    ? Object.keys(TYPE_COLORS).find((k) => wineType.toLowerCase().includes(k.toLowerCase())) ?? null
-    : null
-  const colors = normalized ? TYPE_COLORS[normalized] : DEFAULT_COLORS
+  const colors = (wineType && TYPE_COLORS[wineType]) ? TYPE_COLORS[wineType] : DEFAULT_COLORS
 
   const w = size === "sm" ? 36 : 48
   const h = size === "sm" ? 54 : 68
