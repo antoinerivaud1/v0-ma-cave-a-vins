@@ -5,6 +5,7 @@ import { CaveBadge } from "./cave-badge"
 import { WineExpertPanel } from "./wine-expert-panel"
 import { WineCardActions } from "./wine-card-actions"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from "@/lib/wine-helpers"
 import { getApogee } from "@/data/apogee"
 import { useWineEnrichment } from "@/hooks/use-wine-enrichment"
@@ -43,7 +44,7 @@ const colorBadgeVariant: Record<string, "gold" | "muted"> = {
 export function WineCard({ wine, onWineUpdate }: WineCardProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
-  const { getOverride, setOverride } = useStockOverrides()
+  const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
 
   const isManual = !!(wine._manual as boolean | undefined)
   const { getEnrichment, isEnriching } = useWineEnrichment()
@@ -61,32 +62,41 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
   const region = formatRegion(wine.wine_region || "")
   const hasNote = !!(wine.bottle_comment || wine.wine_comment || wine.wine_notes)
   const note = String(wine.bottle_comment || wine.wine_comment || wine.wine_notes || "")
-  const override = getOverride(wine.wine_name ?? null, wine.millesime_year ?? null)
-  const displayQuantity = override?.quantity !== undefined ? override.quantity : (wine.bottle_quantity || 1)
-  const isArchived = override?.archived || false
+  const override = getOverrideForWine(wine)
+  const effectiveState = getEffectiveWineState(wine, override)
+  const displayQuantity = effectiveState.quantity
+  const isArchived = effectiveState.archived
   const apogeeBadgeVariant = apogee
     ? (apogee.st as "urgent" | "ok" | "wait" | "late")
     : undefined
 
   const handleConsume = () => {
     const newQty = Math.max(0, displayQuantity - 1)
-    setOverride(wine.wine_name ?? null, wine.millesime_year ?? null, { ...override, quantity: newQty })
+    setOverrideForWine(wine, { ...override, quantity: newQty })
   }
 
   const handleArchive = () => {
-    setOverride(wine.wine_name ?? null, wine.millesime_year ?? null, { ...override, archived: true })
+    setOverrideForWine(wine, { ...override, archived: true })
   }
 
   const handleQuantityChange = (qty: number) => {
-    setOverride(wine.wine_name ?? null, wine.millesime_year ?? null, { ...override, quantity: qty })
+    setOverrideForWine(wine, { ...override, quantity: qty })
   }
 
   const handleRestore = () => {
-    setOverride(wine.wine_name ?? null, wine.millesime_year ?? null, { ...override, archived: false })
+    setOverrideForWine(wine, { ...override, archived: false })
   }
 
   const handleDelete = () => {
-    setOverride(wine.wine_name ?? null, wine.millesime_year ?? null, { ...override, deleted: true })
+    setOverrideForWine(wine, { ...override, deleted: true })
+  }
+
+  const handleArchiveAfterLastBottle = () => {
+    setOverrideForWine(wine, { ...override, quantity: 0, archived: true })
+  }
+
+  const handleDeleteAfterLastBottle = () => {
+    setOverrideForWine(wine, { ...override, quantity: 0, deleted: true })
   }
 
   return (
@@ -201,7 +211,7 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
           <AlertDialogCancel>Annuler</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => {
-              handleArchive()
+              handleArchiveAfterLastBottle()
               setShowLastBottleDialog(false)
             }}
             className="bg-muted text-foreground hover:bg-muted/80"
@@ -210,7 +220,7 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
           </AlertDialogAction>
           <AlertDialogAction
             onClick={() => {
-              handleDelete()
+              handleDeleteAfterLastBottle()
               setShowLastBottleDialog(false)
             }}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -223,4 +233,3 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
     </>
   )
 }
-

@@ -10,6 +10,7 @@ import { getApogee } from "@/data/apogee"
 import { getDailyTip } from "@/data/wine-tips"
 import { useUserProfile } from "@/hooks/use-user-profile"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { sanitizeWineName } from "@/lib/wine-helpers"
 import type { Wine as WineType } from "@/data/apogee"
 import type { TabId } from "./bottom-nav"
@@ -31,30 +32,29 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
   const [showAddSheet, setShowAddSheet] = useState(false)
   const [showScanSheet, setShowScanSheet] = useState(false)
   const [fabOpen, setFabOpen] = useState(false)
-  const { getOverride } = useStockOverrides()
+  const { getOverrideForWine } = useStockOverrides()
   const { profile } = useUserProfile()
   const tip = getDailyTip()
 
   const stats = useMemo(() => {
     const active = cave.filter((w) => {
-      const o = getOverride(w.wine_name ?? null, w.millesime_year ?? null)
-      return !o?.deleted && !o?.archived
+      return getEffectiveWineState(w, getOverrideForWine(w)).isVisible
     })
-    const total = active.reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
+    const total = active.reduce((s, w) => s + getEffectiveWineState(w, getOverrideForWine(w)).quantity, 0)
     const reds = active.filter((w) => w.wine_type === "wine_red" || w.wine_color === "Rouge")
-      .reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
+      .reduce((s, w) => s + getEffectiveWineState(w, getOverrideForWine(w)).quantity, 0)
     const whites = active.filter((w) => w.wine_type === "wine_white" || w.wine_color === "Blanc")
-      .reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
+      .reduce((s, w) => s + getEffectiveWineState(w, getOverrideForWine(w)).quantity, 0)
     const sparkling = active.filter((w) =>
       w.wine_type === "wine_white_sparkling" || w.wine_color === "Petillant" || w.wine_color === "Effervescent"
-    ).reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
+    ).reduce((s, w) => s + getEffectiveWineState(w, getOverrideForWine(w)).quantity, 0)
     const toDrink = active.filter((w) => {
       const a = getApogee(w)
       return a && (a.st === "urgent" || a.st === "late")
     })
     const recent = active.filter((w) => (w as any)._manual).slice(0, 3)
     return { total, reds, whites, sparkling, toDrink, recent }
-  }, [cave, getOverride])
+  }, [cave, getOverrideForWine])
 
   const handleFabAction = (action: "scan" | "manual") => {
     setFabOpen(false)
@@ -251,5 +251,3 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
     </div>
   )
 }
-
-

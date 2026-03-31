@@ -8,6 +8,7 @@ import { FilterBar } from "./filter-bar"
 import { SortFilterDropdown, type SortFilterState } from "./sort-filter-dropdown"
 import { WineCard } from "./wine-card"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { formatRegion } from "@/lib/wine-helpers"
 import { getApogee } from "@/data/apogee"
 import type { Wine } from "@/data/apogee"
@@ -84,17 +85,14 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
   })
   const [showArchived, setShowArchived] = useState(false)
   const [showAddSheet, setShowAddSheet] = useState(false)
-  const { getOverride, isLoaded } = useStockOverrides()
+  const { getOverrideForWine, isLoaded } = useStockOverrides()
 
   const filtered = useMemo(() => {
     if (!isLoaded) return []
     
     let result = cave.filter((w) => {
-      const override = getOverride(w.wine_name ?? null, w.millesime_year ?? null)
-      if (override?.deleted) return false
-      if (override?.archived) return false
-      if (override?.quantity === 0) return false
-      return true
+      const effectiveState = getEffectiveWineState(w, getOverrideForWine(w))
+      return effectiveState.isVisible
     })
 
     // Text search — OR across 4 fields, AND with other filters
@@ -153,23 +151,21 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
     }
 
     return result
-  }, [cave, colorFilter, levelFilter, searchQuery, sortFilterState, isLoaded, getOverride])
+  }, [cave, colorFilter, levelFilter, searchQuery, sortFilterState, isLoaded, getOverrideForWine])
 
   const archivedWines = useMemo(() => {
     if (!isLoaded) return []
     return cave.filter((w) => {
-      const override = getOverride(w.wine_name ?? null, w.millesime_year ?? null)
-      return override?.archived === true && !override?.deleted
+      const effectiveState = getEffectiveWineState(w, getOverrideForWine(w))
+      return effectiveState.archived && !effectiveState.deleted
     })
-  }, [cave, isLoaded, getOverride])
+  }, [cave, isLoaded, getOverrideForWine])
 
   const totalBottles = useMemo(() => {
     return filtered.reduce((sum, w) => {
-      const override = getOverride(w.wine_name ?? null, w.millesime_year ?? null)
-      const qty = override?.quantity ?? Number(w.bottle_quantity) ?? 0
-      return sum + qty
+      return sum + getEffectiveWineState(w, getOverrideForWine(w)).quantity
     }, 0)
-  }, [filtered, getOverride])
+  }, [filtered, getOverrideForWine])
 
   return (
     <div className="pb-4">
@@ -291,4 +287,3 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
     </div>
   )
 }
-

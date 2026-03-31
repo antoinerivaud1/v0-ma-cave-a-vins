@@ -6,6 +6,8 @@ import { PageHeader } from './page-header'
 import { SuggestionCard } from './suggestion-card'
 import { suggestService, type SuggestResponse } from '@/lib/suggest-service'
 import type { Wine } from '@/data/apogee'
+import { useStockOverrides } from '@/hooks/use-stock-overrides'
+import { getEffectiveWineState } from '@/lib/stock-overrides'
 
 interface SuggestProps {
   cave: Wine[]
@@ -20,6 +22,8 @@ export function Suggest({ cave }: SuggestProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const { getOverrideForWine } = useStockOverrides()
+  const availableWines = cave.filter((wine) => getEffectiveWineState(wine, getOverrideForWine(wine)).isVisible)
 
   /** Cleanup recognition on unmount */
   useEffect(() => {
@@ -41,7 +45,7 @@ export function Suggest({ cave }: SuggestProps) {
         return
       }
 
-      if (cave.length === 0) {
+      if (availableWines.length === 0) {
         setError('Votre cave est vide. Importez des vins pour commencer.')
         setResult(null)
         return
@@ -49,7 +53,7 @@ export function Suggest({ cave }: SuggestProps) {
 
       setLoading(true)
       try {
-        const response = await suggestService.getSuggestions(trimmed, cave)
+        const response = await suggestService.getSuggestions(trimmed, availableWines)
         setResult(response)
       } catch {
         setError('Une erreur est survenue. Veuillez reessayer.')
@@ -58,7 +62,7 @@ export function Suggest({ cave }: SuggestProps) {
         setLoading(false)
       }
     },
-    [cave]
+    [availableWines]
   )
 
   const handleSearch = useCallback(() => {
@@ -104,7 +108,7 @@ export function Suggest({ cave }: SuggestProps) {
       // Auto-search after voice input
       setTimeout(() => {
         const trimmed = transcript.trim()
-        if (trimmed && cave.length > 0) {
+        if (trimmed && availableWines.length > 0) {
           runSearch(trimmed)
         }
       }, 100)
@@ -121,7 +125,7 @@ export function Suggest({ cave }: SuggestProps) {
     recognitionRef.current = recognition
     recognition.start()
     setRecording(true)
-  }, [recording, cave, runSearch])
+  }, [recording, availableWines.length, runSearch])
 
   return (
     <div className="pb-4">

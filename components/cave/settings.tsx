@@ -15,6 +15,8 @@ import { CaveManagerSheet } from "@/components/cave/cave-manager-sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCaves } from "@/hooks/use-caves"
+import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { getEffectiveWineState } from "@/lib/stock-overrides"
 
 const ICON_MAP: Record<string, LucideIcon> = { Camera, Globe, Layers }
 
@@ -32,10 +34,15 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
   const [caveManagerOpen, setCaveManagerOpen] = useState(false)
   const { user, signOut } = useAuth()
   const { caves } = useCaves()
+  const { getOverrideForWine } = useStockOverrides()
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [signOutError, setSignOutError] = useState<string | null>(null)
 
-  const totalBottles = cave.reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
+  const totalBottles = cave.reduce((s, w) => {
+    const effectiveState = getEffectiveWineState(w, getOverrideForWine(w))
+    if (!effectiveState.isVisible) return s
+    return s + effectiveState.quantity
+  }, 0)
 
   const handleFile = useCallback(
     async (file: File) => {
