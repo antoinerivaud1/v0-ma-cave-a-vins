@@ -15,6 +15,20 @@ import { getApogee } from "@/data/apogee"
 import type { Wine } from "@/data/apogee"
 import type { WineEnrichment } from "@/app/api/enrich-wine/route"
 
+const WINE_TYPE_LABELS: Record<string, string> = {
+  wine_red: "Rouge",
+  wine_white: "Blanc",
+  wine_white_sparkling: "Pétillant",
+  wine_rose: "Rosé",
+}
+
+const APOGEE_BADGE: Record<string, { label: string; className: string }> = {
+  urgent: { label: "⏰ À boire", className: "bg-red-50 text-red-700" },
+  late: { label: "🔴 Trop tard", className: "bg-red-100 text-red-800" },
+  ok: { label: "🍃 En forme", className: "bg-green-50 text-green-700" },
+  wait: { label: "⏳ Attendre", className: "bg-yellow-50 text-yellow-700" },
+}
+
 /* ── Filter options ──────────────────────────────── */
 
 const COLOR_FILTERS = [
@@ -274,7 +288,7 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
                 <div className="flex flex-wrap gap-1 mt-1.5">
                   {wine.wine_type && (
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700">
-                      {wine.wine_type}
+                      {WINE_TYPE_LABELS[wine.wine_type] ?? wine.wine_type}
                     </span>
                   )}
                   {wine.millesime_year && (
@@ -287,6 +301,17 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
                       ★ {enrichment.notes}
                     </span>
                   )}
+                  {(() => {
+                    const apogee = getApogee(wine)
+                    if (!apogee) return null
+                    const badge = APOGEE_BADGE[apogee.st]
+                    if (!badge) return null
+                    return (
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${badge.className}`}>
+                        {badge.label}
+                      </span>
+                    )
+                  })()}
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1 flex-shrink-0">

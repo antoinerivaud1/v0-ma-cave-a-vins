@@ -64,7 +64,6 @@ export function WineDetailSheet({ wine, onClose, onConsume, onActionsOpen, myRat
 
   const triggerEnrichment = useCallback(async () => {
     if (enrichment || isEnriching) return
-    if (!(wine as Record<string, unknown>)._manual) return
     setIsEnriching(true)
     try {
       const res = await fetch("/api/enrich-wine", {
@@ -92,11 +91,18 @@ export function WineDetailSheet({ wine, onClose, onConsume, onActionsOpen, myRat
   }, [triggerEnrichment])
 
   const heroGradient =
-    wine.wine_type?.toLowerCase().includes("blanc")
+    wine.wine_type === "wine_white" || wine.wine_type === "wine_white_sparkling"
       ? "from-[#1a1800] via-[#3a3410] to-[#7a7020]"
-      : wine.wine_type?.toLowerCase().includes("rosé")
+      : wine.wine_type === "wine_rose"
       ? "from-[#1a0510] via-[#5a1030] to-[#b05070]"
       : "from-[#0d0404] via-[#3a0f0f] to-[#722F37]"
+
+  const WINE_TYPE_LABELS: Record<string, string> = {
+    wine_red: "Rouge",
+    wine_white: "Blanc",
+    wine_white_sparkling: "Pétillant",
+    wine_rose: "Rosé",
+  }
 
   return (
     <div
@@ -116,7 +122,7 @@ export function WineDetailSheet({ wine, onClose, onConsume, onActionsOpen, myRat
           )}
           <button
             onClick={onClose}
-            className="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
+            className="absolute top-4 left-4 z-20 w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
             aria-label="Fermer"
           >
             <X className="w-5 h-5 text-white" />
@@ -132,7 +138,7 @@ export function WineDetailSheet({ wine, onClose, onConsume, onActionsOpen, myRat
             <div className="flex flex-wrap gap-1.5 mb-2">
               {wine.wine_type && (
                 <span className="text-xs font-semibold bg-white/20 text-white px-2.5 py-1 rounded-full">
-                  {wine.wine_type}
+                  {WINE_TYPE_LABELS[wine.wine_type] ?? wine.wine_type}
                 </span>
               )}
               {wine.millesime_year && (
