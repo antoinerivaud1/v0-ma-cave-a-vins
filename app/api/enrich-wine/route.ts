@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
 
     for (let i = 0; i < 6; i++) {
       const response = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-5",
         max_tokens: 1024,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         tools: [{ type: "web_search_20250305", name: "web_search" }] as any,

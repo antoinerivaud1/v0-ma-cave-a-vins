@@ -8,7 +8,6 @@ import { FilterBar } from "./filter-bar"
 import { SortFilterDropdown, type SortFilterState } from "./sort-filter-dropdown"
 import { WineCard } from "./wine-card"
 import { WineBottleThumb } from "@/components/cave/wine-bottle-thumb"
-import { WineDetailSheet } from "@/components/cave/wine-detail-sheet"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { formatRegion, sanitizeWineName } from "@/lib/wine-helpers"
 import { getApogee } from "@/data/apogee"
@@ -87,10 +86,11 @@ function compareApogee(a: Wine, b: Wine, dir: 'asc' | 'desc'): number {
 export interface CaveListProps {
   cave: Wine[]
   onAddWine?: (wine: Wine) => void
+  onWineSelect?: (wine: Wine) => void
   initialFilter?: { color?: string; level?: string }
 }
 
-export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
+export function CaveList({ cave, initialFilter, onAddWine, onWineSelect }: CaveListProps) {
   const [colorFilter, setColorFilter] = useState(initialFilter?.color || 'all')
   const [levelFilter, setLevelFilter] = useState(initialFilter?.level || 'all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -101,8 +101,7 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
   })
   const [showArchived, setShowArchived] = useState(false)
   const [showAddSheet, setShowAddSheet] = useState(false)
-  const [selectedWine, setSelectedWine] = useState<Wine | null>(null)
-  const { getOverride, setOverride, isLoaded } = useStockOverrides()
+  const { getOverride, isLoaded } = useStockOverrides()
 
   const filtered = useMemo(() => {
     if (!isLoaded) return []
@@ -272,7 +271,7 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
             <div
               key={`${wine.wine_name}-${wine.millesime_year}-${i}`}
               className="bg-white rounded-2xl flex items-center gap-3 px-3 py-3 shadow-sm border border-gray-100 cursor-pointer active:scale-[0.98] transition-transform"
-              onClick={() => setSelectedWine(wine)}
+              onClick={() => onWineSelect?.(wine)}
             >
               <WineBottleThumb
                 imageUrl={enrichment?.bottle_image_url ?? null}
@@ -359,21 +358,6 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
           isOpen={showAddSheet}
           onOpenChange={setShowAddSheet}
           onAdd={onAddWine}
-        />
-      )}
-
-      {selectedWine && (
-        <WineDetailSheet
-          wine={selectedWine}
-          onClose={() => setSelectedWine(null)}
-          onConsume={() => {
-            const override = getOverride(selectedWine.wine_name ?? null, selectedWine.millesime_year ?? null)
-            const currentQty = override?.quantity ?? Number(selectedWine.bottle_quantity) ?? 1
-            const newQty = Math.max(0, currentQty - 1)
-            setOverride(selectedWine.wine_name ?? null, selectedWine.millesime_year ?? null, { quantity: newQty })
-          }}
-          onActionsOpen={() => setSelectedWine(null)}
-          myRating={null}
         />
       )}
     </div>
