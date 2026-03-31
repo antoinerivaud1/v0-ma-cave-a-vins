@@ -21,8 +21,7 @@ export interface WineEnrichment {
 
 const client = new Anthropic()
 
-const SYSTEM_PROMPT = `Tu es un expert sommelier international. Recherche des informations fiables sur le vin indiqué.
-Utilise la recherche web pour trouver des données précises et récentes.
+const SYSTEM_PROMPT = `Tu es un expert sommelier international avec une connaissance encyclopédique des vins du monde entier.
 Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks, avec exactement ces champs :
 {
   "description": "2-3 phrases concises sur le domaine, le terroir et le style du vin",
@@ -67,46 +66,22 @@ export async function POST(req: NextRequest) {
       .filter(Boolean)
       .join(", ")
 
-    const messages: Anthropic.MessageParam[] = [
-      {
-        role: "user",
-        content: `Recherche des informations sur ce vin français : ${query}. Retourne le JSON demandé.`,
-      },
-    ]
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-5",
+      max_tokens: 1024,
+      system: SYSTEM_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: `Donne-moi des informations sur ce vin : ${query}. Retourne le JSON demandé.`,
+        },
+      ],
+    })
 
-    let finalText = ""
-
-    for (let i = 0; i < 6; i++) {
-      const response = await client.messages.create({
-        model: "claude-sonnet-4-5",
-        max_tokens: 1024,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        tools: [{ type: "web_search_20250305", name: "web_search" }] as any,
-        system: SYSTEM_PROMPT,
-        messages,
-      })
-
-      messages.push({ role: "assistant", content: response.content })
-
-      if (response.stop_reason === "end_turn") {
-        finalText = response.content
-          .filter((b): b is Anthropic.TextBlock => b.type === "text")
-          .map((b) => b.text)
-          .join("")
-        break
-      }
-
-      if (response.stop_reason === "tool_use") {
-        const toolResults: Anthropic.ToolResultBlockParam[] = response.content
-          .filter((b): b is Anthropic.ToolUseBlock => b.type === "tool_use")
-          .map((b) => ({
-            type: "tool_result" as const,
-            tool_use_id: b.id,
-            content: "",
-          }))
-        messages.push({ role: "user", content: toolResults })
-      }
-    }
+    const finalText = response.content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("")
 
     if (!finalText) {
       return NextResponse.json(
