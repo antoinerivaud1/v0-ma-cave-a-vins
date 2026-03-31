@@ -100,8 +100,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(enrichment)
   } catch (error: unknown) {
-    console.error("[enrich-wine] Error:", error)
-    const message = error instanceof Error ? error.message : "Erreur interne"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const message = error instanceof Error ? error.message : String(error)
+    const stack = error instanceof Error ? error.stack : undefined
+    // Log complet pour diagnostic
+    console.error("[enrich-wine] FULL ERROR:", JSON.stringify({ message, stack, error: String(error) }))
+    return NextResponse.json({ error: message, detail: stack }, { status: 500 })
   }
 }
