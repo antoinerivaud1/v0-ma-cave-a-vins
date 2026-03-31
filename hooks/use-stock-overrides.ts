@@ -1,12 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useSyncExternalStore } from 'react'
-
-export interface StockOverride {
-  quantity?: number
-  archived?: boolean
-  deleted?: boolean
-}
+import type { Wine } from '@/data/apogee'
+import { getWineIdentityKey, type StockOverride } from '@/lib/stock-overrides'
 
 const STORAGE_KEY = 'cave-stock-overrides'
 
@@ -91,6 +87,10 @@ export function useStockOverrides() {
     return `${wineName || ''}_${millesime || ''}`
   }, [])
 
+  const getWineKeyFromWine = useCallback((wine: Wine): string => {
+    return getWineIdentityKey(wine)
+  }, [])
+
   const getOverride = useCallback(
     (wineName: string | null, millesime: string | number | null): StockOverride | undefined => {
       return overrides[getWineKey(wineName, millesime)]
@@ -116,5 +116,35 @@ export function useStockOverrides() {
     persistOverrides(next)
   }, [getWineKey])
 
-  return { overrides, isLoaded, getOverride, setOverride, clearOverride, getWineKey }
+  const getOverrideForWine = useCallback((wine: Wine): StockOverride | undefined => {
+    return overrides[getWineKeyFromWine(wine)]
+  }, [getWineKeyFromWine, overrides])
+
+  const setOverrideForWine = useCallback((wine: Wine, override: StockOverride) => {
+    const key = getWineKeyFromWine(wine)
+    persistOverrides({
+      ...overridesStore,
+      [key]: override,
+    })
+  }, [getWineKeyFromWine])
+
+  const clearOverrideForWine = useCallback((wine: Wine) => {
+    const key = getWineKeyFromWine(wine)
+    const next = { ...overridesStore }
+    delete next[key]
+    persistOverrides(next)
+  }, [getWineKeyFromWine])
+
+  return {
+    overrides,
+    isLoaded,
+    getOverride,
+    setOverride,
+    clearOverride,
+    getWineKey,
+    getWineKeyFromWine,
+    getOverrideForWine,
+    setOverrideForWine,
+    clearOverrideForWine,
+  }
 }

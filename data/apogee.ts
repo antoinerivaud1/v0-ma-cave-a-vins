@@ -1,4 +1,6 @@
 export interface Wine {
+  id?: string
+  cave_id?: string | null
   wine_type?: string
   wine_region?: string
   millesime_year?: string | number
