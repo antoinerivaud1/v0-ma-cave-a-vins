@@ -10,6 +10,13 @@ export interface WineEnrichment {
   noteSummary: string | null
   source: string
   enrichedAt: number
+  bottle_image_url: string | null
+  taste_profile: {
+    body: number
+    tannin: number
+    acidity: number
+    complexity: number
+  } | null
 }
 
 const client = new Anthropic()
@@ -24,9 +31,17 @@ Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks, avec exactement 
   "prixMoyen": "18-25€",
   "notes": "Score et source (ex: 94/100 · RVF, ou 92pts · Wine Spectator, ou 17/20 · Bettane+Desseauve). OBLIGATOIRE si trouvable — ne pas retourner null si une note existe en ligne.",
   "noteSummary": "1-2 phrases résumant l'avis du critique (ex: Tanins soyeux, grande complexité aromatique, apogée dans 5 ans). Null si aucune note trouvée.",
-  "source": "nom ou URL de la source principale"
+  "source": "nom ou URL de la source principale",
+  "bottle_image_url": "URL directe d'une image de la bouteille ou de l'étiquette (JPG/PNG). Cherche sur wine-searcher.com, vivino.com, millesima.fr ou le site officiel du domaine. Retourne null si introuvable.",
+  "taste_profile": {
+    "body": "0-100 : intensité du corps (0 = très léger, 100 = très puissant/charpenté)",
+    "tannin": "0-100 : niveau de tanins (0 = très souple/soyeux, 100 = très tannique/astringent). Mettre 0 pour vins blancs/rosés/pétillants.",
+    "acidity": "0-100 : acidité (0 = très doux/rond, 100 = très acide/vif)",
+    "complexity": "0-100 : complexité aromatique (0 = simple/direct, 100 = très complexe/multidimensionnel)"
+  }
 }
-Si une information est introuvable, utilise null pour les champs string et [] pour cepages. apogee doit être null si inconnu.`
+Estime les valeurs de taste_profile d'après le style du vin, son appellation et son millésime.
+Si une information est introuvable, utilise null pour les champs string et [] pour cepages. apogee doit être null si inconnu. bottle_image_url et taste_profile doivent être null si introuvables.`
 
 export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {

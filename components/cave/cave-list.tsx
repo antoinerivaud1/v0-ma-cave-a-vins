@@ -1,16 +1,19 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Search, X, Wine as WineGlass, ChevronDown, Plus } from "lucide-react"
+import { Search, X, Wine as WineGlass, ChevronDown, Plus, ChevronRight } from "lucide-react"
 import { AddWineSheet } from "./add-wine-sheet"
 import { PageHeader } from "./page-header"
 import { FilterBar } from "./filter-bar"
 import { SortFilterDropdown, type SortFilterState } from "./sort-filter-dropdown"
 import { WineCard } from "./wine-card"
+import { WineBottleThumb } from "@/components/cave/wine-bottle-thumb"
+import { WineDetailSheet } from "@/components/cave/wine-detail-sheet"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
-import { formatRegion } from "@/lib/wine-helpers"
+import { formatRegion, sanitizeWineName } from "@/lib/wine-helpers"
 import { getApogee } from "@/data/apogee"
 import type { Wine } from "@/data/apogee"
+import type { WineEnrichment } from "@/app/api/enrich-wine/route"
 
 /* ── Filter options ──────────────────────────────── */
 
@@ -84,7 +87,8 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
   })
   const [showArchived, setShowArchived] = useState(false)
   const [showAddSheet, setShowAddSheet] = useState(false)
-  const { getOverride, isLoaded } = useStockOverrides()
+  const [selectedWine, setSelectedWine] = useState<Wine | null>(null)
+  const { getOverride, setOverride, isLoaded } = useStockOverrides()
 
   const filtered = useMemo(() => {
     if (!isLoaded) return []
@@ -246,9 +250,53 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
           </div>
         )}
 
-        {filtered.map((wine, i) => (
-          <WineCard key={`${wine.wine_name}-${wine.millesime_year}-${i}`} wine={wine} />
-        ))}
+        {filtered.map((wine, i) => {
+          const enrichment = wine.enrichissement as WineEnrichment | null
+          const override = getOverride(wine.wine_name ?? null, wine.millesime_year ?? null)
+          const qty = override?.quantity ?? Number(wine.bottle_quantity) ?? 1
+          return (
+            <div
+              key={`${wine.wine_name}-${wine.millesime_year}-${i}`}
+              className="bg-white rounded-2xl flex items-center gap-3 px-3 py-3 shadow-sm border border-gray-100 cursor-pointer active:scale-[0.98] transition-transform"
+              onClick={() => setSelectedWine(wine)}
+            >
+              <WineBottleThumb
+                imageUrl={enrichment?.bottle_image_url ?? null}
+                wineType={wine.wine_type}
+              />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-gray-900 truncate">
+                  {sanitizeWineName(wine.wine_name)}
+                </div>
+                <div className="text-xs text-gray-500 truncate mt-0.5">
+                  {[wine.wine_domain, wine.wine_region].filter(Boolean).join(" · ")}
+                </div>
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {wine.wine_type && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700">
+                      {wine.wine_type}
+                    </span>
+                  )}
+                  {wine.millesime_year && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                      {String(wine.millesime_year)}
+                    </span>
+                  )}
+                  {enrichment?.notes && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">
+                      ★ {enrichment.notes}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                <span className="text-base font-black text-[#722F37]">{qty}</span>
+                <span className="text-[10px] text-gray-400">bout.</span>
+                <ChevronRight className="w-4 h-4 text-gray-300" />
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* Archived wines section */}
@@ -286,6 +334,21 @@ export function CaveList({ cave, initialFilter, onAddWine }: CaveListProps) {
           isOpen={showAddSheet}
           onOpenChange={setShowAddSheet}
           onAdd={onAddWine}
+        />
+      )}
+
+      {selectedWine && (
+        <WineDetailSheet
+          wine={selectedWine}
+          onClose={() => setSelectedWine(null)}
+          onConsume={() => {
+            const override = getOverride(selectedWine.wine_name ?? null, selectedWine.millesime_year ?? null)
+            const currentQty = override?.quantity ?? Number(selectedWine.bottle_quantity) ?? 1
+            const newQty = Math.max(0, currentQty - 1)
+            setOverride(selectedWine.wine_name ?? null, selectedWine.millesime_year ?? null, { quantity: newQty })
+          }}
+          onActionsOpen={() => setSelectedWine(null)}
+          myRating={null}
         />
       )}
     </div>
