@@ -1,10 +1,11 @@
-'use client'
+"use client"
 
-import { useCallback, useEffect, useSyncExternalStore } from 'react'
-import type { Wine } from '@/data/apogee'
-import { getWineIdentityKey, type StockOverride } from '@/lib/stock-overrides'
+import { useCallback, useEffect, useSyncExternalStore } from "react"
+import type { Wine } from "@/data/apogee"
+import { getWineIdentityKey, type StockOverride } from "@/lib/stock-overrides"
+import { CAVE_STORAGE_KEYS } from "@/lib/cave-storage"
 
-const STORAGE_KEY = 'cave-stock-overrides'
+const STORAGE_KEY = CAVE_STORAGE_KEYS.stockOverrides
 
 type OverridesMap = Record<string, StockOverride>
 
@@ -47,6 +48,17 @@ function persistOverrides(nextOverrides: OverridesMap) {
 
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextOverrides))
+  }
+
+  emitChange()
+}
+
+export function clearAllStockOverrides() {
+  hasLoadedOverrides = true
+  overridesStore = {}
+
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem(STORAGE_KEY)
   }
 
   emitChange()

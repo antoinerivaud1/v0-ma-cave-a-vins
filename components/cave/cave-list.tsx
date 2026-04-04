@@ -144,7 +144,8 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect }: CaveL
     }
 
     if (sortFilterState.apogeeSort) {
-      result = [...result].sort((a, b) => compareApogee(a, b, sortFilterState.apogeeSort))
+      const apogeeDirection = sortFilterState.apogeeSort
+      result = [...result].sort((a, b) => compareApogee(a, b, apogeeDirection))
     }
 
     return result

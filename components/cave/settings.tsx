@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState } from "react"
 import Link from 'next/link'
 import { Database, Trash2, CheckCircle, Camera, Globe, Layers, ShieldCheck, type LucideIcon } from 'lucide-react'
 import { PageHeader } from './page-header'
@@ -15,8 +15,9 @@ import { CaveManagerSheet } from "@/components/cave/cave-manager-sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCaves } from "@/hooks/use-caves"
-import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { clearAllStockOverrides, useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
+import { clearAllLocalCaveData } from "@/lib/cave-storage"
 
 const ICON_MAP: Record<string, LucideIcon> = { Camera, Globe, Layers }
 
@@ -24,7 +25,7 @@ interface SettingsProps {
   cave: Wine[]
   lastUpdated: string | null
   onImport: (data: Wine[]) => void
-  onClear: () => void
+  onClear: () => void | Promise<void>
 }
 
 export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps) {
@@ -54,9 +55,12 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
     [parseFile, onImport]
   )
 
-  const handleReset = useCallback(() => {
-    onClear()
+  const handleReset = useCallback(async () => {
+    clearAllLocalCaveData()
+    clearAllStockOverrides()
+    await onClear()
     setShowConfirm(false)
+    window.location.reload()
   }, [onClear])
 
   const handleSignOut = useCallback(async () => {

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import Anthropic from "@anthropic-ai/sdk"
+import { z } from "zod"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 
 export interface WineEnrichment {
   description: string
@@ -20,6 +22,34 @@ export interface WineEnrichment {
 }
 
 const client = new Anthropic()
+const MAX_TEXT_LENGTH = 160
+
+const requestSchema = z.object({
+  wineName: z.string().trim().min(1).max(MAX_TEXT_LENGTH),
+  millesime: z.union([z.string(), z.number()]).nullish(),
+  region: z.string().trim().max(MAX_TEXT_LENGTH).nullish(),
+  appellation: z.string().trim().max(MAX_TEXT_LENGTH).nullish(),
+})
+
+const responseSchema = z.object({
+  description: z.string().trim().default(""),
+  cepages: z.array(z.string()).default([]),
+  apogee: z.object({
+    debut: z.number(),
+    fin: z.number(),
+  }).nullable().default(null),
+  prixMoyen: z.string().nullable().default(null),
+  notes: z.string().nullable().default(null),
+  noteSummary: z.string().nullable().default(null),
+  source: z.string().trim().min(1).default("Source inconnue"),
+  bottle_image_url: z.string().nullable().optional(),
+  taste_profile: z.object({
+    body: z.number().min(0).max(100),
+    tannin: z.number().min(0).max(100),
+    acidity: z.number().min(0).max(100),
+    complexity: z.number().min(0).max(100),
+  }).nullable().default(null),
+})
 
 const SYSTEM_PROMPT = `Tu es un expert sommelier international avec une connaissance encyclopédique des vins du monde entier.
 Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks, avec exactement ces champs :
@@ -42,6 +72,29 @@ Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks, avec exactement 
 Estime les valeurs de taste_profile d'après le style du vin, son appellation et son millésime.
 Si une information est introuvable, utilise null pour les champs string et [] pour cepages. apogee doit être null si inconnu. bottle_image_url et taste_profile doivent être null si introuvables.`
 
+function sanitizeImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null
+    }
+    return parsed.toString()
+  } catch {
+    return null
+  }
+}
+
+async function requireAuthenticatedUser() {
+  const supabase = await createServerSupabaseClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  return user
+}
+
 export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
@@ -50,13 +103,19 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  try {
-    const { wineName, millesime, region, appellation } = await req.json()
+  const user = await requireAuthenticatedUser()
+  if (!user) {
+    return NextResponse.json({ error: "Authentification requise" }, { status: 401 })
+  }
 
-    if (!wineName) {
-      return NextResponse.json({ error: "wineName est requis" }, { status: 400 })
+  try {
+    const payload = requestSchema.safeParse(await req.json())
+
+    if (!payload.success) {
+      return NextResponse.json({ error: "Payload invalide" }, { status: 400 })
     }
 
+    const { wineName, millesime, region, appellation } = payload.data
     const query = [
       wineName,
       millesime && `millésime ${millesime}`,
@@ -79,31 +138,39 @@ export async function POST(req: NextRequest) {
     })
 
     const finalText = response.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
-      .map((b) => b.text)
+      .filter((block): block is Anthropic.TextBlock => block.type === "text")
+      .map((block) => block.text)
       .join("")
+      .trim()
 
     if (!finalText) {
       return NextResponse.json(
         { error: "Enrichissement impossible" },
-        { status: 500 }
+        { status: 502 }
       )
     }
 
-    let enrichment: WineEnrichment
+    let parsedModelResponse: unknown
     try {
-      enrichment = JSON.parse(finalText.trim())
-      enrichment.enrichedAt = Date.now()
+      parsedModelResponse = JSON.parse(finalText)
     } catch {
-      return NextResponse.json({ error: "Réponse invalide du modèle" }, { status: 500 })
+      return NextResponse.json({ error: "Réponse invalide du modèle" }, { status: 502 })
+    }
+
+    const enrichmentResult = responseSchema.safeParse(parsedModelResponse)
+    if (!enrichmentResult.success) {
+      return NextResponse.json({ error: "Réponse invalide du modèle" }, { status: 502 })
+    }
+
+    const enrichment: WineEnrichment = {
+      ...enrichmentResult.data,
+      enrichedAt: Date.now(),
+      bottle_image_url: sanitizeImageUrl(enrichmentResult.data.bottle_image_url),
     }
 
     return NextResponse.json(enrichment)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error)
-    const stack = error instanceof Error ? error.stack : undefined
-    // Log complet pour diagnostic
-    console.error("[enrich-wine] FULL ERROR:", JSON.stringify({ message, stack, error: String(error) }))
-    return NextResponse.json({ error: message, detail: stack }, { status: 500 })
+    console.error("[enrich-wine] Request failed:", error)
+    return NextResponse.json({ error: "Erreur interne" }, { status: 500 })
   }
 }
