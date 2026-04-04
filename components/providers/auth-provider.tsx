@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import type { ReactNode } from "react"
-import type { User, Session, Provider } from "@supabase/supabase-js"
+import type { AuthChangeEvent, User, Session, Provider } from "@supabase/supabase-js"
 import { createClient } from "@/lib/supabase/client"
 import { migrateLocalToSupabase } from "@/hooks/use-cave-sync"
 import { AuthContext, type UserPlan } from "@/hooks/use-auth"
@@ -43,7 +43,7 @@ export function AuthProvider({ initialUser, children }: AuthProviderProps) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, newSession: Session | null) => {
       if (
         (event === "SIGNED_IN" || event === "INITIAL_SESSION") &&
         newSession?.user

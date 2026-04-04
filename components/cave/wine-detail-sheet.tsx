@@ -14,6 +14,7 @@ interface WineDetailSheetProps {
   onConsume: () => void
   onActionsOpen: () => void
   myRating?: number | null
+  actionsLabel?: string
 }
 
 function ApogeeStatusBadge({ wine }: { wine: Wine }) {
@@ -53,7 +54,14 @@ function TasteBar({ label, oppositeLabel, value }: { label: string; oppositeLabe
   )
 }
 
-export function WineDetailSheet({ wine, onClose, onConsume, onActionsOpen, myRating }: WineDetailSheetProps) {
+export function WineDetailSheet({
+  wine,
+  onClose,
+  onConsume,
+  onActionsOpen,
+  myRating,
+  actionsLabel = "⋯ Actions",
+}: WineDetailSheetProps) {
   const [enrichment, setEnrichment] = useState<WineEnrichment | null>(
     (wine.enrichissement as WineEnrichment | null) ?? null
   )
@@ -304,7 +312,7 @@ export function WineDetailSheet({ wine, onClose, onConsume, onActionsOpen, myRat
           onClick={onActionsOpen}
           className="flex-1 bg-gray-100 rounded-2xl py-3.5 text-sm font-semibold text-gray-600"
         >
-          ⋯ Actions
+          {actionsLabel}
         </button>
         <button
           onClick={onConsume}

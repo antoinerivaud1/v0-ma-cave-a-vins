@@ -34,13 +34,14 @@ export default function ConfidentialitePage() {
         {/* Intro */}
         <section>
           <p className="text-muted-foreground">
-            Dernière mise à jour : mars 2025
+            Dernière mise à jour : 1 avril 2026
           </p>
           <p className="mt-3 text-foreground">
             <strong className="text-primary">Ma Cave à Vins</strong> est une application
-            personnelle de gestion de cave. Votre vie privée est une priorité : l'immense
-            majorité des données reste sur votre appareil et n'est jamais envoyée à un
-            serveur tiers, sauf dans les cas explicitement décrits ci-dessous.
+            personnelle de gestion de cave. Votre vie privée est une priorité :
+            certaines données sont stockées localement dans votre navigateur, et
+            certaines données sont synchronisées dans Supabase lorsque vous utilisez
+            un compte. Les usages externes sont limités aux cas décrits ci-dessous.
           </p>
         </section>
 
@@ -52,15 +53,29 @@ export default function ConfidentialitePage() {
 
           <SubSection title="Données stockées localement (sur votre appareil)">
             <p>
-              Toutes les informations suivantes sont enregistrées exclusivement dans
-              le <code className="rounded bg-muted px-1 py-0.5 text-xs">localStorage</code> de
-              votre navigateur ou de l'application. Elles ne quittent jamais votre
-              appareil sauf cas décrits en section 2.
+              Les informations suivantes peuvent être enregistrées dans le{" "}
+              <code className="rounded bg-muted px-1 py-0.5 text-xs">localStorage</code>{" "}
+              du navigateur afin d&apos;améliorer la rapidité de l&apos;interface et de
+              conserver certains états locaux.
             </p>
             <ul className="mt-2 space-y-1 list-disc list-inside text-muted-foreground">
-              <li>Votre <strong className="text-foreground">prénom</strong> (facultatif, pour la salutation).</li>
-              <li>Votre <strong className="text-foreground">liste de vins</strong> : noms, domaines, millésimes, régions, appellations, quantités et statuts de consommation.</li>
-              <li>Les <strong className="text-foreground">préférences d'interface</strong> (thème, etc.).</li>
+              <li>Votre <strong className="text-foreground">prénom</strong> si vous le renseignez.</li>
+              <li>Des <strong className="text-foreground">caches et états locaux</strong> : cave active, overrides de stock, enrichissements, dégustations locales et préférences d&apos;interface.</li>
+              <li>Des données locales temporaires en attente de synchronisation ou de réinitialisation.</li>
+            </ul>
+          </SubSection>
+
+          <SubSection title="Données synchronisées dans le cloud">
+            <p>
+              Lorsque vous êtes connecté, l&apos;application synchronise votre cave avec{" "}
+              <strong className="text-foreground">Supabase</strong>. Les données
+              suivantes peuvent être stockées à distance pour permettre l&apos;accès
+              multi-appareils :
+            </p>
+            <ul className="mt-2 space-y-1 list-disc list-inside text-muted-foreground">
+              <li>Votre profil de compte et votre plan.</li>
+              <li>Vos caves, vos vins et leurs quantités.</li>
+              <li>Vos notes de dégustation et métadonnées associées.</li>
             </ul>
           </SubSection>
 
@@ -69,9 +84,9 @@ export default function ConfidentialitePage() {
               Lorsque vous utilisez la fonctionnalité <em>Scanner une étiquette</em>,
               la photo est transmise à l'API{" "}
               <strong className="text-foreground">Anthropic Claude Vision</strong> pour
-              analyse. La photo est envoyée en base64 via HTTPS et{" "}
-              <strong className="text-foreground">n'est pas conservée</strong> par
-              l'application ni par nos serveurs. Anthropic peut conserver les données
+              analyse. La photo est envoyée en base64 via HTTPS. L&apos;application ne
+              stocke pas durablement cette image sur son backend. Anthropic peut
+              conserver les données
               conformément à{" "}
               <span className="text-primary underline underline-offset-2">
                 sa propre politique de confidentialité
@@ -82,24 +97,28 @@ export default function ConfidentialitePage() {
 
           <SubSection title="Enrichissement automatique">
             <p>
-              La fonctionnalité d'enrichissement web (à venir) envoie le nom du vin
-              à l'API Anthropic afin d'obtenir une description, un prix moyen et une
-              fenêtre d'apogée. Aucune donnée personnelle n'est incluse dans cette
-              requête.
+              La fonctionnalité d&apos;enrichissement web envoie le nom du vin, le
+              millésime et certains champs descriptifs à l&apos;API Anthropic afin
+              d&apos;obtenir une description, un prix moyen et une fenêtre d&apos;apogée.
+              Aucune donnée personnelle sensible n&apos;est incluse dans cette requête.
             </p>
           </SubSection>
         </section>
 
         <Divider />
 
-        {/* Pas de compte */}
+        {/* Compte */}
         <section className="space-y-3">
-          <SectionTitle>2. Pas de compte utilisateur</SectionTitle>
+          <SectionTitle>2. Compte utilisateur et synchronisation</SectionTitle>
           <p className="text-muted-foreground">
-            L'application ne propose pas de création de compte. Il n'existe aucune
-            base de données distante associée à votre profil. Toutes vos données
-            restent sur votre appareil tant que vous ne les supprimez pas
-            manuellement.
+            L&apos;application propose un compte utilisateur via Supabase Auth.
+            Lorsque vous vous connectez, vos données de cave peuvent être
+            synchronisées dans une base Supabase afin de vous permettre de
+            retrouver votre cave sur plusieurs appareils.
+          </p>
+          <p className="text-muted-foreground">
+            Si vous ne vous connectez pas, certaines données peuvent rester
+            uniquement sur l&apos;appareil local selon le flux utilisé.
           </p>
         </section>
 
@@ -116,6 +135,10 @@ export default function ConfidentialitePage() {
             d'enrichissement, comme décrit en section 1.
           </p>
           <p className="text-muted-foreground">
+            Les données synchronisées de compte et de cave sont hébergées par{" "}
+            <strong className="text-foreground">Supabase</strong>.
+          </p>
+          <p className="text-muted-foreground">
             Des statistiques d'utilisation anonymisées peuvent être collectées par
             Vercel Analytics (hébergeur de l'application) — sans aucune donnée
             personnelle identifiable.
@@ -128,7 +151,8 @@ export default function ConfidentialitePage() {
         <section className="space-y-3">
           <SectionTitle>4. Vos droits — suppression des données</SectionTitle>
           <p className="text-muted-foreground">
-            Vous pouvez supprimer l'intégralité de vos données à tout moment
+            Vous pouvez supprimer l&apos;intégralité des données de cave visibles dans
+            l&apos;application à tout moment
             directement depuis l'application :
           </p>
           <div className="rounded-xl border border-cave-border bg-card px-4 py-3 text-muted-foreground">
@@ -136,13 +160,13 @@ export default function ConfidentialitePage() {
             {" → "}
             <span className="text-destructive font-medium">Réinitialiser la cave</span>
             <p className="mt-1 text-xs">
-              Cette action vide le localStorage et supprime définitivement toutes
-              vos données locales.
+              Cette action supprime les données locales de cave et vide les vins et
+              dégustations synchronisés associés à votre compte actuel.
             </p>
           </div>
           <p className="text-muted-foreground">
             Vous pouvez également vider le cache de votre navigateur ou désinstaller
-            l'application pour effacer toute trace locale.
+            l'application pour effacer les données locales restantes.
           </p>
         </section>
 
@@ -153,8 +177,9 @@ export default function ConfidentialitePage() {
           <SectionTitle>5. Sécurité</SectionTitle>
           <p className="text-muted-foreground">
             Les communications avec l'API Anthropic sont chiffrées via HTTPS/TLS.
-            Les données stockées en localStorage sont protégées par la politique de
-            même origine du navigateur (same-origin policy).
+            Les données de compte et de cave synchronisées sont hébergées dans
+            Supabase. Les données stockées en localStorage restent soumises à la
+            politique de même origine du navigateur.
           </p>
         </section>
 
