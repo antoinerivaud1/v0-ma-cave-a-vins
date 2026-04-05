@@ -105,6 +105,7 @@ export function useCloudCave() {
 
   const loadWines = useCallback(async (caveId: string, userId: string): Promise<void> => {
     setIsLoaded(false)
+    console.log("[cloud-cave] loadWines — caveId:", caveId, "userId:", userId)
 
     const supabase = createClient()
     const { data, error } = await supabase
@@ -113,6 +114,8 @@ export function useCloudCave() {
       .eq("user_id", userId)
       .eq("cave_id", caveId)
       .order("created_at", { ascending: false })
+
+    console.log("[cloud-cave] wines result — count:", data?.length ?? 0, "error:", error?.message ?? null)
 
     if (error) {
       console.error("[cloud-cave] Failed to load wines:", error)
@@ -130,15 +133,22 @@ export function useCloudCave() {
 
   useEffect(() => {
     if (!user) {
+      console.log("[cloud-cave] no user, clearing wines")
       setWines([])
       setLastUpdated(null)
       setIsLoaded(true)
       return
     }
 
-    if (cavesLoading) return
+    if (cavesLoading) {
+      console.log("[cloud-cave] caves loading, waiting...")
+      return
+    }
+
+    console.log("[cloud-cave] triggering load — user:", user.id, "activeCaveId:", activeCaveId, "caves:", caves.length)
 
     ensureActiveCaveId().then((caveId) => {
+      console.log("[cloud-cave] ensureActiveCaveId resolved:", caveId)
       if (!caveId) {
         setWines([])
         setLastUpdated(null)
