@@ -29,23 +29,28 @@ export function useCaves() {
 
     const load = async () => {
       setLoading(true)
+      console.log("[use-caves] loading caves for user:", user.id)
       const supabase = createClient()
 
-      const { data: cavesData } = await supabase
+      const { data: cavesData, error: cavesError } = await supabase
         .from("caves")
         .select("id, name, user_id, created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: true })
 
+      console.log("[use-caves] caves result — count:", cavesData?.length ?? 0, "error:", cavesError?.message ?? null)
+
       const loadedCaves: Cave[] = (cavesData ?? []) as Cave[]
       setCaves(loadedCaves)
 
       // Restore active cave: profile first, then localStorage, then first cave
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("last_active_cave_id")
         .eq("id", user.id)
         .single()
+
+      console.log("[use-caves] profile result — data:", profile, "error:", profileError?.message ?? null)
 
       const profileCaveId = (profile as { last_active_cave_id?: string | null } | null)
         ?.last_active_cave_id ?? null
@@ -60,6 +65,7 @@ export function useCaves() {
         setActiveCaveId(loadedCaves[0].id)
       }
 
+      console.log("[use-caves] done — activeCaveId:", validCave?.id ?? loadedCaves[0]?.id ?? null)
       setLoading(false)
     }
 
