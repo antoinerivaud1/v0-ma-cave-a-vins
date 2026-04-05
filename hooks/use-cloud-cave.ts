@@ -103,31 +103,14 @@ export function useCloudCave() {
     return created.id
   }, [activeCaveId, caves, createCave, setActiveCave, user])
 
-  const loadWines = useCallback(async (): Promise<void> => {
-    if (!user) {
-      setWines([])
-      setLastUpdated(null)
-      setIsLoaded(true)
-      return
-    }
-
-    if (cavesLoading) return
-
+  const loadWines = useCallback(async (caveId: string, userId: string): Promise<void> => {
     setIsLoaded(false)
-
-    const caveId = await ensureActiveCaveId()
-    if (!caveId) {
-      setWines([])
-      setLastUpdated(null)
-      setIsLoaded(true)
-      return
-    }
 
     const supabase = createClient()
     const { data, error } = await supabase
       .from("wines")
       .select(WINE_SELECT)
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("cave_id", caveId)
       .order("created_at", { ascending: false })
 
@@ -143,11 +126,28 @@ export function useCloudCave() {
     setWines(rows.map(mapRowToWine))
     setLastUpdated(new Date().toISOString())
     setIsLoaded(true)
-  }, [cavesLoading, ensureActiveCaveId, user])
+  }, [])
 
   useEffect(() => {
-    loadWines()
-  }, [loadWines])
+    if (!user) {
+      setWines([])
+      setLastUpdated(null)
+      setIsLoaded(true)
+      return
+    }
+
+    if (cavesLoading) return
+
+    ensureActiveCaveId().then((caveId) => {
+      if (!caveId) {
+        setWines([])
+        setLastUpdated(null)
+        setIsLoaded(true)
+        return
+      }
+      loadWines(caveId, user.id)
+    })
+  }, [user, cavesLoading, activeCaveId, ensureActiveCaveId, loadWines])
 
   const addWine = useCallback(
     async (wine: Wine): Promise<void> => {
@@ -242,7 +242,7 @@ export function useCloudCave() {
 
       clearAllLocalCaveData()
       clearAllStockOverrides()
-      await loadWines()
+      await loadWines(caveId, user.id)
     },
     [ensureActiveCaveId, loadWines, user]
   )
@@ -276,6 +276,13 @@ export function useCloudCave() {
     setLastUpdated(null)
   }, [user])
 
+  const reloadCave = useCallback(async (): Promise<void> => {
+    if (!user) return
+    const caveId = await ensureActiveCaveId()
+    if (!caveId) return
+    await loadWines(caveId, user.id)
+  }, [ensureActiveCaveId, loadWines, user])
+
   return {
     cave: wines,
     lastUpdated,
@@ -283,6 +290,6 @@ export function useCloudCave() {
     addWine,
     importWines,
     clearCave,
-    reloadCave: loadWines,
+    reloadCave,
   }
 }
