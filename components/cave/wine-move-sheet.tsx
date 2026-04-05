@@ -36,7 +36,6 @@ export function WineMoveSheet({ wine, open, onOpenChange, onMoved }: WineMoveShe
   const availableCaves = caves.filter((c) => c.id !== wine.cave_id)
 
   const handleMove = async (targetCaveId: string) => {
-    if (!user) return
     if (movingTo) return
     setMovingTo(targetCaveId)
     try {
@@ -45,7 +44,6 @@ export function WineMoveSheet({ wine, open, onOpenChange, onMoved }: WineMoveShe
         .from("wines")
         .update({ cave_id: targetCaveId })
         .eq("id", wine.id)
-        .eq("user_id", user.id)
       onMoved()
       onOpenChange(false)
     } finally {

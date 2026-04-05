@@ -102,38 +102,19 @@ export function useCaves() {
     [user]
   )
 
-  const renameCave = useCallback(
-    async (id: string, name: string): Promise<void> => {
-      if (!user) return
-
-      const supabase = createClient()
-      await supabase
-        .from("caves")
-        .update({ name })
-        .eq("id", id)
-        .eq("user_id", user.id)
-      setCaves((prev) => prev.map((c) => (c.id === id ? { ...c, name } : c)))
-    },
-    [user]
-  )
+  const renameCave = useCallback(async (id: string, name: string): Promise<void> => {
+    const supabase = createClient()
+    await supabase.from("caves").update({ name }).eq("id", id)
+    setCaves((prev) => prev.map((c) => (c.id === id ? { ...c, name } : c)))
+  }, [])
 
   const deleteCave = useCallback(
     async (id: string): Promise<void> => {
-      if (!user) return
-
       const supabase = createClient()
 
       // Move wines to null before deletion to avoid data loss
-      await supabase
-        .from("wines")
-        .update({ cave_id: null })
-        .eq("cave_id", id)
-        .eq("user_id", user.id)
-      await supabase
-        .from("caves")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", user.id)
+      await supabase.from("wines").update({ cave_id: null }).eq("cave_id", id)
+      await supabase.from("caves").delete().eq("id", id)
 
       const remaining = caves.filter((c) => c.id !== id)
       setCaves(remaining)

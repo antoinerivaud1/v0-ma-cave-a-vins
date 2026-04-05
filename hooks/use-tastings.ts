@@ -175,13 +175,7 @@ export function useTastings() {
 
   const deleteTasting = useCallback(
     async (id: string): Promise<boolean> => {
-      if (!user?.id) return false
-
-      const { error } = await supabase
-        .from("tastings")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", user.id)
+      const { error } = await supabase.from("tastings").delete().eq("id", id)
       if (error) {
         console.error("[tastings] Failed to delete:", error)
         return false
@@ -189,7 +183,7 @@ export function useTastings() {
       setTastings((prev) => prev.filter((t) => t.id !== id))
       return true
     },
-    [user?.id]
+    []
   )
 
   const listTastings = useCallback((): Tasting[] => {

@@ -7,22 +7,8 @@
 - **Cache :** localStorage
 - **Package manager :** pnpm UNIQUEMENT — jamais npm/yarn
 - **Repo :** antoinerivaud1/v0-ma-cave-a-vins
-- **Deploy :** Vercel (auto-deploy sur push main et develop)
+- **Deploy :** Vercel (auto-deploy sur push main)
 - **Supabase project :** chriywwlnihmclbrjmta.supabase.co
-
----
-
-## Workflow Git
-- Branches de travail : toujours `claude/*`
-- Cible des PR : toujours `develop` (JAMAIS `main` directement)
-- `develop` = staging — tester sur device réel via Preview URL Vercel
-- `main` = production stable — merge uniquement après validation sur develop
-- Pour merger develop → main : ouvrir une PR manuellement sur GitHub
-
-## Environnement de test
-- URL prod : https://v0-ma-cave-a-vins.vercel.app (branche main)
-- URL staging : Preview Vercel générée automatiquement pour la branche develop
-  (récupérer l'URL dans le dashboard Vercel après le premier push)
 
 ---
 
