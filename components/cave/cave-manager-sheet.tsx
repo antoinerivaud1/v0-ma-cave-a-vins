@@ -42,7 +42,7 @@ interface CaveManagerSheetProps {
 
 export function CaveManagerSheet({ open, onOpenChange }: CaveManagerSheetProps) {
   const { user, plan } = useAuth()
-  const { caves, activeCaveId, createCave, renameCave, deleteCave, setActiveCave } = useCaves()
+  const { caves, activeCaveId, totalWines, createCave, renameCave, deleteCave, setActiveCave } = useCaves()
 
   const isPremiumGated = plan === "free" && caves.length >= 1
 
@@ -91,7 +91,14 @@ export function CaveManagerSheet({ open, onOpenChange }: CaveManagerSheetProps) 
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-0">
           <SheetHeader className="px-5 pb-3">
-            <SheetTitle className="font-serif text-lg">Mes caves</SheetTitle>
+            <div className="flex items-baseline justify-between">
+              <SheetTitle className="font-serif text-lg">Mes caves</SheetTitle>
+              {user && totalWines > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {totalWines} vin{totalWines > 1 ? "s" : ""} au total
+                </span>
+              )}
+            </div>
           </SheetHeader>
 
           <Separator />
@@ -156,12 +163,17 @@ export function CaveManagerSheet({ open, onOpenChange }: CaveManagerSheetProps) 
                             </div>
                           ) : (
                             <>
-                              <span className="flex-1 text-sm font-medium text-foreground">
-                                {cave.name}
-                              </span>
+                              <div className="flex flex-1 items-center gap-2 min-w-0">
+                                <span className="truncate text-sm font-medium text-foreground">
+                                  {cave.name}
+                                </span>
+                                <span className="shrink-0 text-xs text-muted-foreground">
+                                  {cave.nb_wines} vin{cave.nb_wines !== 1 ? "s" : ""}
+                                </span>
+                              </div>
 
                               {isActive && (
-                                <span className="mr-1 text-xs text-[#722F37]">Active</span>
+                                <span className="mr-1 shrink-0 text-xs text-[#722F37]">Active</span>
                               )}
 
                               {/* 3-dot menu */}

@@ -11,12 +11,14 @@ export interface Cave {
   name: string
   user_id: string
   created_at: string
+  nb_wines: number
 }
 
 export function useCaves() {
   const { user, loading: authLoading } = useAuth()
   const [caves, setCaves] = useState<Cave[]>([])
   const [activeCaveId, setActiveCaveId] = useState<string | null>(null)
+  const [totalWines, setTotalWines] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -32,14 +34,31 @@ export function useCaves() {
       setLoading(true)
       const supabase = createClient()
 
-      const { data: cavesData } = await supabase
-        .from("caves")
-        .select("id, name, user_id, created_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: true })
+      const [{ data: cavesData }, { data: winesData }] = await Promise.all([
+        supabase
+          .from("caves")
+          .select("id, name, user_id, created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("wines")
+          .select("cave_id")
+          .eq("user_id", user.id),
+      ])
 
-      const loadedCaves: Cave[] = (cavesData ?? []) as Cave[]
+      const wineCounts: Record<string, number> = {}
+      for (const wine of (winesData ?? [])) {
+        const cid = (wine as { cave_id: string | null }).cave_id ?? ""
+        if (cid) wineCounts[cid] = (wineCounts[cid] ?? 0) + 1
+      }
+
+      type CaveRow = Omit<Cave, "nb_wines">
+      const loadedCaves: Cave[] = (cavesData ?? []).map((c: unknown) => {
+        const row = c as CaveRow
+        return { ...row, nb_wines: wineCounts[row.id] ?? 0 }
+      })
       setCaves(loadedCaves)
+      setTotalWines((winesData ?? []).length)
 
       // Restore active cave: profile first, then localStorage, then first cave
       const { data: profile } = await supabase
@@ -94,7 +113,7 @@ export function useCaves() {
         .single()
 
       if (data) {
-        const cave = data as Cave
+        const cave = { ...(data as Omit<Cave, "nb_wines">), nb_wines: 0 } as Cave
         setCaves((prev) => [...prev, cave])
         return cave
       }
@@ -160,5 +179,5 @@ export function useCaves() {
     [caves, activeCaveId, user]
   )
 
-  return { caves, activeCaveId, loading, createCave, renameCave, deleteCave, setActiveCave }
+  return { caves, activeCaveId, totalWines, loading, createCave, renameCave, deleteCave, setActiveCave }
 }
