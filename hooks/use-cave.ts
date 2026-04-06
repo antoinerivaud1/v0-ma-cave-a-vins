@@ -1,11 +1,14 @@
-'use client'
+"use client"
 
-import { useState, useCallback, useEffect } from 'react'
-import type { Wine } from '@/data/apogee'
+import { useState, useCallback, useEffect } from "react"
+import type { Wine } from "@/data/apogee"
 
-const CAVE_KEY = 'cave_data'
-const CAVE_TS_KEY = 'cave_ts'
+const CAVE_KEY = "cave_data"
+const CAVE_TS_KEY = "cave_ts"
 
+/**
+ * @deprecated — Remplacé par useCloudCave. Conserver uniquement pour use-cave-sync.ts (migration one-shot).
+ */
 export function useCave() {
   const [cave, setCave] = useState<Wine[]>([])
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)

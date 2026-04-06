@@ -14,12 +14,13 @@ export interface Cave {
 }
 
 export function useCaves() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [caves, setCaves] = useState<Cave[]>([])
   const [activeCaveId, setActiveCaveId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (authLoading) return
     if (!user) {
       setCaves([])
       setActiveCaveId(null)
@@ -64,7 +65,7 @@ export function useCaves() {
     }
 
     load()
-  }, [user])
+  }, [user, authLoading])
 
   const setActiveCave = useCallback(
     async (id: string): Promise<void> => {

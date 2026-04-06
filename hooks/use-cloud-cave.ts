@@ -78,12 +78,15 @@ function getFallbackIdentityKey(wine: {
   })
 }
 
+const CACHE_KEY = "cave-offline-cache"
+
 export function useCloudCave() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const { caves, activeCaveId, loading: cavesLoading, createCave, setActiveCave } = useCaves()
   const [wines, setWines] = useState<Wine[]>([])
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isOfflineCache, setIsOfflineCache] = useState(false)
 
   const ensureActiveCaveId = useCallback(async (): Promise<string | null> => {
     if (!user) return null
@@ -104,9 +107,12 @@ export function useCloudCave() {
   }, [activeCaveId, caves, createCave, setActiveCave, user])
 
   const loadWines = useCallback(async (): Promise<void> => {
+    if (authLoading) return
+
     if (!user) {
       setWines([])
       setLastUpdated(null)
+      setIsOfflineCache(false)
       setIsLoaded(true)
       return
     }
@@ -119,6 +125,7 @@ export function useCloudCave() {
     if (!caveId) {
       setWines([])
       setLastUpdated(null)
+      setIsOfflineCache(false)
       setIsLoaded(true)
       return
     }
@@ -133,17 +140,37 @@ export function useCloudCave() {
 
     if (error) {
       console.error("[cloud-cave] Failed to load wines:", error)
-      setWines([])
+      const raw = localStorage.getItem(CACHE_KEY)
+      if (raw) {
+        try {
+          const { wines: cachedWines } = JSON.parse(raw) as { wines: Wine[]; cachedAt: number }
+          setWines(cachedWines)
+          setIsOfflineCache(true)
+        } catch {
+          setWines([])
+          setIsOfflineCache(false)
+        }
+      } else {
+        setWines([])
+        setIsOfflineCache(false)
+      }
       setLastUpdated(null)
       setIsLoaded(true)
       return
     }
 
     const rows = (data ?? []) as WineRow[]
-    setWines(rows.map(mapRowToWine))
+    const mappedWines = rows.map(mapRowToWine)
+    setWines(mappedWines)
     setLastUpdated(new Date().toISOString())
+    setIsOfflineCache(false)
     setIsLoaded(true)
-  }, [cavesLoading, ensureActiveCaveId, user])
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ wines: mappedWines, cachedAt: Date.now() }))
+    } catch {
+      // localStorage not available — ignore
+    }
+  }, [authLoading, cavesLoading, ensureActiveCaveId, user])
 
   useEffect(() => {
     loadWines()
@@ -280,6 +307,7 @@ export function useCloudCave() {
     cave: wines,
     lastUpdated,
     isLoaded,
+    isOfflineCache,
     addWine,
     importWines,
     clearCave,
