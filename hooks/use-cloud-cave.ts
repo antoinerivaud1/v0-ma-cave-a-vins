@@ -179,6 +179,7 @@ export function useCloudCave() {
   const addWine = useCallback(
     async (wine: Wine): Promise<void> => {
       if (!user) return
+      if (cavesLoading) return
 
       const caveId = await ensureActiveCaveId()
       if (!caveId) return
@@ -200,12 +201,13 @@ export function useCloudCave() {
         setLastUpdated(new Date().toISOString())
       }
     },
-    [ensureActiveCaveId, user]
+    [cavesLoading, ensureActiveCaveId, user]
   )
 
   const importWines = useCallback(
     async (importedWines: Wine[]): Promise<void> => {
       if (!user || importedWines.length === 0) return
+      if (cavesLoading) return
 
       const caveId = await ensureActiveCaveId()
       if (!caveId) return
@@ -271,7 +273,7 @@ export function useCloudCave() {
       clearAllStockOverrides()
       await loadWines()
     },
-    [ensureActiveCaveId, loadWines, user]
+    [cavesLoading, ensureActiveCaveId, loadWines, user]
   )
 
   const clearCave = useCallback(async (): Promise<void> => {
