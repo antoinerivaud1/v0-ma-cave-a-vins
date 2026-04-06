@@ -7,6 +7,9 @@ import { syncWineToSupabase } from "@/hooks/use-cave-sync"
 
 const STORAGE_KEY = "cave-manual-wines"
 
+/**
+ * @deprecated — Remplacé par useCloudCave. Conserver uniquement pour use-cave-sync.ts (migration one-shot).
+ */
 export function useManualWines() {
   const [manualWines, setManualWines] = useState<Wine[]>([])
   const [isLoaded, setIsLoaded] = useState(false)

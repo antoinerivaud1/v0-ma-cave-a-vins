@@ -15,6 +15,7 @@ export default function Page() {
     clearCave,
     lastUpdated,
     isLoaded,
+    isOfflineCache,
     addWine,
     reloadCave,
   } = useCloudCave()
@@ -22,14 +23,16 @@ export default function Page() {
 
   const handleImport = useCallback(
     (data: Wine[]) => {
+      if (isOfflineCache) return
       void importWines(data)
     },
-    [importWines]
+    [importWines, isOfflineCache]
   )
 
   const handleClear = useCallback(() => {
+    if (isOfflineCache) return
     void clearCave()
-  }, [clearCave])
+  }, [clearCave, isOfflineCache])
 
   if (authLoading || !isLoaded) {
     return (
@@ -69,9 +72,10 @@ export default function Page() {
     <AppShell
       cave={cave}
       lastUpdated={lastUpdated}
+      isOfflineCache={isOfflineCache}
       onImport={handleImport}
       onClear={handleClear}
-      onAddWine={addWine}
+      onAddWine={isOfflineCache ? () => {} : addWine}
       onReload={reloadCave}
     />
   )
