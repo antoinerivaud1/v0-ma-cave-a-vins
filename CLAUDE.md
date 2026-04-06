@@ -1,78 +1,212 @@
 # Ma Cave à Vins — CLAUDE.md
 
-## Stack & Infra
-- **Framework :** Next.js App Router, TypeScript strict
-- **UI :** shadcn/ui, Tailwind CSS, lucide-react
-- **Backend :** Supabase (postgres + RLS)
-- **Cache :** localStorage
-- **Package manager :** pnpm UNIQUEMENT — jamais npm/yarn
-- **Repo :** antoinerivaud1/v0-ma-cave-a-vins
-- **Deploy :** Vercel (auto-deploy sur push main et develop)
-- **Supabase project :** chriywwlnihmclbrjmta.supabase.co
+> Référence absolue pour tous les agents IA travaillant sur ce projet.
+> Lire intégralement avant toute action.
 
 ---
 
-## Workflow Git
-- Branches de travail : toujours `claude/*`
-- Cible des PR : toujours `develop` (JAMAIS `main` directement)
-- `develop` = staging — tester sur device réel via Preview URL Vercel
-- `main` = production stable — merge uniquement après validation sur develop
-- Pour merger develop → main : ouvrir une PR manuellement sur GitHub
+## 🏗 Stack technique
 
-## Environnement de test
-- URL prod : https://v0-ma-cave-a-vins.vercel.app (branche main)
-- URL staging : Preview Vercel générée automatiquement pour la branche develop
-  (récupérer l'URL dans le dashboard Vercel après le premier push)
+- Framework : Next.js App Router
+- UI : shadcn/ui + Tailwind CSS
+- Langage : TypeScript strict
+- Package manager : pnpm (toujours synchroniser pnpm-lock.yaml)
+- Déploiement : Vercel (auto sur push)
+- Base de données : Supabase (chriywwlnihmclbrjmta.supabase.co)
+- Auth : Supabase Auth — email + Apple + Google
 
 ---
 
-## Règles non-négociables
+## 🌿 Branches Git — Règles absolues
 
-### Code
-- **Jamais de single quotes** dans le code — iOS Safari les convertit en guillemets typographiques. Double quotes partout, y compris dans JSX et les strings CSS-in-JS.
-- `sanitizeWineName()` sur TOUS les affichages de noms de vins — import depuis `@/lib/wine-helpers`
-- `env(safe-area-inset-top)` / `env(safe-area-inset-bottom)` sur tout nouveau header/footer iOS
+| Branche | Rôle | Déploiement |
+|---------|------|-------------|
+| `main` | Production stable | v0-ma-cave-a-vins.vercel.app |
+| `develop` | Staging — tests iPhone | URL Preview Vercel |
+| `claude/*` | Branches de travail agents IA | Preview Vercel auto |
 
-### UI mobile
-- `max-h-[90dvh] flex flex-col` + `overflow-y-auto flex-1` sur tout bottom sheet contenant un formulaire
-- `z-[60]` minimum sur tout sheet custom (bottom nav est à z-50)
+### Règles NON-NÉGOCIABLES
 
-### Package management
-- Si `package.json` modifié : `pnpm install --no-frozen-lockfile` puis push `pnpm-lock.yaml`
+- Les agents IA créent UNIQUEMENT des branches `claude/nom-feature`
+- La cible de toute PR est TOUJOURS `develop` — JAMAIS `main`
+- Le merge `develop` → `main` est fait MANUELLEMENT par Antoine après test iPhone
+- Un seul agent actif à la fois sur une branche
+- Force push interdit sur `main` et `develop`
 
----
+### Créer une branche correctement
 
-## Fichiers à ne JAMAIS toucher (sauf demande explicite)
-- `components/providers/auth-provider.tsx` — Apple Sign In + Google Sign In
-- `hooks/use-auth.ts` — authentification
-- `hooks/use-stock-overrides.ts` — gestion stock
-- `app/page.tsx` — SEUL point de fusion Excel + vins manuels
-
----
-
-## Architecture clé
-
-### Points d'entrée
-- `app/page.tsx` — page principale, fusion des sources de données
-- `components/cave/app-shell.tsx` — shell de navigation, routing entre onglets
-- `components/cave/bottom-nav.tsx` — navigation bas de page (4 onglets)
-
-### Wine card
-- `components/cave/wine-card.tsx` — carte principale
-- `components/cave/wine-card-actions.tsx` — menu 3 points (NE PAS modifier sans raison explicite)
-- **Règle critique :** `WineCardActions` doit toujours être EN DEHORS du `<button>` de toggle
-- Après toute modif de `wine-card.tsx` : vérifier les imports lucide-react dans `dashboard.tsx` (import Camera !)
-
-### Enrichissement
-- `app/api/enrich-wine/route.ts` — enrichissement IA des vins
-- `components/cave/wine-enrichment-panel.tsx` — panel d'affichage enrichissement
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b claude/nom-feature
+# ... travail ...
+git push origin claude/nom-feature
+# Ouvrir PR sur GitHub → cible : develop
+```
 
 ---
 
-## Conventions de fichiers
-- Plans de sprint : `docs/superpowers/plans/`
-- Specs de design : `docs/superpowers/specs/`
-- Migrations Supabase : `supabase/migrations/`
-- Hooks : `hooks/`
-- Composants cave : `components/cave/`
-- Feature flags : `lib/feature-flags.ts`
+## ✅ Checklist obligatoire avant tout push
+
+Vérifier chaque point avant de pousser quoi que ce soit :
+
+- [ ] `pnpm build` passe sans erreur
+- [ ] Pas de `console.log` oublié
+- [ ] Double quotes partout — jamais de single quotes (bug Safari iOS)
+- [ ] `sanitizeWineName()` sur tous les affichages de noms de vins
+- [ ] `env(safe-area-inset-top/bottom)` sur tous les nouveaux headers/footers
+- [ ] `max-h-[90dvh] flex flex-col` + `overflow-y-auto flex-1` sur les bottom sheets
+- [ ] `z-[60]` minimum sur les bottom sheets
+- [ ] La PR GitHub cible `develop` (vérifier visuellement avant de cliquer Merge)
+- [ ] Aucune régression sur les flux : login → vins affichés → action principale
+
+---
+
+## ⚠️ Conventions NON-NÉGOCIABLES
+
+### Double quotes
+```typescript
+// ✅ Correct
+const label = "Bonjour"
+// ❌ Interdit — bug Safari iOS
+const label = 'Bonjour'
+```
+
+### sanitizeWineName() — obligatoire sur tous les affichages
+```typescript
+import { sanitizeWineName } from "@/lib/wine-helpers"
+// ✅ Toujours
+<span>{sanitizeWineName(wine.name)}</span>
+// ❌ Jamais
+<span>{wine.name}</span>
+```
+
+### Safe area iOS — obligatoire sur tous les headers/footers
+```typescript
+// ✅ Correct
+style={{ paddingTop: "env(safe-area-inset-top, 20px)" }}
+// ❌ Manquant = contenu sous la barre de statut iOS
+```
+
+### Bottom sheets
+```typescript
+// ✅ Pattern obligatoire
+className="max-h-[90dvh] flex flex-col z-[60]"
+// Contenu scrollable à l'intérieur :
+className="overflow-y-auto flex-1"
+```
+
+### Swipe iOS — abandonné définitivement
+Ne jamais réintroduire de swipe. Menu 3 points uniquement.
+
+---
+
+## 🏛 Architecture codebase
+
+```
+app/
+  page.tsx              → SEUL point de fusion vins (ne pas dupliquer)
+  layout.tsx            → Root layout + AuthProvider (initialUser server-side)
+  auth/callback/        → Callback OAuth Supabase
+  api/
+    scan-label/         → Endpoint Claude Vision
+    enrich-wine/        → Endpoint enrichissement IA (pas de web_search)
+
+components/cave/
+  app-shell.tsx         → Shell principal, safe-area fallback 20px
+  auth-sheet.tsx        → Apple + Google Sign In
+  scan-label-sheet.tsx  → z-[60], scroll OK
+  wine-card.tsx         → Menu 3 points, JAMAIS swipe
+  wine-expert-panel.tsx → wineName prop OBLIGATOIRE
+
+hooks/
+  use-auth.ts           → useAuth() + isPremium
+  use-cave-sync.ts      → Migration localStorage → Supabase
+
+lib/
+  feature-flags.ts      → SCAN_LABEL, ENRICH_WINE
+  wine-helpers.ts       → sanitizeWineName() OBLIGATOIRE
+  supabase/             → client.ts, server.ts, middleware.ts
+```
+
+### Règle app/page.tsx
+C'est le SEUL endroit où les vins Excel et les vins manuels sont fusionnés.
+Ne jamais dupliquer cette logique ailleurs.
+
+### Règle WineExpertPanel
+Doit toujours recevoir `wineName` en prop. Sans ça, "Trouver en ligne" → "Vin inconnu".
+
+---
+
+## 🔐 Freemium — Gates
+
+```typescript
+// Depuis use-auth.ts
+const { isPremium } = useAuth()
+// isPremium = plan === 'premium' || role === 'beta' || role === 'admin'
+
+// Plans : 'free' | 'amateur' | 'collector'
+// Roles : 'user' | 'beta' | 'admin'
+```
+
+Ne jamais dupliquer la logique isPremium. Toujours importer depuis use-auth.ts.
+
+---
+
+## 🗄 Supabase — Pièges critiques
+
+- RLS obligatoire sur toutes les tables : `user_id = auth.uid()`
+- Ne jamais court-circuiter avec `if (!userId) return []` sans vérifier
+  que useAuth() a fini de résoudre (risque : cave vide après login)
+- Pattern correct pour attendre la résolution :
+```typescript
+const { user, loading } = useAuth()
+if (loading) return <Skeleton />
+if (!user) return null
+```
+- Variables d'env : modifier uniquement via le dashboard Vercel (pas via MCP)
+- `NEXT_PUBLIC_` sur les clés Supabase → warning Vercel normal, ignorer
+
+---
+
+## 🚨 Protocole incident prod
+
+Si un bug apparaît en production :
+1. STOP — ne pas empiler de correctifs
+2. Lire les logs Vercel pour identifier le commit fautif
+3. `git revert <hash>` → push → vérifier Vercel
+4. Si revert insuffisant → hard reset vers dernier commit stable
+5. Sauvegarder le travail sur une branche dédiée avant tout reset
+6. Corriger sur `claude/fix-xxx` → PR vers `develop` → test iPhone → `main`
+
+---
+
+## 📦 Dépendances — Règles pnpm
+
+```bash
+# Après tout pnpm add :
+pnpm install --no-frozen-lockfile
+# Puis pousser pnpm-lock.yaml — cause #1 de build failures Vercel
+```
+
+---
+
+## 🔑 localStorage Keys
+
+```javascript
+cave-manual-wines       // Vins manuels
+cave-stock-overrides    // Surcharges stock
+cave-user-profile       // Prénom + settings
+```
+
+---
+
+## 📋 Template pour décrire une tâche à Claude Code
+
+Toute demande doit préciser :
+1. Contexte : quel fichier, quel composant, quel comportement actuel
+2. Objectif : ce qui doit changer précisément
+3. Fichiers autorisés à modifier
+4. Fichiers interdits à toucher
+5. Branche cible : `claude/nom-feature` depuis `develop`
+6. Cible PR : `develop`
