@@ -17,13 +17,14 @@ import type { Wine } from "@/data/apogee"
 interface AppShellProps {
   cave: Wine[]
   lastUpdated: string | null
+  isOfflineCache?: boolean
   onImport: (data: Wine[]) => void
   onClear: () => void | Promise<void>
   onAddWine: (wine: Wine) => void
   onReload?: () => void | Promise<void>
 }
 
-export function AppShell({ cave, lastUpdated, onImport, onClear, onAddWine, onReload }: AppShellProps) {
+export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear, onAddWine, onReload }: AppShellProps) {
   const [activeTab, setActiveTab] = useState<TabId>("cave")
   const [listFilter, setListFilter] = useState<CaveListProps["initialFilter"]>(undefined)
   const [selectedWine, setSelectedWine] = useState<Wine | null>(null)
@@ -39,6 +40,14 @@ export function AppShell({ cave, lastUpdated, onImport, onClear, onAddWine, onRe
 
   return (
     <div className="mx-auto min-h-dvh max-w-[480px]" style={{ paddingBottom: "calc(76px + env(safe-area-inset-bottom, 20px))" }}>
+      {isOfflineCache && (
+        <div
+          className="sticky top-0 z-[60] bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-800 text-center"
+          style={{ paddingTop: "calc(0.5rem + env(safe-area-inset-top, 0px))" }}
+        >
+          📶 Mode hors ligne — données mises en cache — les modifications sont désactivées
+        </div>
+      )}
       {activeTab === "cave" && <Dashboard cave={cave} onNavigate={navigateTo} onAddWine={onAddWine} />}
       {activeTab === "carnet" && <TastingScreen />}
       {activeTab === "liste" && <CaveList cave={cave} initialFilter={listFilter} onAddWine={onAddWine} onWineSelect={setSelectedWine} />}
@@ -59,6 +68,7 @@ export function AppShell({ cave, lastUpdated, onImport, onClear, onAddWine, onRe
           wine={selectedWine}
           onClose={() => setSelectedWine(null)}
           onConsume={() => {
+            if (isOfflineCache) return
             const override = getOverrideForWine(selectedWine)
             const currentQty = override?.quantity ?? Number(selectedWine.bottle_quantity ?? 0)
             const newQty = Math.max(0, currentQty - 1)
