@@ -1,39 +1,106 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useSyncExternalStore } from "react"
+import type { Wine } from "@/data/apogee"
+import { getWineIdentityKey, type StockOverride } from "@/lib/stock-overrides"
+import { CAVE_STORAGE_KEYS } from "@/lib/cave-storage"
 
-export interface StockOverride {
-  quantity?: number
-  archived?: boolean
-  deleted?: boolean
+const STORAGE_KEY = CAVE_STORAGE_KEYS.stockOverrides
+
+type OverridesMap = Record<string, StockOverride>
+
+let overridesStore: OverridesMap = {}
+let hasLoadedOverrides = false
+const listeners = new Set<() => void>()
+
+function emitChange() {
+  listeners.forEach((listener) => listener())
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
+function getSnapshot() {
+  return overridesStore
+}
+
+function loadOverridesFromStorage() {
+  if (hasLoadedOverrides || typeof window === 'undefined') return
+
+  hasLoadedOverrides = true
+
+  const stored = window.localStorage.getItem(STORAGE_KEY)
+  if (!stored) return
+
+  try {
+    overridesStore = JSON.parse(stored)
+  } catch (e) {
+    console.error('[v0] Failed to parse stock overrides:', e)
+  }
+}
+
+function persistOverrides(nextOverrides: OverridesMap) {
+  overridesStore = nextOverrides
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextOverrides))
+  }
+
+  emitChange()
+}
+
+export function clearAllStockOverrides() {
+  hasLoadedOverrides = true
+  overridesStore = {}
+
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem(STORAGE_KEY)
+  }
+
+  emitChange()
 }
 
 export function useStockOverrides() {
-  const [overrides, setOverrides] = useState<Record<string, StockOverride>>({})
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  // Load from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem('cave-stock-overrides')
-    if (stored) {
+    loadOverridesFromStorage()
+    emitChange()
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY) return
+
+      if (!event.newValue) {
+        overridesStore = {}
+        emitChange()
+        return
+      }
+
       try {
-        setOverrides(JSON.parse(stored))
+        overridesStore = JSON.parse(event.newValue)
+        emitChange()
       } catch (e) {
         console.error('[v0] Failed to parse stock overrides:', e)
       }
     }
-    setIsLoaded(true)
+
+    window.addEventListener('storage', handleStorage)
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+    }
   }, [])
 
-  // Persist to localStorage whenever overrides change
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem('cave-stock-overrides', JSON.stringify(overrides))
-    }
-  }, [overrides, isLoaded])
+  const overrides = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+  const isLoaded = hasLoadedOverrides
 
   const getWineKey = useCallback((wineName: string | null, millesime: string | number | null): string => {
     return `${wineName || ''}_${millesime || ''}`
+  }, [])
+
+  const getWineKeyFromWine = useCallback((wine: Wine): string => {
+    return getWineIdentityKey(wine)
   }, [])
 
   const getOverride = useCallback(
@@ -46,22 +113,50 @@ export function useStockOverrides() {
   const setOverride = useCallback(
     (wineName: string | null, millesime: string | number | null, override: StockOverride) => {
       const key = getWineKey(wineName, millesime)
-      setOverrides((prev) => ({
-        ...prev,
+      persistOverrides({
+        ...overridesStore,
         [key]: override,
-      }))
+      })
     },
     [getWineKey]
   )
 
   const clearOverride = useCallback((wineName: string | null, millesime: string | number | null) => {
     const key = getWineKey(wineName, millesime)
-    setOverrides((prev) => {
-      const next = { ...prev }
-      delete next[key]
-      return next
-    })
+    const next = { ...overridesStore }
+    delete next[key]
+    persistOverrides(next)
   }, [getWineKey])
 
-  return { overrides, isLoaded, getOverride, setOverride, clearOverride, getWineKey }
+  const getOverrideForWine = useCallback((wine: Wine): StockOverride | undefined => {
+    return overrides[getWineKeyFromWine(wine)]
+  }, [getWineKeyFromWine, overrides])
+
+  const setOverrideForWine = useCallback((wine: Wine, override: StockOverride) => {
+    const key = getWineKeyFromWine(wine)
+    persistOverrides({
+      ...overridesStore,
+      [key]: override,
+    })
+  }, [getWineKeyFromWine])
+
+  const clearOverrideForWine = useCallback((wine: Wine) => {
+    const key = getWineKeyFromWine(wine)
+    const next = { ...overridesStore }
+    delete next[key]
+    persistOverrides(next)
+  }, [getWineKeyFromWine])
+
+  return {
+    overrides,
+    isLoaded,
+    getOverride,
+    setOverride,
+    clearOverride,
+    getWineKey,
+    getWineKeyFromWine,
+    getOverrideForWine,
+    setOverrideForWine,
+    clearOverrideForWine,
+  }
 }

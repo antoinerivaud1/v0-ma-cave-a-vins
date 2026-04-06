@@ -223,7 +223,7 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
         </Tabs>
 
         {/* OAuth */}
-        <div className="px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4">
+        <div className="px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,20px))] pt-4">
           <div className="flex items-center gap-3 py-2">
             <Separator className="flex-1" />
             <span className="text-xs text-muted-foreground">ou</span>

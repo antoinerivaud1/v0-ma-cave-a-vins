@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState } from "react"
 import Link from 'next/link'
 import { Database, Trash2, CheckCircle, Camera, Globe, Layers, ShieldCheck, type LucideIcon } from 'lucide-react'
 import { PageHeader } from './page-header'
@@ -15,6 +15,9 @@ import { CaveManagerSheet } from "@/components/cave/cave-manager-sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCaves } from "@/hooks/use-caves"
+import { clearAllStockOverrides, useStockOverrides } from "@/hooks/use-stock-overrides"
+import { getEffectiveWineState } from "@/lib/stock-overrides"
+import { clearAllLocalCaveData } from "@/lib/cave-storage"
 
 const ICON_MAP: Record<string, LucideIcon> = { Camera, Globe, Layers }
 
@@ -22,7 +25,7 @@ interface SettingsProps {
   cave: Wine[]
   lastUpdated: string | null
   onImport: (data: Wine[]) => void
-  onClear: () => void
+  onClear: () => void | Promise<void>
 }
 
 export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps) {
@@ -32,8 +35,15 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
   const [caveManagerOpen, setCaveManagerOpen] = useState(false)
   const { user, signOut } = useAuth()
   const { caves } = useCaves()
+  const { getOverrideForWine } = useStockOverrides()
+  const [isSigningOut, setIsSigningOut] = useState(false)
+  const [signOutError, setSignOutError] = useState<string | null>(null)
 
-  const totalBottles = cave.reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
+  const totalBottles = cave.reduce((s, w) => {
+    const effectiveState = getEffectiveWineState(w, getOverrideForWine(w))
+    if (!effectiveState.isVisible) return s
+    return s + effectiveState.quantity
+  }, 0)
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -45,10 +55,24 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
     [parseFile, onImport]
   )
 
-  const handleReset = useCallback(() => {
-    onClear()
+  const handleReset = useCallback(async () => {
+    clearAllLocalCaveData()
+    clearAllStockOverrides()
+    await onClear()
     setShowConfirm(false)
+    window.location.reload()
   }, [onClear])
+
+  const handleSignOut = useCallback(async () => {
+    setIsSigningOut(true)
+    setSignOutError(null)
+    try {
+      await signOut()
+    } catch {
+      // ignore, on force le reload de toute façon
+    }
+    window.location.href = "/"
+  }, [signOut])
 
   const formattedDate = lastUpdated
     ? new Date(lastUpdated).toLocaleDateString('fr-FR', {
@@ -166,9 +190,10 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
               variant="outline"
               size="sm"
               className="w-full"
-              onClick={() => signOut()}
+              onClick={handleSignOut}
+              disabled={isSigningOut}
             >
-              Se déconnecter
+              {isSigningOut ? "Deconnexion..." : "Se déconnecter"}
             </Button>
           </div>
         ) : (

@@ -36,6 +36,7 @@
   --cave-muted: #8a7060;
   --cave-card: #1a0e06;
   --cave-border: #2a1a0e;
+  --cave-bordeaux: #722F37;
 }
 
 @theme inline {
@@ -72,10 +73,20 @@
   --color-cave-muted: var(--cave-muted);
   --color-cave-card: var(--cave-card);
   --color-cave-border: var(--cave-border);
+  --color-cave-bordeaux: var(--cave-bordeaux);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+}
+
+@utility font-cormorant {
+  font-family: var(--font-cormorant);
+}
+
+@keyframes scan {
+  0%, 100% { transform: translateY(0); opacity: 0.3; }
+  50% { transform: translateY(180px); opacity: 0.8; }
 }
 
 @layer base {

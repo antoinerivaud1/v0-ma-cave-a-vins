@@ -10,6 +10,7 @@ import { getApogee } from "@/data/apogee"
 import { getDailyTip } from "@/data/wine-tips"
 import { useUserProfile } from "@/hooks/use-user-profile"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { sanitizeWineName } from "@/lib/wine-helpers"
 import type { Wine as WineType } from "@/data/apogee"
 import type { TabId } from "./bottom-nav"
@@ -31,30 +32,29 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
   const [showAddSheet, setShowAddSheet] = useState(false)
   const [showScanSheet, setShowScanSheet] = useState(false)
   const [fabOpen, setFabOpen] = useState(false)
-  const { getOverride } = useStockOverrides()
+  const { getOverrideForWine } = useStockOverrides()
   const { profile } = useUserProfile()
   const tip = getDailyTip()
 
   const stats = useMemo(() => {
     const active = cave.filter((w) => {
-      const o = getOverride(w.wine_name ?? null, w.millesime_year ?? null)
-      return !o?.deleted && !o?.archived
+      return getEffectiveWineState(w, getOverrideForWine(w)).isVisible
     })
-    const total = active.reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
+    const total = active.reduce((s, w) => s + getEffectiveWineState(w, getOverrideForWine(w)).quantity, 0)
     const reds = active.filter((w) => w.wine_type === "wine_red" || w.wine_color === "Rouge")
-      .reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
+      .reduce((s, w) => s + getEffectiveWineState(w, getOverrideForWine(w)).quantity, 0)
     const whites = active.filter((w) => w.wine_type === "wine_white" || w.wine_color === "Blanc")
-      .reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
+      .reduce((s, w) => s + getEffectiveWineState(w, getOverrideForWine(w)).quantity, 0)
     const sparkling = active.filter((w) =>
       w.wine_type === "wine_white_sparkling" || w.wine_color === "Petillant" || w.wine_color === "Effervescent"
-    ).reduce((s, w) => s + (Number(w.bottle_quantity) || 0), 0)
+    ).reduce((s, w) => s + getEffectiveWineState(w, getOverrideForWine(w)).quantity, 0)
     const toDrink = active.filter((w) => {
       const a = getApogee(w)
       return a && (a.st === "urgent" || a.st === "late")
     })
     const recent = active.filter((w) => (w as any)._manual).slice(0, 3)
     return { total, reds, whites, sparkling, toDrink, recent }
-  }, [cave, getOverride])
+  }, [cave, getOverrideForWine])
 
   const handleFabAction = (action: "scan" | "manual") => {
     setFabOpen(false)
@@ -68,7 +68,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
 
       {/* Header salutation */}
       <div className="flex items-center justify-between px-4 pt-5 pb-1">
-        <h1 className="font-serif text-2xl font-semibold text-foreground">
+        <h1 className="font-cormorant text-4xl font-normal leading-tight text-foreground">
           {getGreeting(profile?.firstName)}
         </h1>
         {profile?.firstName && (
@@ -92,7 +92,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
             {tip.type === "personal" ? "Votre cave" : "Le saviez-vous ?"}
           </span>
         </div>
-        <p className="px-3.5 pb-3.5 text-sm leading-relaxed text-foreground">{tip.text}</p>
+        <p className="px-3.5 pb-3.5 font-cormorant italic text-sm leading-relaxed text-foreground">{tip.text}</p>
       </div>
 
       {/* Snapshot cave */}
@@ -103,25 +103,25 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <Wine className="h-4 w-4 text-primary" />
-            <span className="font-serif text-lg font-semibold text-foreground">{stats.total}</span>
+            <span className="font-sans font-semibold tabular-nums text-2xl text-foreground">{stats.total}</span>
             <span className="text-xs text-muted-foreground">bouteilles</span>
           </div>
           {stats.reds > 0 && (
             <div className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-red-500" />
-              <span className="text-xs text-muted-foreground">{stats.reds}</span>
+              <span className="font-sans font-semibold tabular-nums text-xs text-muted-foreground">{stats.reds}</span>
             </div>
           )}
           {stats.whites > 0 && (
             <div className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-amber-200" />
-              <span className="text-xs text-muted-foreground">{stats.whites}</span>
+              <span className="font-sans font-semibold tabular-nums text-xs text-muted-foreground">{stats.whites}</span>
             </div>
           )}
           {stats.sparkling > 0 && (
             <div className="flex items-center gap-1">
               <Sparkles className="h-3 w-3 text-sky-300" />
-              <span className="text-xs text-muted-foreground">{stats.sparkling}</span>
+              <span className="font-sans font-semibold tabular-nums text-xs text-muted-foreground">{stats.sparkling}</span>
             </div>
           )}
         </div>
@@ -145,7 +145,7 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
           <div className="mb-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-400" />
-              <h2 className="text-sm font-semibold text-foreground">A boire maintenant</h2>
+              <h2 className="font-cormorant text-2xl font-normal text-foreground">A boire maintenant</h2>
             </div>
             {stats.toDrink.length > 3 && (
               <button onClick={() => onNavigate("liste", { level: "drink" })} className="text-xs text-primary">
@@ -159,11 +159,12 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
               return (
                 <div key={`drink-${wine.wine_name}-${i}`} className="flex items-center justify-between rounded-lg border border-cave-border bg-card px-3 py-2.5">
                   <div className="flex-1 pr-3 min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">
+                    <p className="truncate font-cormorant text-sm font-normal text-foreground">
                       {sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || "Vin inconnu"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {wine.millesime_year}{wine.wine_region ? ` · ${sanitizeWineName(wine.wine_region)}` : ""}
+                      <span className="font-sans font-semibold tabular-nums">{wine.millesime_year}</span>
+                      {wine.wine_region ? ` · ${sanitizeWineName(wine.wine_region)}` : ""}
                     </p>
                   </div>
                   {apogee && (
@@ -181,17 +182,18 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
         <section className="mt-5 px-4">
           <div className="mb-2.5 flex items-center gap-2">
             <GlassWater className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">Ajouts recents</h2>
+            <h2 className="font-cormorant text-2xl font-normal text-foreground">Ajouts recents</h2>
           </div>
           <div className="flex flex-col gap-2">
             {stats.recent.map((wine, i) => (
               <div key={`recent-${wine.wine_name}-${i}`} className="flex items-center justify-between rounded-lg border border-cave-border bg-card px-3 py-2.5">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-foreground">
+                  <p className="truncate font-cormorant text-sm font-normal text-foreground">
                     {sanitizeWineName(wine.wine_name) || "Vin inconnu"}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {wine.millesime_year}{wine.wine_region ? ` · ${sanitizeWineName(wine.wine_region)}` : ""}
+                    <span className="font-sans font-semibold tabular-nums">{wine.millesime_year}</span>
+                    {wine.wine_region ? ` · ${sanitizeWineName(wine.wine_region)}` : ""}
                   </p>
                 </div>
               </div>
@@ -249,5 +251,3 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
     </div>
   )
 }
-
-
