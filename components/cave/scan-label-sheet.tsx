@@ -2,17 +2,81 @@
 
 import { useState, useRef, useCallback } from "react"
 import { Camera, ImagePlus, Loader2, X, Check, AlertCircle } from "lucide-react"
-import { ComingSoonBadge } from "./coming-soon-badge"
-import type { Wine } from "@/data/apogee"
+import type { Wine as WineType } from "@/data/apogee"
 import type { ScanLabelResult } from "@/app/api/scan-label/route"
 
 interface ScanLabelSheetProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
-  onAdd: (wine: Wine) => void
+  onAdd: (wine: WineType) => void
 }
 
 type ScanStep = "capture" | "scanning" | "result" | "error"
+
+/* ── Animated Viewfinder Component ─────────────────────────────── */
+function ScanViewfinder() {
+  return (
+    <div className="relative mx-auto flex h-64 w-56 items-center justify-center">
+      {/* Animated corner marks */}
+      <div className="absolute inset-0">
+        {/* Top-left corner */}
+        <div className="absolute left-0 top-0 h-8 w-8">
+          <div className="absolute left-0 top-0 h-full w-0.5 animate-pulse bg-gradient-to-b from-cave-gold to-transparent" />
+          <div className="absolute left-0 top-0 h-0.5 w-full animate-pulse bg-gradient-to-r from-cave-gold to-transparent" />
+        </div>
+        {/* Top-right corner */}
+        <div className="absolute right-0 top-0 h-8 w-8">
+          <div className="absolute right-0 top-0 h-full w-0.5 animate-pulse bg-gradient-to-b from-cave-gold to-transparent" />
+          <div className="absolute right-0 top-0 h-0.5 w-full animate-pulse bg-gradient-to-l from-cave-gold to-transparent" />
+        </div>
+        {/* Bottom-left corner */}
+        <div className="absolute bottom-0 left-0 h-8 w-8">
+          <div className="absolute bottom-0 left-0 h-full w-0.5 animate-pulse bg-gradient-to-t from-cave-gold to-transparent" />
+          <div className="absolute bottom-0 left-0 h-0.5 w-full animate-pulse bg-gradient-to-r from-cave-gold to-transparent" />
+        </div>
+        {/* Bottom-right corner */}
+        <div className="absolute bottom-0 right-0 h-8 w-8">
+          <div className="absolute bottom-0 right-0 h-full w-0.5 animate-pulse bg-gradient-to-t from-cave-gold to-transparent" />
+          <div className="absolute bottom-0 right-0 h-0.5 w-full animate-pulse bg-gradient-to-l from-cave-gold to-transparent" />
+        </div>
+      </div>
+
+      {/* Inner frame with subtle border */}
+      <div className="absolute inset-4 rounded-lg border border-cave-bordeaux/30 bg-cave-bordeaux/5" />
+
+      {/* Wine bottle silhouette */}
+      <div className="relative flex flex-col items-center gap-3">
+        {/* Stylized wine bottle */}
+        <svg
+          width="48"
+          height="100"
+          viewBox="0 0 48 100"
+          fill="none"
+          className="opacity-40"
+        >
+          {/* Bottle neck */}
+          <rect x="19" y="0" width="10" height="20" rx="2" fill="#722F37" />
+          {/* Cork area */}
+          <rect x="17" y="18" width="14" height="8" rx="1" fill="#722F37" />
+          {/* Bottle shoulder */}
+          <path
+            d="M17 26 C17 26 10 35 10 45 L10 95 C10 97.5 12 100 14.5 100 L33.5 100 C36 100 38 97.5 38 95 L38 45 C38 35 31 26 31 26 Z"
+            fill="#722F37"
+          />
+          {/* Label area */}
+          <rect x="14" y="55" width="20" height="28" rx="2" fill="#C0956C" fillOpacity="0.3" />
+          {/* Label lines */}
+          <rect x="17" y="62" width="14" height="1.5" rx="0.75" fill="#C0956C" fillOpacity="0.5" />
+          <rect x="17" y="67" width="10" height="1" rx="0.5" fill="#C0956C" fillOpacity="0.4" />
+          <rect x="17" y="72" width="12" height="1" rx="0.5" fill="#C0956C" fillOpacity="0.4" />
+        </svg>
+
+        {/* Scan line animation */}
+        <div className="absolute inset-x-4 top-8 h-0.5 animate-[scan_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-cave-gold/60 to-transparent" />
+      </div>
+    </div>
+  )
+}
 
 export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetProps) {
   const [step, setStep] = useState<ScanStep>("capture")
@@ -82,7 +146,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
         setRegion(data.region || "")
         setAppellation(data.appellation || "")
         setStep("result")
-      } catch (err: any) {
+      } catch (err: unknown) {
         setErrorMsg("Impossible d'analyser l'image. Reessayez.")
         setStep("error")
       }
@@ -96,7 +160,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
   }
 
   const handleConfirm = () => {
-    const wine: Wine = {
+    const wine: WineType = {
       wine_name: [domaine, wineName].filter(Boolean).join(" — ") || "Vin sans nom",
       wine_appellation: appellation || undefined,
       wine_region: region || undefined,
@@ -106,7 +170,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
       wine_type: undefined,
       wine_classification: undefined,
       _manual: true,
-    } as any
+    } as WineType
     onAdd(wine)
     handleClose()
   }
@@ -114,60 +178,70 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+    <div className="fixed inset-0 z-[60] flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-background border-t border-cave-border overflow-hidden">
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="h-1 w-10 rounded-full bg-cave-border" />
+      <div className="absolute bottom-0 left-0 right-0 flex min-h-[65dvh] flex-col rounded-t-2xl border-t border-cave-bordeaux/30 bg-background">
+        {/* Drag Handle */}
+        <div className="flex justify-center pt-3 pb-2">
+          <div className="h-1 w-10 rounded-full bg-neutral-600" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <h2 className="font-serif text-lg font-semibold text-foreground">Scanner une etiquette</h2>
-            <ComingSoonBadge />
+        <div className="flex items-center justify-between px-5 py-3">
+          <div className="flex items-center gap-3">
+            <h2 className="font-serif text-xl font-semibold text-white">
+              Scanner une etiquette
+            </h2>
+            <span className="inline-flex items-center rounded-full bg-cave-bordeaux px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cave-gold">
+              Bientôt
+            </span>
           </div>
-          <button onClick={handleClose} className="rounded-full p-1.5 hover:bg-secondary">
-            <X className="h-4 w-4 text-muted-foreground" />
+          <button
+            onClick={handleClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-white/10"
+          >
+            <X className="h-5 w-5 text-neutral-400" />
           </button>
         </div>
 
-        <div className="px-4 pb-6">
-
+        <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-8">
           {/* STEP: capture */}
           {step === "capture" && (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-muted-foreground text-center pb-1">
-                Prenez en photo l'etiquette de votre bouteille.
+            <div className="flex flex-1 flex-col">
+              {/* Viewfinder Zone */}
+              <div className="flex-1 py-4">
+                <ScanViewfinder />
+              </div>
+
+              {/* Subtitle */}
+              <p className="mb-6 text-center text-sm text-neutral-400">
+                Cadrez l'etiquette dans la zone pour une meilleure reconnaissance
               </p>
-              <button
-                onClick={() => cameraInputRef.current?.click()}
-                className="flex items-center gap-3 rounded-xl border border-cave-border bg-card px-4 py-4 transition-colors hover:border-primary/30"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15">
-                  <Camera className="h-4 w-4 text-primary" />
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-medium text-foreground">Prendre une photo</p>
-                  <p className="text-xs text-muted-foreground">Ouvrir l'appareil photo</p>
-                </div>
-              </button>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-3 rounded-xl border border-cave-border bg-card px-4 py-4 transition-colors hover:border-primary/30"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary">
-                  <ImagePlus className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-medium text-foreground">Choisir une photo</p>
-                  <p className="text-xs text-muted-foreground">Depuis la galerie</p>
-                </div>
-              </button>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3">
+                {/* Primary Button */}
+                <button
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex items-center justify-center gap-3 rounded-xl bg-cave-bordeaux py-4 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+                >
+                  <Camera className="h-5 w-5" />
+                  Prendre une photo
+                </button>
+
+                {/* Secondary Button */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center justify-center gap-3 rounded-xl border border-cave-bordeaux py-4 text-sm font-medium text-neutral-300 transition-all hover:bg-white/5 active:scale-[0.98]"
+                >
+                  <ImagePlus className="h-5 w-5" />
+                  Choisir depuis la galerie
+                </button>
+              </div>
+
               <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             </div>
@@ -175,12 +249,16 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
 
           {/* STEP: scanning */}
           {step === "scanning" && (
-            <div className="flex flex-col items-center gap-4 py-6">
+            <div className="flex flex-1 flex-col items-center justify-center gap-6 py-8">
               {preview && (
-                <img src={preview} alt="Etiquette" className="h-40 w-auto rounded-lg object-contain border border-cave-border" />
+                <img
+                  src={preview}
+                  alt="Etiquette"
+                  className="h-48 w-auto rounded-xl object-contain border border-cave-bordeaux"
+                />
               )}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <div className="flex items-center gap-3 text-sm text-neutral-400">
+                <Loader2 className="h-5 w-5 animate-spin text-cave-gold" />
                 Analyse en cours...
               </div>
             </div>
@@ -188,14 +266,14 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
 
           {/* STEP: error */}
           {step === "error" && (
-            <div className="flex flex-col items-center gap-4 py-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-                <AlertCircle className="h-6 w-6 text-destructive" />
+            <div className="flex flex-1 flex-col items-center justify-center gap-5 py-8">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/15">
+                <AlertCircle className="h-7 w-7 text-destructive" />
               </div>
-              <p className="text-center text-sm text-muted-foreground">{errorMsg}</p>
+              <p className="max-w-xs text-center text-sm text-neutral-400">{errorMsg}</p>
               <button
                 onClick={reset}
-                className="rounded-xl border border-cave-border bg-card px-6 py-2.5 text-sm font-medium text-foreground"
+                className="rounded-xl border border-cave-bordeaux px-8 py-3 text-sm font-medium text-white transition-all hover:bg-white/5"
               >
                 Reessayer
               </button>
@@ -204,19 +282,25 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
 
           {/* STEP: result */}
           {step === "result" && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               {preview && (
-                <img src={preview} alt="Etiquette" className="h-32 w-auto rounded-lg object-contain border border-cave-border mx-auto" />
+                <img
+                  src={preview}
+                  alt="Etiquette"
+                  className="mx-auto h-36 w-auto rounded-xl object-contain border border-cave-bordeaux"
+                />
               )}
 
               {result?.confidence === "low" && (
-                <div className="flex items-center gap-2 rounded-lg bg-amber-950/30 border border-amber-800/30 px-3 py-2">
-                  <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                  <p className="text-xs text-amber-400">Lecture partielle — verifiez les informations.</p>
+                <div className="flex items-center gap-2 rounded-lg border border-cave-gold/30 bg-cave-gold/10 px-4 py-3">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-cave-gold" />
+                  <p className="text-xs text-cave-gold">
+                    Lecture partielle — verifiez les informations.
+                  </p>
                 </div>
               )}
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 {[
                   { label: "Domaine", value: domaine, setter: setDomaine },
                   { label: "Nom du vin", value: wineName, setter: setWineName },
@@ -225,27 +309,29 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
                   { label: "Appellation", value: appellation, setter: setAppellation },
                 ].map(({ label, value, setter, type }) => (
                   <div key={label}>
-                    <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</label>
+                    <label className="mb-1 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                      {label}
+                    </label>
                     <input
                       type={type || "text"}
                       value={value}
                       onChange={(e) => setter(e.target.value)}
-                      className="mt-0.5 w-full rounded-lg border border-cave-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-cave-border bg-card px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-1"
                     />
                   </div>
                 ))}
               </div>
 
-              <div className="flex gap-2 pt-1">
+              <div className="flex gap-3 pt-2">
                 <button
                   onClick={reset}
-                  className="flex-1 rounded-xl border border-cave-border bg-card py-3 text-sm font-medium text-foreground"
+                  className="flex-1 rounded-xl border border-cave-bordeaux py-3.5 text-sm font-medium text-white transition-all hover:bg-white/5"
                 >
                   Rescanner
                 </button>
                 <button
                   onClick={handleConfirm}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-cave-bordeaux py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
                 >
                   <Check className="h-4 w-4" />
                   Ajouter

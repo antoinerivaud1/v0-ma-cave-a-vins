@@ -20,7 +20,7 @@ export const FEATURE_FLAGS: Record<string, FeatureFlag> = {
     key: "ENRICH_WINE",
     label: "Enrichissement web",
     description: "Récupérez automatiquement la description, l'apogée et le prix moyen d'un vin.",
-    status: "coming-soon",
+    status: "enabled",
     icon: "Globe",
   },
   MULTI_CAVE: {
@@ -29,6 +29,13 @@ export const FEATURE_FLAGS: Record<string, FeatureFlag> = {
     description: "Gérez plusieurs caves (ex: Paris, La Baule) depuis une seule app.",
     status: "enabled",
     icon: "Layers",
+  },
+  TASTING_CARNET: {
+    key: "TASTING_CARNET",
+    label: "Carnet de dégustation",
+    description: "Notez vos vins, consultez les avis critiques et gardez un historique de vos dégustations.",
+    status: "enabled",
+    icon: "BookOpen",
   },
 }
 
