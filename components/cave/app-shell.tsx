@@ -12,7 +12,18 @@ import { Suggest } from "./suggest"
 import { Settings } from "./settings"
 import { useCaves } from "@/hooks/use-caves"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { sanitizeWineName } from "@/lib/wine-helpers"
 import type { Wine } from "@/data/apogee"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface AppShellProps {
   cave: Wine[]
@@ -29,6 +40,7 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
   const [listFilter, setListFilter] = useState<CaveListProps["initialFilter"]>(undefined)
   const [selectedWine, setSelectedWine] = useState<Wine | null>(null)
   const [moveSheetOpen, setMoveSheetOpen] = useState(false)
+  const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
   const { caves } = useCaves()
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
   const canMoveSelectedWine = !!selectedWine?.id && caves.length > 1
@@ -71,8 +83,11 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
             if (isOfflineCache) return
             const override = getOverrideForWine(selectedWine)
             const currentQty = override?.quantity ?? Number(selectedWine.bottle_quantity ?? 0)
-            const newQty = Math.max(0, currentQty - 1)
-            setOverrideForWine(selectedWine, { ...override, quantity: newQty })
+            if (currentQty <= 1) {
+              setShowLastBottleDialog(true)
+              return
+            }
+            setOverrideForWine(selectedWine, { ...override, quantity: currentQty - 1 })
           }}
           onActionsOpen={() => {
             if (canMoveSelectedWine) {
@@ -84,6 +99,44 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
           myRating={null}
           actionsLabel={canMoveSelectedWine ? "Déplacer" : "Fermer"}
         />
+      )}
+
+      {selectedWine && (
+        <AlertDialog open={showLastBottleDialog} onOpenChange={setShowLastBottleDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Dernière bouteille</AlertDialogTitle>
+              <AlertDialogDescription>
+                Vous avez consommé votre dernière bouteille de{" "}
+                {sanitizeWineName(selectedWine.wine_name) || "ce vin"}.
+                Que souhaitez-vous faire ?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  const override = getOverrideForWine(selectedWine)
+                  setOverrideForWine(selectedWine, { ...override, quantity: 0, archived: true })
+                  setShowLastBottleDialog(false)
+                }}
+                className="bg-muted text-foreground hover:bg-muted/80"
+              >
+                Archiver
+              </AlertDialogAction>
+              <AlertDialogAction
+                onClick={() => {
+                  const override = getOverrideForWine(selectedWine)
+                  setOverrideForWine(selectedWine, { ...override, quantity: 0, deleted: true })
+                  setShowLastBottleDialog(false)
+                }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Supprimer
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
 
       {selectedWine?.id && (
