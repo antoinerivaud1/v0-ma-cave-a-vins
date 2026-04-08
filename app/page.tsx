@@ -10,7 +10,7 @@ import type { Wine } from "@/data/apogee"
 
 export default function Page() {
   const { user, loading: authLoading } = useAuth()
-  const { activeCave, caves } = useCaves()
+  const { activeCave, caves, activeCaveId, setActiveCave } = useCaves()
   const {
     cave,
     importWines,
@@ -81,6 +81,9 @@ export default function Page() {
       onReload={reloadCave}
       activeCave={activeCave}
       caveCount={caves.length}
+      caves={caves}
+      activeCaveId={activeCaveId}
+      setActiveCave={setActiveCave}
     />
   )
 }
