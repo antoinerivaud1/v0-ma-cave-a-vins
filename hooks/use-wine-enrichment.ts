@@ -92,5 +92,10 @@ export function useWineEnrichment() {
     [enriching]
   )
 
-  return { getEnrichment, enrichWine, isEnriching, isLoaded }
+  const resetEnrichments = useCallback(() => {
+    setCache({})
+    localStorage.removeItem(STORAGE_KEY)
+  }, [])
+
+  return { getEnrichment, enrichWine, isEnriching, isLoaded, resetEnrichments }
 }

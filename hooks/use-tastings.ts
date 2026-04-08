@@ -198,6 +198,11 @@ export function useTastings() {
     )
   }, [tastings])
 
+  const resetTastings = useCallback(() => {
+    setTastings([])
+    localStorage.removeItem(STORAGE_KEY)
+  }, [])
+
   return {
     tastings,
     isLoaded,
@@ -206,5 +211,6 @@ export function useTastings() {
     deleteTasting,
     listTastings,
     makeCaveWineRef,
+    resetTastings,
   }
 }

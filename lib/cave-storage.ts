@@ -9,6 +9,7 @@ export const CAVE_STORAGE_KEYS = {
   wineEnrichments: "cave-wine-enrichments",
   tastings: "cave-tastings",
   activeCaveId: "cave-active-cave-id",
+  offlineCache: "cave-offline-cache",
 } as const
 
 // Clé de migration — séparée de CAVE_STORAGE_KEYS intentionnellement :
