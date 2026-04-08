@@ -17,7 +17,9 @@ import { Badge } from "@/components/ui/badge"
 import { useCaves } from "@/hooks/use-caves"
 import { clearAllStockOverrides, useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
-import { clearAllLocalCaveData } from "@/lib/cave-storage"
+import { clearAllLocalCaveData, MIGRATION_DONE_KEY } from "@/lib/cave-storage"
+import { useTastings } from "@/hooks/use-tastings"
+import { useWineEnrichment } from "@/hooks/use-wine-enrichment"
 
 const ICON_MAP: Record<string, LucideIcon> = { Camera, Globe, Layers }
 
@@ -34,8 +36,10 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
   const [authOpen, setAuthOpen] = useState(false)
   const [caveManagerOpen, setCaveManagerOpen] = useState(false)
   const { user, signOut } = useAuth()
-  const { caves } = useCaves()
+  const { caves, resetActiveCave } = useCaves()
   const { getOverrideForWine } = useStockOverrides()
+  const { resetTastings } = useTastings()
+  const { resetEnrichments } = useWineEnrichment()
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [signOutError, setSignOutError] = useState<string | null>(null)
 
@@ -56,12 +60,21 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
   )
 
   const handleReset = useCallback(async () => {
+    // 1. Effacer toutes les clés localStorage métier (inclut cave-offline-cache)
     clearAllLocalCaveData()
+    localStorage.removeItem(MIGRATION_DONE_KEY)
+
+    // 2. Réinitialiser l'état mémoire React de chaque hook
     clearAllStockOverrides()
+    resetTastings()
+    resetEnrichments()
+    resetActiveCave()
+
+    // 3. Nettoyage via le handler parent
     await onClear()
     setShowConfirm(false)
     window.location.reload()
-  }, [onClear])
+  }, [onClear, resetTastings, resetEnrichments, resetActiveCave])
 
   const handleSignOut = useCallback(async () => {
     setIsSigningOut(true)
@@ -234,9 +247,18 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
             </button>
           ) : (
             <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
-              <p className="text-sm text-foreground">
-                Etes-vous sur ? Cette action supprimera toutes les donnees de votre cave.
+              <p className="text-sm font-medium text-foreground">
+                Réinitialiser ma cave ?
               </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Cette action effacera définitivement toutes vos données locales :
+              </p>
+              <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+                <li>• Vins importés et vins manuels</li>
+                <li>• Dégustations et notes</li>
+                <li>• Overrides de stock</li>
+                <li>• Cache d&apos;enrichissements</li>
+              </ul>
               <div className="mt-3 flex gap-3">
                 <button
                   onClick={handleReset}

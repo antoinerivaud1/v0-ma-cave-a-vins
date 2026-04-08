@@ -160,5 +160,10 @@ export function useCaves() {
     [caves, activeCaveId, user]
   )
 
-  return { caves, activeCaveId, loading, createCave, renameCave, deleteCave, setActiveCave }
+  const resetActiveCave = useCallback(() => {
+    setActiveCaveId(null)
+    localStorage.removeItem(ACTIVE_CAVE_KEY)
+  }, [])
+
+  return { caves, activeCaveId, loading, createCave, renameCave, deleteCave, setActiveCave, resetActiveCave }
 }
