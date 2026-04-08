@@ -30,7 +30,6 @@ import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { clearAllLocalCaveData, MIGRATION_DONE_KEY } from "@/lib/cave-storage"
 import { useTastings } from "@/hooks/use-tastings"
 import { useWineEnrichment } from "@/hooks/use-wine-enrichment"
-import { createClient } from "@/lib/supabase/client"
 
 const ICON_MAP: Record<string, LucideIcon> = { Camera, Globe, Layers }
 
@@ -77,28 +76,12 @@ export function Settings({ cave, lastUpdated, onImport }: SettingsProps) {
     setResetError(null)
 
     try {
-      const supabase = createClient()
-
-      // 1. Supprimer les données cloud (stock_overrides peut ne pas exister — ignoré)
-      await supabase.from("stock_overrides").delete().eq("user_id", user.id)
-
-      const { error: tastingError } = await supabase
-        .from("tastings")
-        .delete()
-        .eq("user_id", user.id)
-      if (tastingError) throw tastingError
-
-      const { error: wineError } = await supabase
-        .from("wines")
-        .delete()
-        .eq("user_id", user.id)
-      if (wineError) throw wineError
-
-      const { error: caveError } = await supabase
-        .from("caves")
-        .delete()
-        .eq("user_id", user.id)
-      if (caveError) throw caveError
+      // 1. Supprimer les données cloud via API serveur (service role — contourne RLS)
+      const res = await fetch("/api/reset-user", { method: "POST" })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error ?? `Erreur serveur (${res.status})`)
+      }
 
       // 2. Effacer toutes les clés localStorage métier (inclut cave-offline-cache)
       clearAllLocalCaveData()
@@ -114,7 +97,8 @@ export function Settings({ cave, lastUpdated, onImport }: SettingsProps) {
       window.location.reload()
     } catch (err) {
       console.error("[settings] Reset failed:", err)
-      setResetError("La suppression a échoué. Veuillez réessayer.")
+      const message = err instanceof Error ? err.message : "La suppression a échoué."
+      setResetError(message)
     } finally {
       setIsResetting(false)
     }
