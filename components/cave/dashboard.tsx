@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Wine, GlassWater, Sparkles, Clock, Plus, Lightbulb, Sparkle, ChevronRight, Minus, Camera, PenLine, X } from "lucide-react"
+import { Wine, GlassWater, Sparkles, Clock, Plus, Lightbulb, Sparkle, ChevronRight, ChevronDown, Minus, Camera, PenLine, X } from "lucide-react"
 import { CaveBadge } from "./cave-badge"
 import { AddWineSheet } from "./add-wine-sheet"
 import { ScanLabelSheet } from "./scan-label-sheet"
@@ -15,11 +15,14 @@ import { sanitizeWineName } from "@/lib/wine-helpers"
 import type { Wine as WineType } from "@/data/apogee"
 import type { TabId } from "./bottom-nav"
 import type { CaveListProps } from "./cave-list"
+import type { Cave } from "@/hooks/use-caves"
 
 interface DashboardProps {
   cave: WineType[]
   onNavigate: (tab: TabId, filter?: CaveListProps["initialFilter"]) => void
   onAddWine: (wine: WineType) => void
+  activeCave?: Cave | null
+  caveCount?: number
 }
 
 function getGreeting(firstName?: string): string {
@@ -28,7 +31,7 @@ function getGreeting(firstName?: string): string {
   return firstName ? `${salut}, ${firstName} !` : `${salut} !`
 }
 
-export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
+export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount }: DashboardProps) {
   const [showAddSheet, setShowAddSheet] = useState(false)
   const [showScanSheet, setShowScanSheet] = useState(false)
   const [fabOpen, setFabOpen] = useState(false)
@@ -79,6 +82,18 @@ export function Dashboard({ cave, onNavigate, onAddWine }: DashboardProps) {
           </div>
         )}
       </div>
+
+      {/* Nom de la cave active */}
+      {activeCave && (caveCount ?? 0) > 0 && (
+        <div className="flex items-center gap-1 px-4 pb-1">
+          <span className="text-sm text-muted-foreground">
+            {sanitizeWineName(activeCave.name)}
+          </span>
+          {(caveCount ?? 0) >= 2 && (
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
+        </div>
+      )}
 
       {/* Tip du jour */}
       <div className="mx-4 mt-4 rounded-xl border border-cave-border bg-card overflow-hidden">
