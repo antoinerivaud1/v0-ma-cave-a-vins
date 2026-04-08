@@ -165,5 +165,7 @@ export function useCaves() {
     localStorage.removeItem(ACTIVE_CAVE_KEY)
   }, [])
 
-  return { caves, activeCaveId, loading, createCave, renameCave, deleteCave, setActiveCave, resetActiveCave }
+  const activeCave = caves.find((c) => c.id === activeCaveId) ?? null
+
+  return { caves, activeCave, activeCaveId, loading, createCave, renameCave, deleteCave, setActiveCave, resetActiveCave }
 }

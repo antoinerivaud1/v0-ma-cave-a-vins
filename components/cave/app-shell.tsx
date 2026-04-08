@@ -10,7 +10,7 @@ import { WineMoveSheet } from "./wine-move-sheet"
 import { TastingScreen } from "./tasting-screen"
 import { Suggest } from "./suggest"
 import { Settings } from "./settings"
-import { useCaves } from "@/hooks/use-caves"
+import type { Cave } from "@/hooks/use-caves"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { sanitizeWineName } from "@/lib/wine-helpers"
 import type { Wine } from "@/data/apogee"
@@ -33,17 +33,18 @@ interface AppShellProps {
   onClear: () => void | Promise<void>
   onAddWine: (wine: Wine) => void
   onReload?: () => void | Promise<void>
+  activeCave: Cave | null
+  caveCount: number
 }
 
-export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear, onAddWine, onReload }: AppShellProps) {
+export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear, onAddWine, onReload, activeCave, caveCount }: AppShellProps) {
   const [activeTab, setActiveTab] = useState<TabId>("cave")
   const [listFilter, setListFilter] = useState<CaveListProps["initialFilter"]>(undefined)
   const [selectedWine, setSelectedWine] = useState<Wine | null>(null)
   const [moveSheetOpen, setMoveSheetOpen] = useState(false)
   const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
-  const { caves } = useCaves()
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
-  const canMoveSelectedWine = !!selectedWine?.id && caves.length > 1
+  const canMoveSelectedWine = !!selectedWine?.id && caveCount > 1
 
   const navigateTo = useCallback((tab: TabId, filter?: CaveListProps["initialFilter"]) => {
     setListFilter(tab === "liste" ? filter : undefined)
@@ -60,7 +61,7 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
           📶 Mode hors ligne — données mises en cache — les modifications sont désactivées
         </div>
       )}
-      {activeTab === "cave" && <Dashboard cave={cave} onNavigate={navigateTo} onAddWine={onAddWine} />}
+      {activeTab === "cave" && <Dashboard cave={cave} onNavigate={navigateTo} onAddWine={onAddWine} activeCave={activeCave} caveCount={caveCount} />}
       {activeTab === "carnet" && <TastingScreen />}
       {activeTab === "liste" && <CaveList cave={cave} initialFilter={listFilter} onAddWine={onAddWine} onWineSelect={setSelectedWine} />}
       {activeTab === "accords" && <Suggest cave={cave} />}
