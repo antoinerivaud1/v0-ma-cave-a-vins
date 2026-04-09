@@ -7,10 +7,12 @@ import { CaveList } from "./cave-list"
 import type { CaveListProps } from "./cave-list"
 import { WineDetailSheet } from "./wine-detail-sheet"
 import { WineMoveSheet } from "./wine-move-sheet"
+import { CaveSwitchSheet } from "./cave-switch-sheet"
 import { TastingScreen } from "./tasting-screen"
 import { Suggest } from "./suggest"
 import { Settings } from "./settings"
 import type { Cave } from "@/hooks/use-caves"
+import { useAuth } from "@/hooks/use-auth"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { sanitizeWineName } from "@/lib/wine-helpers"
 import type { Wine } from "@/data/apogee"
@@ -35,15 +37,21 @@ interface AppShellProps {
   onReload?: () => void | Promise<void>
   activeCave: Cave | null
   caveCount: number
+  caves: Cave[]
+  activeCaveId: string | null
+  setActiveCave: (id: string) => Promise<void>
 }
 
-export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear, onAddWine, onReload, activeCave, caveCount }: AppShellProps) {
+export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear, onAddWine, onReload, activeCave, caveCount, caves, activeCaveId, setActiveCave }: AppShellProps) {
   const [activeTab, setActiveTab] = useState<TabId>("cave")
   const [listFilter, setListFilter] = useState<CaveListProps["initialFilter"]>(undefined)
   const [selectedWine, setSelectedWine] = useState<Wine | null>(null)
   const [moveSheetOpen, setMoveSheetOpen] = useState(false)
   const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
+  const [caveSwitchOpen, setCaveSwitchOpen] = useState(false)
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
+  const { plan } = useAuth()
+  const isPremium = plan !== "free"
   const canMoveSelectedWine = !!selectedWine?.id && caveCount > 1
 
   const navigateTo = useCallback((tab: TabId, filter?: CaveListProps["initialFilter"]) => {
@@ -61,7 +69,16 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
           📶 Mode hors ligne — données mises en cache — les modifications sont désactivées
         </div>
       )}
-      {activeTab === "cave" && <Dashboard cave={cave} onNavigate={navigateTo} onAddWine={onAddWine} activeCave={activeCave} caveCount={caveCount} />}
+      {activeTab === "cave" && (
+        <Dashboard
+          cave={cave}
+          onNavigate={navigateTo}
+          onAddWine={onAddWine}
+          activeCave={activeCave}
+          caveCount={caveCount}
+          onCaveSwitch={isPremium ? () => setCaveSwitchOpen(true) : undefined}
+        />
+      )}
       {activeTab === "carnet" && <TastingScreen />}
       {activeTab === "liste" && <CaveList cave={cave} initialFilter={listFilter} onAddWine={onAddWine} onWineSelect={setSelectedWine} />}
       {activeTab === "accords" && <Suggest cave={cave} />}
@@ -157,6 +174,16 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
           }}
         />
       )}
+
+      <CaveSwitchSheet
+        open={caveSwitchOpen}
+        onOpenChange={setCaveSwitchOpen}
+        caves={caves}
+        activeCaveId={activeCaveId}
+        onSelectCave={(id) => {
+          void setActiveCave(id)
+        }}
+      />
     </div>
   )
 }

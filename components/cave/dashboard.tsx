@@ -23,6 +23,7 @@ interface DashboardProps {
   onAddWine: (wine: WineType) => void
   activeCave?: Cave | null
   caveCount?: number
+  onCaveSwitch?: () => void
 }
 
 function getGreeting(firstName?: string): string {
@@ -31,7 +32,7 @@ function getGreeting(firstName?: string): string {
   return firstName ? `${salut}, ${firstName} !` : `${salut} !`
 }
 
-export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount }: DashboardProps) {
+export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, onCaveSwitch }: DashboardProps) {
   const [showAddSheet, setShowAddSheet] = useState(false)
   const [showScanSheet, setShowScanSheet] = useState(false)
   const [fabOpen, setFabOpen] = useState(false)
@@ -85,12 +86,19 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount }
 
       {/* Nom de la cave active */}
       {activeCave && (caveCount ?? 0) > 0 && (
-        <div className="flex items-center gap-1 px-4 pb-1">
-          <span className="text-sm text-muted-foreground">
-            {sanitizeWineName(activeCave.name)}
-          </span>
-          {(caveCount ?? 0) >= 2 && (
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+        <div className="px-4 pb-1">
+          {(caveCount ?? 0) >= 2 && onCaveSwitch ? (
+            <button
+              onClick={onCaveSwitch}
+              className="flex items-center gap-1 text-sm text-muted-foreground"
+            >
+              {sanitizeWineName(activeCave.name)}
+              <ChevronDown className="h-3 w-3" />
+            </button>
+          ) : (
+            <span className="text-sm text-muted-foreground">
+              {sanitizeWineName(activeCave.name)}
+            </span>
           )}
         </div>
       )}
