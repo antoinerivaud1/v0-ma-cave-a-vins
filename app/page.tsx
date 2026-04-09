@@ -1,5 +1,5 @@
 "use client"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useCloudCave } from "@/hooks/use-cloud-cave"
 import { useAuth } from "@/hooks/use-auth"
 import { useCaves } from "@/hooks/use-caves"
@@ -10,7 +10,14 @@ import type { Wine } from "@/data/apogee"
 
 export default function Page() {
   const { user, loading: authLoading } = useAuth()
-  const { activeCave, caves, activeCaveId, setActiveCave } = useCaves()
+  const {
+    activeCave,
+    caves,
+    activeCaveId,
+    loading: cavesLoading,
+    createCave,
+    setActiveCave,
+  } = useCaves()
   const {
     cave,
     importWines,
@@ -20,8 +27,17 @@ export default function Page() {
     isOfflineCache,
     addWine,
     reloadCave,
-  } = useCloudCave()
+  } = useCloudCave(activeCaveId)
   const [authSheetOpen, setAuthSheetOpen] = useState(false)
+
+  // Create a default cave for new users who have none
+  useEffect(() => {
+    if (authLoading || cavesLoading) return
+    if (!user || caves.length > 0) return
+    createCave("Ma Cave").then((newCave) => {
+      if (newCave) void setActiveCave(newCave.id)
+    })
+  }, [authLoading, cavesLoading, user, caves.length, createCave, setActiveCave])
 
   const handleImport = useCallback(
     (data: Wine[]) => {
