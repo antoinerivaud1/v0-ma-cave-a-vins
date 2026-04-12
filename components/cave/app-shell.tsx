@@ -80,7 +80,7 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
         />
       )}
       {activeTab === "carnet" && <TastingScreen />}
-      {activeTab === "liste" && <CaveList cave={cave} initialFilter={listFilter} onAddWine={onAddWine} onWineSelect={setSelectedWine} />}
+      {activeTab === "liste" && <CaveList cave={cave} initialFilter={listFilter} onAddWine={onAddWine} onWineSelect={setSelectedWine} onWineMove={onReload} />}
       {activeTab === "accords" && <Suggest cave={cave} />}
       {activeTab === "reglages" && (
         <Settings

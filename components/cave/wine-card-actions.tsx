@@ -60,7 +60,7 @@ export function WineCardActions({
   wineCaveId,
   onMoved,
 }: WineCardActionsProps) {
-  const { user } = useAuth()
+  const { user, plan } = useAuth()
   const { caves } = useCaves()
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -69,7 +69,8 @@ export function WineCardActions({
   const [showSearchSheet, setShowSearchSheet] = useState(false)
   const [showMoveSheet, setShowMoveSheet] = useState(false)
 
-  const canMove = !!user && !!wineId && caves.length > 1 && !isArchived
+  const isCollector = plan === "premium"
+  const canMove = !!user && isCollector && !!wineId && !!wineCaveId && caves.length > 1 && !isArchived
 
   const handleQuantitySave = () => {
     const qty = Math.max(0, parseInt(tempQuantity) || 0)

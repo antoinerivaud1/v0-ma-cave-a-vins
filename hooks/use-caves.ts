@@ -165,7 +165,21 @@ export function useCaves() {
     localStorage.removeItem(ACTIVE_CAVE_KEY)
   }, [])
 
+  const moveWine = useCallback(
+    async (wineId: string, targetCaveId: string): Promise<void> => {
+      if (!user) throw new Error("Non authentifié")
+      const supabase = createClient()
+      const { error } = await supabase
+        .from("wines")
+        .update({ cave_id: targetCaveId })
+        .eq("id", wineId)
+        .eq("user_id", user.id)
+      if (error) throw error
+    },
+    [user]
+  )
+
   const activeCave = caves.find((c) => c.id === activeCaveId) ?? null
 
-  return { caves, activeCave, activeCaveId, loading, createCave, renameCave, deleteCave, setActiveCave, resetActiveCave }
+  return { caves, activeCave, activeCaveId, loading, createCave, renameCave, deleteCave, setActiveCave, resetActiveCave, moveWine }
 }

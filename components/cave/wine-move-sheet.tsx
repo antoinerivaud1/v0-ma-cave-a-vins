@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 import {
   Sheet,
   SheetContent,
@@ -10,9 +11,9 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
-import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/hooks/use-auth"
 import { useCaves } from "@/hooks/use-caves"
+import { sanitizeWineName } from "@/lib/wine-helpers"
 
 export interface SupabaseWine {
   id: string
@@ -30,7 +31,7 @@ interface WineMoveSheetProps {
 
 export function WineMoveSheet({ wine, open, onOpenChange, onMoved }: WineMoveSheetProps) {
   const { user } = useAuth()
-  const { caves, activeCaveId } = useCaves()
+  const { caves, activeCaveId, moveWine } = useCaves()
   const [movingTo, setMovingTo] = useState<string | null>(null)
 
   const availableCaves = caves.filter((c) => c.id !== wine.cave_id)
@@ -40,14 +41,15 @@ export function WineMoveSheet({ wine, open, onOpenChange, onMoved }: WineMoveShe
     if (movingTo) return
     setMovingTo(targetCaveId)
     try {
-      const supabase = createClient()
-      await supabase
-        .from("wines")
-        .update({ cave_id: targetCaveId })
-        .eq("id", wine.id)
-        .eq("user_id", user.id)
+      await moveWine(wine.id, targetCaveId)
+      const targetCave = caves.find((c) => c.id === targetCaveId)
+      toast.success(
+        `${sanitizeWineName(wine.name) || "Vin"} déplacé vers ${sanitizeWineName(targetCave?.name ?? "") || "la cave"}`
+      )
       onMoved()
       onOpenChange(false)
+    } catch {
+      toast.error("Erreur lors du déplacement. Veuillez réessayer.")
     } finally {
       setMovingTo(null)
     }
@@ -94,13 +96,15 @@ export function WineMoveSheet({ wine, open, onOpenChange, onMoved }: WineMoveShe
                 <span
                   className={`h-2.5 w-2.5 shrink-0 rounded-full ${
                     isActive
-                      ? "bg-[#722F37]"
+                      ? "bg-cave-bordeaux"
                       : "border border-muted-foreground/30 bg-transparent"
                   }`}
                 />
-                <span className="flex-1 text-sm font-medium text-foreground">{cave.name}</span>
+                <span className="flex-1 text-sm font-medium text-foreground">
+                  {sanitizeWineName(cave.name)}
+                </span>
                 {isActive && (
-                  <span className="text-xs text-[#722F37]">Active</span>
+                  <span className="text-xs text-cave-bordeaux">Active</span>
                 )}
                 {isMoving && (
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -115,11 +119,11 @@ export function WineMoveSheet({ wine, open, onOpenChange, onMoved }: WineMoveShe
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-0">
+      <SheetContent side="bottom" className="max-h-[90dvh] flex flex-col rounded-t-2xl px-0 pb-0 z-[60]">
         <SheetHeader className="px-5 pb-3">
           <SheetTitle className="font-serif text-lg">Déplacer vers...</SheetTitle>
           <SheetDescription className="text-sm text-muted-foreground">
-            {wine.name}
+            {sanitizeWineName(wine.name) || "Vin"}
             {wine.vintage ? ` · ${wine.vintage}` : ""}
           </SheetDescription>
         </SheetHeader>
@@ -127,7 +131,7 @@ export function WineMoveSheet({ wine, open, onOpenChange, onMoved }: WineMoveShe
         <Separator />
 
         <div
-          className="max-h-[60vh] overflow-y-auto"
+          className="overflow-y-auto flex-1"
           style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
         >
           {renderContent()}

@@ -27,6 +27,7 @@ import {
 interface WineCardProps {
   wine: Wine
   onWineUpdate?: (updates: Partial<Wine>) => void
+  onMoved?: () => void
 }
 
 const colorDotClasses: Record<string, string> = {
@@ -43,7 +44,7 @@ const colorBadgeVariant: Record<string, "gold" | "muted"> = {
   unknown: "muted",
 }
 
-export function WineCard({ wine, onWineUpdate }: WineCardProps) {
+export function WineCard({ wine, onWineUpdate, onMoved }: WineCardProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
@@ -184,6 +185,9 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
           onArchive={handleArchive}
           onRestore={handleRestore}
           onDelete={handleDelete}
+          wineId={wine.id}
+          wineCaveId={wine.cave_id}
+          onMoved={onMoved}
         />
       </div>
 
