@@ -10,6 +10,10 @@ export interface AuthContextValue {
   session: Session | null
   loading: boolean
   plan: UserPlan
+  /** Valeur brute du champ plan en base (ex: "free", "amateur", "collector") */
+  rawPlan: string
+  /** Valeur brute du champ role en base (ex: "user", "beta", "admin") */
+  role: string | null
   signIn: (email: string, password: string) => Promise<string | null>
   signUp: (email: string, password: string, firstName: string) => Promise<string | null>
   signOut: () => Promise<void>
