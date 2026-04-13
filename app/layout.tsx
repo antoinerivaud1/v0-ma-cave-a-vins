@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Inter, Cormorant_Garamond } from "next/font/google"
+import localFont from "next/font/local"
 import { Analytics } from "@vercel/analytics/next"
 import { cookies } from "next/headers"
 import { createServerClient } from "@supabase/ssr"
@@ -7,14 +7,19 @@ import { AuthProvider } from "@/components/providers/auth-provider"
 import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
-const inter = Inter({
-  subsets: ["latin"],
+const inter = localFont({
+  src: "../public/fonts/inter-latin-wght-normal.woff2",
   variable: "--font-inter",
+  weight: "100 900",
 })
 
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const cormorant = localFont({
+  src: [
+    { path: "../public/fonts/cormorant-garamond-latin-400-normal.woff2", weight: "400" },
+    { path: "../public/fonts/cormorant-garamond-latin-500-normal.woff2", weight: "500" },
+    { path: "../public/fonts/cormorant-garamond-latin-600-normal.woff2", weight: "600" },
+    { path: "../public/fonts/cormorant-garamond-latin-700-normal.woff2", weight: "700" },
+  ],
   variable: "--font-cormorant",
 })
 
