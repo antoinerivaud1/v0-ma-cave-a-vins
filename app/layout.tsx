@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { cookies } from "next/headers"
 import { createServerClient } from "@supabase/ssr"
 import { AuthProvider } from "@/components/providers/auth-provider"
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
 const inter = Inter({
@@ -83,6 +84,7 @@ export default async function RootLayout({
       <body className={`${inter.variable} ${cormorant.variable} font-sans antialiased`}>
         <AuthProvider initialUser={user}>
           {children}
+          <Toaster />
         </AuthProvider>
         <Analytics />
       </body>
