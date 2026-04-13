@@ -15,7 +15,7 @@ export interface ScanLabelResult {
 }
 
 const client = new Anthropic()
-const MAX_IMAGE_BASE64_LENGTH = 6_000_000
+const MAX_IMAGE_BASE64_LENGTH = 10_000_000
 const allowedMediaTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const
 
 const requestSchema = z.object({
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     console.error("[scan-label] Request failed:", error)
     return NextResponse.json(
-      { error: "Erreur interne" },
+      { error: "Erreur analyse image" },
       { status: 500 }
     )
   }

@@ -22,13 +22,11 @@ export interface WineEnrichment {
 }
 
 const client = new Anthropic()
-const MAX_TEXT_LENGTH = 160
-
 const requestSchema = z.object({
-  wineName: z.string().trim().min(1).max(MAX_TEXT_LENGTH),
-  millesime: z.union([z.string(), z.number()]).nullish(),
-  region: z.string().trim().max(MAX_TEXT_LENGTH).nullish(),
-  appellation: z.string().trim().max(MAX_TEXT_LENGTH).nullish(),
+  wineName: z.string().trim().min(1).max(200),
+  millesime: z.union([z.string().max(4), z.number().int().min(0).max(9999)]).nullish(),
+  region: z.string().trim().max(100).nullish(),
+  appellation: z.string().trim().max(100).nullish(),
 })
 
 const responseSchema = z.object({
@@ -171,6 +169,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(enrichment)
   } catch (error: unknown) {
     console.error("[enrich-wine] Request failed:", error)
-    return NextResponse.json({ error: "Erreur interne" }, { status: 500 })
+    return NextResponse.json({ error: "Erreur enrichissement" }, { status: 500 })
   }
 }

@@ -50,8 +50,7 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
   const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
   const [caveSwitchOpen, setCaveSwitchOpen] = useState(false)
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
-  const { plan } = useAuth()
-  const isPremium = plan !== "free"
+  const { isPremium } = useAuth()
   const canMoveSelectedWine = !!selectedWine?.id && caveCount > 1
 
   const navigateTo = useCallback((tab: TabId, filter?: CaveListProps["initialFilter"]) => {
