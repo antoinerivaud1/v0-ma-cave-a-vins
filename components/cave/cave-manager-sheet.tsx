@@ -41,10 +41,10 @@ interface CaveManagerSheetProps {
 }
 
 export function CaveManagerSheet({ open, onOpenChange }: CaveManagerSheetProps) {
-  const { user, plan } = useAuth()
+  const { user, isPremium } = useAuth()
   const { caves, activeCaveId, createCave, renameCave, deleteCave, setActiveCave } = useCaves()
 
-  const isPremiumGated = plan === "free" && caves.length >= 1
+  const isPremiumGated = !isPremium && caves.length >= 1
 
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState("")

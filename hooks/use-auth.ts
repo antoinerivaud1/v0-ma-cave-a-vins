@@ -22,8 +22,13 @@ export interface AuthContextValue {
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
-export function useAuth(): AuthContextValue {
+export function useAuth(): AuthContextValue & { isPremium: boolean } {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>")
-  return ctx
+  const isPremium =
+    ctx.rawPlan === "amateur" ||
+    ctx.rawPlan === "collector" ||
+    ctx.role === "admin" ||
+    ctx.role === "beta"
+  return { ...ctx, isPremium }
 }
