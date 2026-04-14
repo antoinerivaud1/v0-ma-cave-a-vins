@@ -138,18 +138,22 @@ Doit toujours recevoir `wineName` en prop. Sans ça, "Trouver en ligne" → "Vin
 
 ---
 
-## 🔐 Freemium — Gates
+## Plan freemium — 3 tiers
 
-```typescript
-// Depuis use-auth.ts
-const { isPremium } = useAuth()
-// isPremium = plan === 'premium' || role === 'beta' || role === 'admin'
-
-// Plans : 'free' | 'amateur' | 'collector'
-// Roles : 'user' | 'beta' | 'admin'
+```
+isPremium = plan === 'premium' || role === 'beta' || role === 'admin'
 ```
 
-Ne jamais dupliquer la logique isPremium. Toujours importer depuis use-auth.ts.
+| Feature | Gratuit | Amateur 3,49€/mois | Collectionneur 6,99€/mois |
+|---|---|---|---|
+| Bouteilles | 50 max | Illimité | Illimité |
+| Caves | 1 | 1 | Multi-cave |
+| Scan IA | ❌ | ✅ | ✅ |
+| Enrichissement IA | ❌ | ✅ | ✅ |
+| Profil dégustation | ✅ (statique) | ✅ (IA) | ✅ (IA précis) |
+| Fiche vin enrichie complète | ❌ | ❌ | ✅ |
+| Export CSV | ❌ | ✅ | ✅ |
+| Export PDF + stats avancées | ❌ | ❌ | ✅ |
 
 ---
 
@@ -166,6 +170,26 @@ if (!user) return null
 ```
 - Variables d'env : modifier uniquement via le dashboard Vercel (pas via MCP)
 - `NEXT_PUBLIC_` sur les clés Supabase → warning Vercel normal, ignorer
+
+---
+
+## Pattern auth Supabase — obligatoire
+
+Ne jamais court-circuiter avec `if (!userId) return []` sans vérifier que `loading` est false.
+
+Pattern correct :
+```typescript
+const { user, loading } = useAuth()
+if (loading) return <Skeleton />
+if (!user) return null
+// suite du composant
+```
+
+Pattern incorrect (provoque des bugs de race condition) :
+```typescript
+const { user } = useAuth()
+if (!user) return [] // FAUX — loading non vérifié
+```
 
 ---
 
