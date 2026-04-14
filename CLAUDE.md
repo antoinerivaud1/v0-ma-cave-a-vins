@@ -122,20 +122,42 @@ RLS obligatoire sur toutes les tables : `user_id = auth.uid()`
 
 ---
 
-## Plan freemium
+## Pattern auth Supabase — obligatoire
+
+Ne jamais court-circuiter avec `if (!userId) return []` sans vérifier que `loading` est false.
+
+Pattern correct :
+```typescript
+const { user, loading } = useAuth()
+if (loading) return <Skeleton />
+if (!user) return null
+// suite du composant
+```
+
+Pattern incorrect (provoque des bugs de race condition) :
+```typescript
+const { user } = useAuth()
+if (!user) return [] // FAUX — loading non vérifié
+```
+
+---
+
+## Plan freemium — 3 tiers
 
 ```
 isPremium = plan === 'premium' || role === 'beta' || role === 'admin'
 ```
 
-| Feature | Gratuit | Collectionneur (3,49€/mois) |
-|---|---|---|
-| Cave | 20 vins max | Illimitée |
-| Scan étiquette IA | 3/mois | Illimité |
-| Enrichissement IA | ❌ | ✅ |
-| Multi-cave | ❌ | ✅ |
-| Export cave | ❌ | ✅ |
-| Profil dégustation | ✅ (statique) | ✅ (IA précis) |
+| Feature | Gratuit | Amateur 3,49€/mois | Collectionneur 6,99€/mois |
+|---|---|---|---|
+| Bouteilles | 50 max | Illimité | Illimité |
+| Caves | 1 | 1 | Multi-cave |
+| Scan IA | ❌ | ✅ | ✅ |
+| Enrichissement IA | ❌ | ✅ | ✅ |
+| Profil dégustation | ✅ (statique) | ✅ (IA) | ✅ (IA précis) |
+| Fiche vin enrichie complète | ❌ | ❌ | ✅ |
+| Export CSV | ❌ | ✅ | ✅ |
+| Export PDF + stats avancées | ❌ | ❌ | ✅ |
 
 ---
 
