@@ -37,6 +37,25 @@
   --cave-card: #1a0e06;
   --cave-border: #2a1a0e;
   --cave-bordeaux: #722F37;
+  /* Wine type color palette */
+  --cave-terracotta: #c0664a;
+  --cave-rouge-noir: #1a0505;
+  --cave-rouge-sombre: #3a0f0f;
+  --cave-rouge-profond: #5c1a1a;
+  --cave-rouge-vif: #7a2020;
+  --cave-blanc-noir: #1a1800;
+  --cave-blanc-sombre: #2a2810;
+  --cave-blanc-profond: #3a3410;
+  --cave-blanc-moyen: #6b6020;
+  --cave-blanc-dore: #7a7020;
+  --cave-rose-noir: #1a0510;
+  --cave-rose-sombre: #3a1018;
+  --cave-rose-profond: #5a1030;
+  --cave-rose-medium: #7a2035;
+  --cave-rose-vif: #b05070;
+  --cave-bulles-noir: #0a1a2a;
+  --cave-bulles-profond: #1a3a5a;
+  --cave-bulles-vif: #2a5a8a;
 }
 
 @theme inline {
@@ -74,6 +93,25 @@
   --color-cave-card: var(--cave-card);
   --color-cave-border: var(--cave-border);
   --color-cave-bordeaux: var(--cave-bordeaux);
+  /* Wine type color palette */
+  --color-cave-terracotta: var(--cave-terracotta);
+  --color-cave-rouge-noir: var(--cave-rouge-noir);
+  --color-cave-rouge-sombre: var(--cave-rouge-sombre);
+  --color-cave-rouge-profond: var(--cave-rouge-profond);
+  --color-cave-rouge-vif: var(--cave-rouge-vif);
+  --color-cave-blanc-noir: var(--cave-blanc-noir);
+  --color-cave-blanc-sombre: var(--cave-blanc-sombre);
+  --color-cave-blanc-profond: var(--cave-blanc-profond);
+  --color-cave-blanc-moyen: var(--cave-blanc-moyen);
+  --color-cave-blanc-dore: var(--cave-blanc-dore);
+  --color-cave-rose-noir: var(--cave-rose-noir);
+  --color-cave-rose-sombre: var(--cave-rose-sombre);
+  --color-cave-rose-profond: var(--cave-rose-profond);
+  --color-cave-rose-medium: var(--cave-rose-medium);
+  --color-cave-rose-vif: var(--cave-rose-vif);
+  --color-cave-bulles-noir: var(--cave-bulles-noir);
+  --color-cave-bulles-profond: var(--cave-bulles-profond);
+  --color-cave-bulles-vif: var(--cave-bulles-vif);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

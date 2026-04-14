@@ -4,8 +4,7 @@ import { useEffect, useState, useCallback } from "react"
 import { X, Star } from "lucide-react"
 import { sanitizeWineName } from "@/lib/wine-helpers"
 import { WineBottleThumb } from "@/components/cave/wine-bottle-thumb"
-import type { Wine } from "@/data/apogee"
-import type { WineEnrichment } from "@/app/api/enrich-wine/route"
+import type { Wine, WineEnrichment } from "@/data/apogee"
 import { getApogee } from "@/data/apogee"
 
 interface WineDetailSheetProps {
@@ -45,7 +44,7 @@ function TasteBar({ label, oppositeLabel, value }: { label: string; oppositeLabe
       <span className="text-xs text-gray-400 w-14 text-right flex-shrink-0">{label}</span>
       <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-[#722F37] to-[#c0664a]"
+          className="h-full rounded-full bg-gradient-to-r from-cave-bordeaux to-cave-terracotta"
           style={{ width: `${value}%` }}
         />
       </div>
@@ -63,7 +62,7 @@ export function WineDetailSheet({
   actionsLabel = "⋯ Actions",
 }: WineDetailSheetProps) {
   const [enrichment, setEnrichment] = useState<WineEnrichment | null>(
-    (wine.enrichissement as WineEnrichment | null) ?? null
+    wine.enrichissement ?? null
   )
   const [isEnriching, setIsEnriching] = useState(false)
 
@@ -100,10 +99,10 @@ export function WineDetailSheet({
 
   const heroGradient =
     wine.wine_type === "wine_white" || wine.wine_type === "wine_white_sparkling"
-      ? "from-[#1a1800] via-[#3a3410] to-[#7a7020]"
+      ? "from-cave-blanc-noir via-cave-blanc-profond to-cave-blanc-dore"
       : wine.wine_type === "wine_rose"
-      ? "from-[#1a0510] via-[#5a1030] to-[#b05070]"
-      : "from-[#0d0404] via-[#3a0f0f] to-[#722F37]"
+      ? "from-cave-rose-noir via-cave-rose-profond to-cave-rose-vif"
+      : "from-cave-bg via-cave-rouge-sombre to-cave-bordeaux"
 
   const WINE_TYPE_LABELS: Record<string, string> = {
     wine_red: "Rouge",
@@ -196,7 +195,7 @@ export function WineDetailSheet({
               {isEnriching && !enrichment?.notes ? (
                 <SkeletonLine className="h-7 w-16 mx-auto mb-1" />
               ) : enrichment?.notes ? (
-                <div className="text-2xl font-black text-[#722F37]">{enrichment.notes}</div>
+                <div className="text-2xl font-black text-cave-bordeaux">{enrichment.notes}</div>
               ) : (
                 <div className="text-2xl font-black text-gray-200">—</div>
               )}
@@ -214,7 +213,7 @@ export function WineDetailSheet({
             </div>
             <div className="bg-gray-50 rounded-2xl p-3 text-center">
               {myRating != null ? (
-                <div className="text-2xl font-black text-[#722F37]">{myRating}/5</div>
+                <div className="text-2xl font-black text-cave-bordeaux">{myRating}/5</div>
               ) : (
                 <div className="text-2xl font-black text-gray-200">—</div>
               )}
@@ -292,7 +291,7 @@ export function WineDetailSheet({
               {enrichment?.prixMoyen && (
                 <div className="flex-1 bg-gray-50 rounded-2xl p-3">
                   <div className="text-xs text-gray-400 mb-1">Prix estimé</div>
-                  <div className="text-base font-black text-[#722F37]">{enrichment.prixMoyen}</div>
+                  <div className="text-base font-black text-cave-bordeaux">{enrichment.prixMoyen}</div>
                   <div className="text-xs text-gray-400">/ bouteille</div>
                 </div>
               )}
@@ -316,7 +315,7 @@ export function WineDetailSheet({
         </button>
         <button
           onClick={onConsume}
-          className="flex-[1.5] bg-[#722F37] rounded-2xl py-3.5 text-sm font-bold text-white"
+          className="flex-[1.5] bg-cave-bordeaux rounded-2xl py-3.5 text-sm font-bold text-white"
         >
           − Consommer
         </button>
