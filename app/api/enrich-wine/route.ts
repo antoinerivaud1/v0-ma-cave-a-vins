@@ -27,6 +27,7 @@ const requestSchema = z.object({
   millesime: z.union([z.string().max(4), z.number().int().min(0).max(9999)]).nullish(),
   region: z.string().trim().max(100).nullish(),
   appellation: z.string().trim().max(100).nullish(),
+  wineId: z.string().uuid().nullish(),
 })
 
 const responseSchema = z.object({
@@ -113,7 +114,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Payload invalide" }, { status: 400 })
     }
 
-    const { wineName, millesime, region, appellation } = payload.data
+    const { wineName, millesime, region, appellation, wineId } = payload.data
     const query = [
       wineName,
       millesime && `millésime ${millesime}`,
@@ -164,6 +165,60 @@ export async function POST(req: NextRequest) {
       ...enrichmentResult.data,
       enrichedAt: Date.now(),
       bottle_image_url: sanitizeImageUrl(enrichmentResult.data.bottle_image_url),
+    }
+
+    // Cache enrichissement dans wine_enrichments (best-effort — ne bloque pas la réponse)
+    if (wineId) {
+      let priceMin: number | null = null
+      let priceMax: number | null = null
+      if (enrichment.prixMoyen) {
+        const priceMatch = enrichment.prixMoyen.match(/(\d+)(?:[^\d]+(\d+))?/)
+        if (priceMatch) {
+          priceMin = parseInt(priceMatch[1], 10)
+          priceMax = priceMatch[2] ? parseInt(priceMatch[2], 10) : priceMin
+        }
+      }
+
+      let criticScore: number | null = null
+      if (enrichment.notes) {
+        const scoreMatch = enrichment.notes.match(/(\d{2,3})/)
+        if (scoreMatch) {
+          criticScore = parseInt(scoreMatch[1], 10)
+        }
+      }
+
+      const supabaseCache = await createServerSupabaseClient()
+      const { error: upsertError } = await supabaseCache
+        .from("wine_enrichments")
+        .upsert(
+          {
+            wine_id: wineId,
+            user_id: user.id,
+            description: enrichment.description || null,
+            grape_varieties: enrichment.cepages.map((name) => ({ name })),
+            taste_profile: enrichment.taste_profile
+              ? {
+                  body: enrichment.taste_profile.body,
+                  tannins: enrichment.taste_profile.tannin,
+                  acidity: enrichment.taste_profile.acidity,
+                  complexity: enrichment.taste_profile.complexity,
+                }
+              : null,
+            critic_score: criticScore,
+            price_min: priceMin,
+            price_max: priceMax,
+            apogee_start: enrichment.apogee?.debut ?? null,
+            apogee_end: enrichment.apogee?.fin ?? null,
+            bottle_image_url: enrichment.bottle_image_url,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "wine_id,user_id" }
+        )
+
+      if (upsertError) {
+        console.error("wine_enrichments upsert error:", upsertError)
+        // Ne pas faire échouer la réponse — le cache est best-effort
+      }
     }
 
     return NextResponse.json(enrichment)
