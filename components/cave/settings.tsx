@@ -29,7 +29,7 @@ import { clearAllStockOverrides, useStockOverrides } from "@/hooks/use-stock-ove
 import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { clearAllLocalCaveData, MIGRATION_DONE_KEY } from "@/lib/cave-storage"
 import { useTastings } from "@/hooks/use-tastings"
-import { useWineEnrichment } from "@/hooks/use-wine-enrichment"
+import { useWineEnrichmentLegacy } from "@/hooks/use-wine-enrichment"
 
 const ICON_MAP: Record<string, LucideIcon> = { Camera, Globe, Layers }
 
@@ -51,7 +51,7 @@ export function Settings({ cave, lastUpdated, onImport }: SettingsProps) {
   const { caves, resetActiveCave } = useCaves()
   const { getOverrideForWine } = useStockOverrides()
   const { resetTastings } = useTastings()
-  const { resetEnrichments } = useWineEnrichment()
+  const { resetEnrichments } = useWineEnrichmentLegacy()
   const [isSigningOut, setIsSigningOut] = useState(false)
 
   const totalBottles = cave.reduce((s, w) => {

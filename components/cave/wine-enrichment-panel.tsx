@@ -1,7 +1,7 @@
 "use client"
 
 import { Loader2, Sparkles, Euro, Star, ExternalLink } from "lucide-react"
-import type { WineEnrichment } from "@/hooks/use-wine-enrichment"
+import type { WineEnrichment } from "@/app/api/enrich-wine/route"
 
 interface WineEnrichmentPanelProps {
   enrichment: WineEnrichment | null
