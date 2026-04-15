@@ -9,7 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { REGIONS } from "@/data/regions"
-import { useWineEnrichment } from "@/hooks/use-wine-enrichment"
+import { useWineEnrichmentLegacy } from "@/hooks/use-wine-enrichment"
 import type { Wine } from "@/data/apogee"
 
 interface AddWineSheetProps {
@@ -27,7 +27,7 @@ const WINE_TYPES = [
 const CURRENT_YEAR = new Date().getFullYear()
 
 export function AddWineSheet({ isOpen, onOpenChange, onAdd }: AddWineSheetProps) {
-  const { enrichWine } = useWineEnrichment()
+  const { enrichWine } = useWineEnrichmentLegacy()
   const [name, setName] = useState("")
   const [type, setType] = useState("wine_red")
   const [millesime, setMillesime] = useState(String(CURRENT_YEAR - 3))

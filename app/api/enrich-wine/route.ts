@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import Anthropic from "@anthropic-ai/sdk"
 import { z } from "zod"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { sanitizeWineName } from "@/lib/wine-helpers"
 
 export interface WineEnrichment {
   description: string
@@ -22,12 +23,13 @@ export interface WineEnrichment {
 }
 
 const client = new Anthropic()
+
 const requestSchema = z.object({
-  wineName: z.string().trim().min(1).max(200),
+  wineName: z.string().trim().min(1).max(200).optional(),
   millesime: z.union([z.string().max(4), z.number().int().min(0).max(9999)]).nullish(),
   region: z.string().trim().max(100).nullish(),
   appellation: z.string().trim().max(100).nullish(),
-  wineId: z.string().uuid().nullish(),
+  wineId: z.string().uuid().optional(),
 })
 
 const responseSchema = z.object({
@@ -48,6 +50,9 @@ const responseSchema = z.object({
     acidity: z.number().min(0).max(100),
     complexity: z.number().min(0).max(100),
   }).nullable().default(null),
+  food_pairings: z.array(z.string()).nullable().default(null),
+  domaine_history: z.string().nullable().default(null),
+  domaine_style: z.string().nullable().default(null),
 })
 
 const SYSTEM_PROMPT = `Tu es un expert sommelier international avec une connaissance encyclopédique des vins du monde entier.
@@ -58,7 +63,7 @@ Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks, avec exactement 
   "apogee": { "debut": 2025, "fin": 2035 },
   "prixMoyen": "18-25€",
   "notes": "Score et source (ex: 94/100 · RVF, ou 92pts · Wine Spectator, ou 17/20 · Bettane+Desseauve). OBLIGATOIRE si trouvable — ne pas retourner null si une note existe en ligne.",
-  "noteSummary": "1-2 phrases résumant l'avis du critique (ex: Tanins soyeux, grande complexité aromatique, apogée dans 5 ans). Null si aucune note trouvée.",
+  "noteSummary": "1-2 phrases résumant l'avis du critique. Null si aucune note trouvée.",
   "source": "nom ou URL de la source principale",
   "bottle_image_url": "URL directe d'une image de la bouteille ou de l'étiquette (JPG/PNG). Cherche sur wine-searcher.com, vivino.com, millesima.fr ou le site officiel du domaine. Retourne null si introuvable.",
   "taste_profile": {
@@ -66,32 +71,44 @@ Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks, avec exactement 
     "tannin": "0-100 : niveau de tanins (0 = très souple/soyeux, 100 = très tannique/astringent). Mettre 0 pour vins blancs/rosés/pétillants.",
     "acidity": "0-100 : acidité (0 = très doux/rond, 100 = très acide/vif)",
     "complexity": "0-100 : complexité aromatique (0 = simple/direct, 100 = très complexe/multidimensionnel)"
-  }
+  },
+  "food_pairings": ["accord 1", "accord 2", "accord 3"],
+  "domaine_history": "2-3 phrases sur l'histoire du domaine et du vigneron.",
+  "domaine_style": "1-2 phrases sur la philosophie et le style de vinification."
 }
 Estime les valeurs de taste_profile d'après le style du vin, son appellation et son millésime.
-Si une information est introuvable, utilise null pour les champs string et [] pour cepages. apogee doit être null si inconnu. bottle_image_url et taste_profile doivent être null si introuvables.`
+food_pairings doit contenir 3 à 5 accords mets-vins concis (ex: "Agneau rôti", "Fromages affinés").
+Si une information est introuvable, utilise null pour les champs string et [] pour les tableaux. apogee doit être null si inconnu. bottle_image_url et taste_profile doivent être null si introuvables.`
 
 function sanitizeImageUrl(url: string | null | undefined): string | null {
   if (!url) return null
-
   try {
     const parsed = new URL(url)
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      return null
-    }
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null
     return parsed.toString()
   } catch {
     return null
   }
 }
 
-async function requireAuthenticatedUser() {
-  const supabase = await createServerSupabaseClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  return user
+async function checkUserPlan(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  userId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("plan, role")
+    .eq("id", userId)
+    .single()
+  const raw = data as { plan?: string; role?: string } | null
+  const rawPlan = raw?.plan ?? "free"
+  const role = raw?.role ?? null
+  return (
+    rawPlan === "amateur" ||
+    rawPlan === "collector" ||
+    role === "admin" ||
+    role === "beta"
+  )
 }
 
 export async function POST(req: NextRequest) {
@@ -102,30 +119,62 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const user = await requireAuthenticatedUser()
+  const supabase = await createServerSupabaseClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user) {
     return NextResponse.json({ error: "Authentification requise" }, { status: 401 })
   }
 
+  // Gate plan : seuls les utilisateurs payants peuvent déclencher un enrichissement IA
+  const canEnrich = await checkUserPlan(supabase, user.id)
+  if (!canEnrich) {
+    return NextResponse.json(
+      { error: "Fonctionnalité réservée aux abonnés Amateur et Collectionneur" },
+      { status: 403 }
+    )
+  }
+
   try {
     const payload = requestSchema.safeParse(await req.json())
-
     if (!payload.success) {
       return NextResponse.json({ error: "Payload invalide" }, { status: 400 })
     }
 
-    const { wineName, millesime, region, appellation, wineId } = payload.data
-    const query = [
-      wineName,
-      millesime && `millésime ${millesime}`,
-      appellation,
-      region,
-    ]
+    let { wineName, millesime, region, appellation, wineId } = payload.data
+
+    // Mode wineId-only : récupérer les informations du vin depuis la table wines
+    if (!wineName && wineId) {
+      const { data: wineRow } = await supabase
+        .from("wines")
+        .select("wine_name, millesime_year, wine_region, wine_appellation")
+        .eq("id", wineId)
+        .eq("user_id", user.id)
+        .single()
+
+      if (!wineRow || !wineRow.wine_name) {
+        return NextResponse.json({ error: "Vin introuvable" }, { status: 404 })
+      }
+
+      wineName = sanitizeWineName(wineRow.wine_name) || undefined
+      millesime = wineRow.millesime_year ?? undefined
+      region = wineRow.wine_region ?? undefined
+      appellation = wineRow.wine_appellation ?? undefined
+    }
+
+    if (!wineName) {
+      return NextResponse.json({ error: "Nom du vin requis" }, { status: 400 })
+    }
+
+    const sanitizedName = sanitizeWineName(wineName) || wineName
+    const query = [sanitizedName, millesime && `millésime ${millesime}`, appellation, region]
       .filter(Boolean)
       .join(", ")
 
     const response = await client.messages.create({
-      model: "claude-sonnet-4-5",
+      model: "claude-sonnet-4-6",
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: [
@@ -136,17 +185,14 @@ export async function POST(req: NextRequest) {
       ],
     })
 
-    const finalText = response.content
-      .filter((block): block is Anthropic.TextBlock => block.type === "text")
-      .map((block) => block.text)
+    const finalText = (response.content as Array<{ type: string; text?: string }>)
+      .filter((block) => block.type === "text")
+      .map((block) => block.text ?? "")
       .join("")
       .trim()
 
     if (!finalText) {
-      return NextResponse.json(
-        { error: "Enrichissement impossible" },
-        { status: 502 }
-      )
+      return NextResponse.json({ error: "Enrichissement impossible" }, { status: 502 })
     }
 
     let parsedModelResponse: unknown
@@ -167,7 +213,7 @@ export async function POST(req: NextRequest) {
       bottle_image_url: sanitizeImageUrl(enrichmentResult.data.bottle_image_url),
     }
 
-    // Cache enrichissement dans wine_enrichments (best-effort — ne bloque pas la réponse)
+    // Upsert dans wine_enrichments si wineId fourni
     if (wineId) {
       let priceMin: number | null = null
       let priceMax: number | null = null
@@ -187,15 +233,14 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      const supabaseCache = await createServerSupabaseClient()
-      const { error: upsertError } = await supabaseCache
+      const { error: upsertError } = await supabase
         .from("wine_enrichments")
         .upsert(
           {
             wine_id: wineId,
             user_id: user.id,
             description: enrichment.description || null,
-            grape_varieties: enrichment.cepages.map((name) => ({ name })),
+            grape_varieties: enrichmentResult.data.cepages.map((name: string) => ({ name })),
             taste_profile: enrichment.taste_profile
               ? {
                   body: enrichment.taste_profile.body,
@@ -209,6 +254,9 @@ export async function POST(req: NextRequest) {
             price_max: priceMax,
             apogee_start: enrichment.apogee?.debut ?? null,
             apogee_end: enrichment.apogee?.fin ?? null,
+            food_pairings: enrichmentResult.data.food_pairings ?? null,
+            domaine_history: enrichmentResult.data.domaine_history ?? null,
+            domaine_style: enrichmentResult.data.domaine_style ?? null,
             bottle_image_url: enrichment.bottle_image_url,
             updated_at: new Date().toISOString(),
           },
@@ -216,14 +264,12 @@ export async function POST(req: NextRequest) {
         )
 
       if (upsertError) {
-        console.error("wine_enrichments upsert error:", upsertError)
         // Ne pas faire échouer la réponse — le cache est best-effort
       }
     }
 
     return NextResponse.json(enrichment)
   } catch (error: unknown) {
-    console.error("[enrich-wine] Request failed:", error)
     return NextResponse.json({ error: "Erreur enrichissement" }, { status: 500 })
   }
 }

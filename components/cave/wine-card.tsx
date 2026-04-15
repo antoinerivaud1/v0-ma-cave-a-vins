@@ -8,7 +8,7 @@ import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from "@/lib/wine-helpers"
 import { getApogee } from "@/data/apogee"
-import { useWineEnrichment } from "@/hooks/use-wine-enrichment"
+import { useWineEnrichmentLegacy } from "@/hooks/use-wine-enrichment"
 import { WineEnrichmentPanel } from "./wine-enrichment-panel"
 import { useTastings } from "@/hooks/use-tastings"
 import { TastingPanel } from "./tasting-panel"
@@ -50,7 +50,7 @@ export function WineCard({ wine, onWineUpdate, onMoved }: WineCardProps) {
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
 
   const isManual = !!(wine._manual as boolean | undefined)
-  const { getEnrichment, isEnriching } = useWineEnrichment()
+  const { getEnrichment, isEnriching } = useWineEnrichmentLegacy()
   const enrichment = isManual
     ? getEnrichment(wine.wine_name ?? "", wine.millesime_year)
     : null
