@@ -1,3 +1,23 @@
+export interface WineEnrichmentTasteProfile {
+  body: number
+  tannin: number
+  acidity: number
+  complexity: number
+}
+
+export interface WineEnrichment {
+  description: string
+  cepages: string[]
+  apogee: { debut: number; fin: number } | null
+  prixMoyen: string | null
+  notes: string | null
+  noteSummary: string | null
+  source: string
+  enrichedAt: number
+  bottle_image_url: string | null
+  taste_profile: WineEnrichmentTasteProfile | null
+}
+
 export interface Wine {
   id?: string
   cave_id?: string | null
@@ -12,6 +32,7 @@ export interface Wine {
   wine_classification?: string
   wine_notes?: string
   _manual?: boolean
+  enrichissement?: WineEnrichment | null
   [key: string]: unknown
 }
 
