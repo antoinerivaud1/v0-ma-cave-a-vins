@@ -2,7 +2,7 @@
 
 import { Thermometer, Wine as WineGlass, Sparkles } from 'lucide-react'
 import { CaveBadge } from './cave-badge'
-import { getIcon, getLabel, getColor, formatRegion } from '@/lib/wine-helpers'
+import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from '@/lib/wine-helpers'
 import { getApogee } from '@/data/apogee'
 import type { Wine } from '@/data/apogee'
 
@@ -52,7 +52,7 @@ export function SuggestionCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-start gap-2">
             <p className="flex-1 font-serif text-lg font-semibold leading-tight text-foreground">
-              {wine.wine_name || wine.wine_appellation || 'Vin inconnu'}
+              {sanitizeWineName(wine.wine_name || wine.wine_appellation || 'Vin inconnu')}
               {wine.millesime_year ? (
                 <span className="ml-1.5 text-sm font-normal text-muted-foreground">
                   {wine.millesime_year}
@@ -67,7 +67,7 @@ export function SuggestionCard({
             )}
           </div>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {wine.wine_domain ? `${wine.wine_domain}` : ''}
+            {wine.wine_domain ? sanitizeWineName(wine.wine_domain) : ''}
             {wine.wine_domain && region ? ' \u00B7 ' : ''}
             {region}
           </p>
