@@ -83,6 +83,8 @@ export function WineDetailSheet({
   const isCollector =
     rawPlan === "collector" || role === "admin" || role === "beta"
 
+  console.log("[MA-61]", { rawPlan, role, isCollector, wineId, enrichment: !!enrichment, isLoading })
+
   const heroGradient =
     wine.wine_type === "wine_white" || wine.wine_type === "wine_white_sparkling"
       ? "from-cave-blanc-noir via-cave-blanc-profond to-cave-blanc-dore"
