@@ -149,19 +149,19 @@ export async function POST(req: NextRequest) {
     if (!wineName && wineId) {
       const { data: wineRow } = await supabase
         .from("wines")
-        .select("wine_name, millesime_year, wine_region, wine_appellation")
+        .select("name, vintage, region, appellation")
         .eq("id", wineId)
         .eq("user_id", user.id)
         .single()
 
-      if (!wineRow || !wineRow.wine_name) {
+      if (!wineRow || !wineRow.name) {
         return NextResponse.json({ error: "Vin introuvable" }, { status: 404 })
       }
 
-      wineName = sanitizeWineName(wineRow.wine_name) || undefined
-      millesime = wineRow.millesime_year ?? undefined
-      region = wineRow.wine_region ?? undefined
-      appellation = wineRow.wine_appellation ?? undefined
+      wineName = sanitizeWineName(wineRow.name) || undefined
+      millesime = wineRow.vintage ?? undefined
+      region = wineRow.region ?? undefined
+      appellation = wineRow.appellation ?? undefined
     }
 
     if (!wineName) {
