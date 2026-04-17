@@ -2,7 +2,6 @@
 import { useState } from "react"
 import { ChevronDown, MessageSquare } from "lucide-react"
 import { CaveBadge } from "./cave-badge"
-import { WineExpertPanel } from "./wine-expert-panel"
 import { WineCardActions } from "./wine-card-actions"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
@@ -220,15 +219,6 @@ export function WineCard({ wine, onWineUpdate, onMoved }: WineCardProps) {
             ) : (
               <p className="text-sm text-muted-foreground italic">Aucune note pour ce vin.</p>
             )}
-
-            <div className="mt-3">
-              <WineExpertPanel
-                region={wine.wine_region}
-                cepage={typeof wine.wine_classification === "string" ? wine.wine_classification : undefined}
-                millesime={wine.millesime_year ? parseInt(String(wine.millesime_year)) : undefined}
-                wineName={sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || undefined}
-              />
-            </div>
 
             {isManual && (
               <WineEnrichmentPanel

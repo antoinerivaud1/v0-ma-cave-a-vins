@@ -79,9 +79,12 @@ export function WineDetailSheet({
   const wineName = sanitizeWineName(wine.wine_name)
   const apogeeResult = getApogee(wine)
 
-  // Gate Collectionneur pour le bouton "Analyser ce vin"
-  const isCollector =
-    rawPlan === "collector" || role === "admin" || role === "beta"
+  const canEnrich = !!wineId && enrichment === null && !isLoading
+  const isAllowedPlan =
+    rawPlan === "collector" ||
+    rawPlan === "premium" ||
+    role === "admin" ||
+    role === "beta"
 
   const heroGradient =
     wine.wine_type === "wine_white" || wine.wine_type === "wine_white_sparkling"
@@ -162,28 +165,29 @@ export function WineDetailSheet({
         </div>
 
         {/* Bouton "Analyser ce vin" — visible si pas d'enrichissement et wineId présent */}
-        {!isLoading && !enrichment && wineId && (
+        {canEnrich && isAllowedPlan && (
           <div className="mx-5 mt-4 mb-1">
-            {isCollector ? (
-              <button
-                onClick={enrich}
-                className="w-full flex items-center justify-center gap-2 bg-cave-bordeaux rounded-2xl py-3.5 text-sm font-bold text-white"
-              >
-                <Sparkles className="w-4 h-4" />
-                Analyser ce vin avec l&rsquo;IA
-              </button>
-            ) : (
-              <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
-                <Lock className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">Analyse IA</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Disponible avec l&apos;abonnement Collectionneur — description, profil
-                    gustatif, accords mets et bien plus.
-                  </p>
-                </div>
+            <button
+              onClick={enrich}
+              className="w-full flex items-center justify-center gap-2 bg-cave-bordeaux rounded-2xl py-3.5 text-sm font-bold text-white"
+            >
+              <Sparkles className="w-4 h-4" />
+              Analyser ce vin avec l&rsquo;IA
+            </button>
+          </div>
+        )}
+        {canEnrich && !isAllowedPlan && (
+          <div className="mx-5 mt-4 mb-1">
+            <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+              <Lock className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-gray-800">Analyse IA</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Disponible avec l&apos;abonnement Collectionneur — description, profil
+                  gustatif, accords mets et bien plus.
+                </p>
               </div>
-            )}
+            </div>
           </div>
         )}
 
