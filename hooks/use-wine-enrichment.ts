@@ -104,6 +104,9 @@ export function useWineEnrichmentLegacy() {
 // ── Nouveau hook Supabase (MA-59) ─────────────────────────────────────────────
 // Lit le cache wine_enrichments, appelle l'API IA si absent
 
+// Cache mémoire session — évite les requêtes Supabase répétées pour le même wineId
+const enrichmentCache = new Map<string, WineEnrichment>()
+
 export function useWineEnrichment(
   wineId: string | null,
   autoEnrich: boolean = false
@@ -115,8 +118,9 @@ export function useWineEnrichment(
   enrich: () => Promise<void>
 } {
   const { user } = useAuth()
-  const [enrichment, setEnrichment] = useState<WineEnrichment | null>(null)
-  const [isLoading, setIsLoading] = useState(!!wineId)
+  const cached = wineId ? enrichmentCache.get(wineId) : undefined
+  const [enrichment, setEnrichment] = useState<WineEnrichment | null>(cached ?? null)
+  const [isLoading, setIsLoading] = useState(!!wineId && !cached)
   const [error, setError] = useState<string | null>(null)
 
   // Chargement initial : lit le cache Supabase, déclenche l'IA si autoEnrich=true
@@ -128,6 +132,15 @@ export function useWineEnrichment(
         setIsLoading(false)
         return
       }
+
+      // Cache hit mémoire → pas de requête réseau
+      const memCached = enrichmentCache.get(wineId)
+      if (memCached) {
+        setEnrichment(memCached)
+        setIsLoading(false)
+        return
+      }
+
       setIsLoading(true)
       setError(null)
       try {
@@ -146,6 +159,7 @@ export function useWineEnrichment(
 
         if (cached) {
           // Cache hit — aucun appel IA
+          enrichmentCache.set(wineId, cached)
           setEnrichment(cached)
         } else if (autoEnrich) {
           // Cache miss + auto-enrich → appel API
@@ -168,7 +182,10 @@ export function useWineEnrichment(
             .eq("wine_id", wineId)
             .eq("user_id", user.id)
             .maybeSingle()
-          if (!cancelled) setEnrichment(fresh as WineEnrichment | null)
+          if (!cancelled) {
+            if (fresh) enrichmentCache.set(wineId, fresh as WineEnrichment)
+            setEnrichment(fresh as WineEnrichment | null)
+          }
         }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : "Erreur de chargement")
@@ -229,7 +246,9 @@ export function useWineEnrichment(
         .eq("wine_id", wineId)
         .eq("user_id", user.id)
         .maybeSingle()
-      setEnrichment(data as WineEnrichment | null)
+      const fresh = data as WineEnrichment | null
+      if (fresh) enrichmentCache.set(wineId, fresh)
+      setEnrichment(fresh)
     } catch (e) {
       setError(e instanceof Error ? e.message : "Enrichissement impossible")
     } finally {
