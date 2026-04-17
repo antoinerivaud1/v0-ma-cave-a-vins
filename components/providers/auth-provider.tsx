@@ -75,6 +75,10 @@ export function AuthProvider({ initialUser, children }: AuthProviderProps) {
       } else if (event === "TOKEN_REFRESHED" && newSession?.user) {
         setSession(newSession)
         setUser(newSession.user)
+        const refreshedProfile = await fetchUserProfile(newSession.user.id)
+        setPlan(refreshedProfile.plan)
+        setRawPlan(refreshedProfile.rawPlan)
+        setRole(refreshedProfile.role)
       } else if (event === "SIGNED_OUT") {
         setUser(null)
         setSession(null)
