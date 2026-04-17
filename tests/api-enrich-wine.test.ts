@@ -3,12 +3,25 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const getUserMock = vi.fn()
 const anthropicCreateMock = vi.fn()
+const fromMock = vi.fn()
+
+// Helper : crée un mock de chaîne Supabase (select, eq, single, upsert, maybeSingle)
+function makeSupabaseChain(resolveValue: unknown) {
+  const chain: Record<string, unknown> = {}
+  chain.select = vi.fn(() => chain)
+  chain.eq = vi.fn(() => chain)
+  chain.single = vi.fn().mockResolvedValue(resolveValue)
+  chain.maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null })
+  chain.upsert = vi.fn(() => chain)
+  return chain
+}
 
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseClient: vi.fn(async () => ({
     auth: {
       getUser: getUserMock,
     },
+    from: fromMock,
   })),
 }))
 
@@ -24,6 +37,11 @@ describe("POST /api/enrich-wine", () => {
   beforeEach(() => {
     vi.resetAllMocks()
     process.env.ANTHROPIC_API_KEY = "test-key"
+
+    // Par défaut : profil avec plan collector pour que le gate plan passe
+    fromMock.mockReturnValue(
+      makeSupabaseChain({ data: { plan: "collector", role: null }, error: null })
+    )
   })
 
   it("returns 401 when the user is not authenticated", async () => {

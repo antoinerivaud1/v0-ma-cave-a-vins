@@ -1,32 +1,16 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Search, X, Wine as WineGlass, ChevronDown, Plus, ChevronRight } from "lucide-react"
+import { Search, X, Wine as WineGlass, ChevronDown, Plus } from "lucide-react"
 import { AddWineSheet } from "./add-wine-sheet"
 import { FilterBar } from "./filter-bar"
 import { SortFilterDropdown, type SortFilterState } from "./sort-filter-dropdown"
 import { WineCard } from "./wine-card"
-import { WineBottleThumb } from "@/components/cave/wine-bottle-thumb"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
-import { formatRegion, sanitizeWineName } from "@/lib/wine-helpers"
+import { formatRegion } from "@/lib/wine-helpers"
 import { getApogee } from "@/data/apogee"
 import type { Wine } from "@/data/apogee"
-import type { WineEnrichment } from "@/app/api/enrich-wine/route"
-
-const WINE_TYPE_LABELS: Record<string, string> = {
-  wine_red: "Rouge",
-  wine_white: "Blanc",
-  wine_white_sparkling: "Pétillant",
-  wine_rose: "Rosé",
-}
-
-const APOGEE_BADGE: Record<string, { label: string; className: string }> = {
-  urgent: { label: "⏰ À boire", className: "bg-red-50 text-red-700" },
-  late: { label: "🔴 Trop tard", className: "bg-red-100 text-red-800" },
-  ok: { label: "🍃 En forme", className: "bg-green-50 text-green-700" },
-  wait: { label: "⏳ Attendre", className: "bg-yellow-50 text-yellow-700" },
-}
 
 const COLOR_FILTERS = [
   { key: "all", label: "Tous" },
@@ -78,10 +62,11 @@ export interface CaveListProps {
   cave: Wine[]
   onAddWine?: (wine: Wine) => void
   onWineSelect?: (wine: Wine) => void
+  onWineMove?: () => void
   initialFilter?: { color?: string; level?: string }
 }
 
-export function CaveList({ cave, initialFilter, onAddWine, onWineSelect }: CaveListProps) {
+export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineMove }: CaveListProps) {
   const [colorFilter, setColorFilter] = useState(initialFilter?.color || "all")
   const [levelFilter, setLevelFilter] = useState(initialFilter?.level || "all")
   const [searchQuery, setSearchQuery] = useState("")
@@ -226,66 +211,14 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect }: CaveL
           </div>
         )}
 
-        {filtered.map((wine, index) => {
-          const enrichment = wine.enrichissement as WineEnrichment | null
-          const qty = getEffectiveWineState(wine, getOverrideForWine(wine)).quantity
-
-          return (
-            <div
-              key={`${wine.wine_name}-${wine.millesime_year}-${index}`}
-              className="bg-white rounded-2xl flex items-center gap-3 px-3 py-3 shadow-sm border border-gray-100 cursor-pointer active:scale-[0.98] transition-transform"
-              onClick={() => onWineSelect?.(wine)}
-            >
-              <WineBottleThumb
-                imageUrl={enrichment?.bottle_image_url ?? null}
-                wineType={wine.wine_type}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-gray-900 truncate">
-                  {sanitizeWineName(wine.wine_name)}
-                </div>
-                <div className="text-xs text-gray-500 truncate mt-0.5">
-                  {[wine.wine_domain, wine.wine_region].filter(Boolean).join(" · ")}
-                </div>
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {wine.wine_type && (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700">
-                      {WINE_TYPE_LABELS[wine.wine_type] ?? wine.wine_type}
-                    </span>
-                  )}
-                  {wine.millesime_year && (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                      {String(wine.millesime_year)}
-                    </span>
-                  )}
-                  {enrichment?.notes && (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">
-                      ★ {enrichment.notes}
-                    </span>
-                  )}
-                  {(() => {
-                    const apogee = getApogee(wine)
-                    if (!apogee) return null
-
-                    const badge = APOGEE_BADGE[apogee.st]
-                    if (!badge) return null
-
-                    return (
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${badge.className}`}>
-                        {badge.label}
-                      </span>
-                    )
-                  })()}
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                <span className="text-base font-black text-[#722F37]">{qty}</span>
-                <span className="text-[10px] text-gray-400">bout.</span>
-                <ChevronRight className="w-4 h-4 text-gray-300" />
-              </div>
-            </div>
-          )
-        })}
+        {filtered.map((wine, index) => (
+          <WineCard
+            key={`${wine.wine_name}-${wine.millesime_year}-${index}`}
+            wine={wine}
+            onWineSelect={onWineSelect}
+            onMoved={onWineMove}
+          />
+        ))}
       </div>
 
       {archivedWines.length > 0 && (

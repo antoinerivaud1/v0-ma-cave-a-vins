@@ -1,23 +1,35 @@
 "use client"
 
 import { useCallback, useState } from "react"
-import Link from 'next/link'
-import { Database, Trash2, CheckCircle, Camera, Globe, Layers, ShieldCheck, type LucideIcon } from 'lucide-react'
-import { PageHeader } from './page-header'
-import { ImportZone } from './import-zone'
+import Link from "next/link"
+import { Database, Trash2, CheckCircle, Camera, Globe, Layers, ShieldCheck, type LucideIcon } from "lucide-react"
+import { PageHeader } from "./page-header"
+import { ImportZone } from "./import-zone"
 import { ComingSoonBadge } from "./coming-soon-badge"
 import { getComingSoonFeatures } from "@/lib/feature-flags"
-import { useFileParser } from '@/hooks/use-file-parser'
-import type { Wine } from '@/data/apogee'
+import { useFileParser } from "@/hooks/use-file-parser"
+import type { Wine } from "@/data/apogee"
 import { useAuth } from "@/hooks/use-auth"
 import { AuthSheet } from "@/components/cave/auth-sheet"
 import { CaveManagerSheet } from "@/components/cave/cave-manager-sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Spinner } from "@/components/ui/spinner"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog"
 import { useCaves } from "@/hooks/use-caves"
 import { clearAllStockOverrides, useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
-import { clearAllLocalCaveData } from "@/lib/cave-storage"
+import { clearAllLocalCaveData, MIGRATION_DONE_KEY } from "@/lib/cave-storage"
+import { useTastings } from "@/hooks/use-tastings"
+import { useWineEnrichmentLegacy } from "@/hooks/use-wine-enrichment"
 
 const ICON_MAP: Record<string, LucideIcon> = { Camera, Globe, Layers }
 
@@ -28,16 +40,19 @@ interface SettingsProps {
   onClear: () => void | Promise<void>
 }
 
-export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps) {
+export function Settings({ cave, lastUpdated, onImport }: SettingsProps) {
   const { parseFile, isParsing, error } = useFileParser()
-  const [showConfirm, setShowConfirm] = useState(false)
+  const [confirmStep, setConfirmStep] = useState<0 | 1 | 2>(0)
+  const [isResetting, setIsResetting] = useState(false)
+  const [resetError, setResetError] = useState<string | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
   const [caveManagerOpen, setCaveManagerOpen] = useState(false)
   const { user, signOut } = useAuth()
-  const { caves } = useCaves()
+  const { caves, resetActiveCave } = useCaves()
   const { getOverrideForWine } = useStockOverrides()
+  const { resetTastings } = useTastings()
+  const { resetEnrichments } = useWineEnrichmentLegacy()
   const [isSigningOut, setIsSigningOut] = useState(false)
-  const [signOutError, setSignOutError] = useState<string | null>(null)
 
   const totalBottles = cave.reduce((s, w) => {
     const effectiveState = getEffectiveWineState(w, getOverrideForWine(w))
@@ -56,31 +71,56 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
   )
 
   const handleReset = useCallback(async () => {
-    clearAllLocalCaveData()
-    clearAllStockOverrides()
-    await onClear()
-    setShowConfirm(false)
-    window.location.reload()
-  }, [onClear])
+    if (!user) return
+    setIsResetting(true)
+    setResetError(null)
+
+    try {
+      // 1. Supprimer les données cloud via API serveur (service role — contourne RLS)
+      const res = await fetch("/api/reset-user", { method: "POST" })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error ?? `Erreur serveur (${res.status})`)
+      }
+
+      // 2. Effacer toutes les clés localStorage métier (inclut cave-offline-cache)
+      clearAllLocalCaveData()
+      localStorage.removeItem(MIGRATION_DONE_KEY)
+
+      // 3. Réinitialiser l'état mémoire React de chaque hook
+      clearAllStockOverrides()
+      resetTastings()
+      resetEnrichments()
+      resetActiveCave()
+
+      // 4. Reload — état propre garanti
+      window.location.reload()
+    } catch (err) {
+      console.error("[settings] Reset failed:", err)
+      const message = err instanceof Error ? err.message : "La suppression a échoué."
+      setResetError(message)
+    } finally {
+      setIsResetting(false)
+    }
+  }, [user, resetTastings, resetEnrichments, resetActiveCave])
 
   const handleSignOut = useCallback(async () => {
     setIsSigningOut(true)
-    setSignOutError(null)
     try {
       await signOut()
     } catch {
-      // ignore, on force le reload de toute façon
+      // ignore, on force le redirect de toute façon
     }
     window.location.href = "/"
   }, [signOut])
 
   const formattedDate = lastUpdated
-    ? new Date(lastUpdated).toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
+    ? new Date(lastUpdated).toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       })
     : null
 
@@ -98,7 +138,7 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
             <div>
               <p className="text-sm font-medium text-foreground">Statut de la cave</p>
               <p className="text-xs text-muted-foreground">
-                {totalBottles} bouteille{totalBottles !== 1 ? 's' : ''} en stock
+                {totalBottles} bouteille{totalBottles !== 1 ? "s" : ""} en stock
               </p>
             </div>
           </div>
@@ -218,43 +258,94 @@ export function Settings({ cave, lastUpdated, onImport, onClear }: SettingsProps
         <CaveManagerSheet open={caveManagerOpen} onOpenChange={setCaveManagerOpen} />
       </section>
 
-      {/* Reset Section */}
+      {/* Zone de danger */}
       {cave.length > 0 && (
         <section className="mx-4 mt-6">
           <h2 className="mb-3 font-serif text-base font-medium text-foreground">
             Zone de danger
           </h2>
-          {!showConfirm ? (
-            <button
-              onClick={() => setShowConfirm(true)}
-              className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive transition-colors hover:bg-destructive/20"
-            >
-              <Trash2 className="h-4 w-4" />
-              Reinitialiser la cave
-            </button>
-          ) : (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
-              <p className="text-sm text-foreground">
-                Etes-vous sur ? Cette action supprimera toutes les donnees de votre cave.
-              </p>
-              <div className="mt-3 flex gap-3">
-                <button
-                  onClick={handleReset}
-                  className="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-destructive/80"
-                >
-                  Confirmer
-                </button>
-                <button
-                  onClick={() => setShowConfirm(false)}
-                  className="rounded-lg border border-cave-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Annuler
-                </button>
-              </div>
-            </div>
-          )}
+          <button
+            onClick={() => setConfirmStep(1)}
+            className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive transition-colors hover:bg-destructive/20"
+          >
+            <Trash2 className="h-4 w-4" />
+            Réinitialiser ma cave
+          </button>
         </section>
       )}
+
+      {/* Étape 1 — Première confirmation */}
+      <AlertDialog
+        open={confirmStep === 1}
+        onOpenChange={(open) => { if (!open) setConfirmStep(0) }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Réinitialiser ma cave</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Elle supprimera définitivement :
+            </AlertDialogDescription>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              <li>• Tous vos vins</li>
+              <li>• Toutes vos caves</li>
+              <li>• Votre historique de dégustations</li>
+              <li>• Vos données de stock</li>
+            </ul>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmStep(0)}>
+              Annuler
+            </AlertDialogCancel>
+            <button
+              onClick={() => { setResetError(null); setConfirmStep(2) }}
+              className="inline-flex items-center justify-center rounded-md bg-destructive px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-destructive/80"
+            >
+              Je comprends, continuer
+            </button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Étape 2 — Dernière confirmation + exécution */}
+      <AlertDialog
+        open={confirmStep === 2}
+        onOpenChange={(open) => { if (!open && !isResetting) setConfirmStep(0) }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Dernière confirmation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous certain ? Toutes vos données seront perdues définitivement.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {resetError && (
+            <p className="text-sm text-destructive">{resetError}</p>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={isResetting}
+              onClick={() => setConfirmStep(0)}
+            >
+              Annuler
+            </AlertDialogCancel>
+            <button
+              onClick={handleReset}
+              disabled={isResetting}
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+            >
+              {isResetting ? (
+                <>
+                  <Spinner className="h-4 w-4" />
+                  Suppression en cours...
+                </>
+              ) : (
+                "Supprimer tout"
+              )}
+            </button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* À propos */}
       <section className="mx-4 mt-6">
         <h2 className="mb-3 font-serif text-base font-medium text-foreground">

@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react"
 import type { Wine } from "@/data/apogee"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/hooks/use-auth"
-import { useCaves } from "@/hooks/use-caves"
 import { clearAllLocalCaveData } from "@/lib/cave-storage"
 import { clearAllStockOverrides } from "@/hooks/use-stock-overrides"
 import { getWineSyncIdentityKey } from "@/lib/wine-sync"
@@ -80,31 +79,12 @@ function getFallbackIdentityKey(wine: {
 
 const CACHE_KEY = "cave-offline-cache"
 
-export function useCloudCave() {
+export function useCloudCave(activeCaveId: string | null) {
   const { user, loading: authLoading } = useAuth()
-  const { caves, activeCaveId, loading: cavesLoading, createCave, setActiveCave } = useCaves()
   const [wines, setWines] = useState<Wine[]>([])
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isOfflineCache, setIsOfflineCache] = useState(false)
-
-  const ensureActiveCaveId = useCallback(async (): Promise<string | null> => {
-    if (!user) return null
-
-    if (activeCaveId) return activeCaveId
-
-    const firstCave = caves[0]
-    if (firstCave) {
-      await setActiveCave(firstCave.id)
-      return firstCave.id
-    }
-
-    const created = await createCave("Ma Cave")
-    if (!created) return null
-
-    await setActiveCave(created.id)
-    return created.id
-  }, [activeCaveId, caves, createCave, setActiveCave, user])
 
   const loadWines = useCallback(async (): Promise<void> => {
     if (authLoading) return
@@ -117,25 +97,16 @@ export function useCloudCave() {
       return
     }
 
-    if (cavesLoading) return
+    if (!activeCaveId) return
 
     setIsLoaded(false)
-
-    const caveId = await ensureActiveCaveId()
-    if (!caveId) {
-      setWines([])
-      setLastUpdated(null)
-      setIsOfflineCache(false)
-      setIsLoaded(true)
-      return
-    }
 
     const supabase = createClient()
     const { data, error } = await supabase
       .from("wines")
       .select(WINE_SELECT)
       .eq("user_id", user.id)
-      .eq("cave_id", caveId)
+      .eq("cave_id", activeCaveId)
       .order("created_at", { ascending: false })
 
     if (error) {
@@ -170,24 +141,20 @@ export function useCloudCave() {
     } catch {
       // localStorage not available — ignore
     }
-  }, [authLoading, cavesLoading, ensureActiveCaveId, user])
+  }, [authLoading, user, activeCaveId])
 
   useEffect(() => {
-    loadWines()
+    void loadWines()
   }, [loadWines])
 
   const addWine = useCallback(
     async (wine: Wine): Promise<void> => {
-      if (!user) return
-      if (cavesLoading) return
-
-      const caveId = await ensureActiveCaveId()
-      if (!caveId) return
+      if (!user || !activeCaveId) return
 
       const supabase = createClient()
       const { data, error } = await supabase
         .from("wines")
-        .insert(mapWineToRow(wine, user.id, caveId))
+        .insert(mapWineToRow(wine, user.id, activeCaveId))
         .select(WINE_SELECT)
         .single()
 
@@ -201,23 +168,19 @@ export function useCloudCave() {
         setLastUpdated(new Date().toISOString())
       }
     },
-    [cavesLoading, ensureActiveCaveId, user]
+    [activeCaveId, user]
   )
 
   const importWines = useCallback(
     async (importedWines: Wine[]): Promise<void> => {
-      if (!user || importedWines.length === 0) return
-      if (cavesLoading) return
-
-      const caveId = await ensureActiveCaveId()
-      if (!caveId) return
+      if (!user || importedWines.length === 0 || !activeCaveId) return
 
       const supabase = createClient()
       const { data: existingRows, error } = await supabase
         .from("wines")
         .select(WINE_SELECT)
         .eq("user_id", user.id)
-        .eq("cave_id", caveId)
+        .eq("cave_id", activeCaveId)
 
       if (error) {
         console.error("[cloud-cave] Failed to fetch existing wines for import:", error)
@@ -242,9 +205,9 @@ export function useCloudCave() {
       const inserts = []
 
       for (const wine of importedWines) {
-        const key = getFallbackIdentityKey({ ...wine, cave_id: caveId })
+        const key = getFallbackIdentityKey({ ...wine, cave_id: activeCaveId })
         const existingRow = existingByKey.get(key)
-        const nextRow = mapWineToRow(wine, user.id, caveId)
+        const nextRow = mapWineToRow(wine, user.id, activeCaveId)
 
         if (existingRow) {
           updates.push(
@@ -273,7 +236,7 @@ export function useCloudCave() {
       clearAllStockOverrides()
       await loadWines()
     },
-    [cavesLoading, ensureActiveCaveId, loadWines, user]
+    [activeCaveId, loadWines, user]
   )
 
   const clearCave = useCallback(async (): Promise<void> => {

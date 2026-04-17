@@ -7,7 +7,13 @@ import { createClient } from "@/lib/supabase/client"
 import { migrateLocalToSupabase } from "@/hooks/use-cave-sync"
 import { AuthContext, type UserPlan } from "@/hooks/use-auth"
 
-async function fetchUserPlan(userId: string): Promise<UserPlan> {
+interface UserProfile {
+  plan: UserPlan
+  rawPlan: string
+  role: string | null
+}
+
+async function fetchUserProfile(userId: string): Promise<UserProfile> {
   const supabase = createClient()
   const { data } = await supabase
     .from("profiles")
@@ -15,8 +21,12 @@ async function fetchUserPlan(userId: string): Promise<UserPlan> {
     .eq("id", userId)
     .single()
   const raw = data as { plan?: string; role?: string } | null
-  if (raw?.role === "beta" || raw?.role === "admin") return "premium"
-  return raw?.plan === "premium" ? "premium" : "free"
+  const role = raw?.role ?? null
+  const rawPlan = raw?.plan ?? "free"
+  const plan: UserPlan =
+    (role === "beta" || role === "admin") ? "premium"
+    : rawPlan === "premium" ? "premium" : "free"
+  return { plan, rawPlan, role }
 }
 
 interface AuthProviderProps {
@@ -29,11 +39,17 @@ export function AuthProvider({ initialUser, children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(false)
   const [plan, setPlan] = useState<UserPlan>("free")
+  const [rawPlan, setRawPlan] = useState<string>("free")
+  const [role, setRole] = useState<string | null>(null)
 
   // Fetch plan for the user resolved server-side
   useEffect(() => {
     if (initialUser?.id) {
-      fetchUserPlan(initialUser.id).then(setPlan)
+      fetchUserProfile(initialUser.id).then(({ plan: p, rawPlan: rp, role: r }) => {
+        setPlan(p)
+        setRawPlan(rp)
+        setRole(r)
+      })
     }
   }, [initialUser?.id])
 
@@ -51,16 +67,24 @@ export function AuthProvider({ initialUser, children }: AuthProviderProps) {
         setSession(newSession)
         setUser(newSession.user)
         await migrateLocalToSupabase(newSession.user.id)
-        const userPlan = await fetchUserPlan(newSession.user.id)
-        setPlan(userPlan)
+        const profile = await fetchUserProfile(newSession.user.id)
+        setPlan(profile.plan)
+        setRawPlan(profile.rawPlan)
+        setRole(profile.role)
         setLoading(false)
       } else if (event === "TOKEN_REFRESHED" && newSession?.user) {
         setSession(newSession)
         setUser(newSession.user)
+        const refreshedProfile = await fetchUserProfile(newSession.user.id)
+        setPlan(refreshedProfile.plan)
+        setRawPlan(refreshedProfile.rawPlan)
+        setRole(refreshedProfile.role)
       } else if (event === "SIGNED_OUT") {
         setUser(null)
         setSession(null)
         setPlan("free")
+        setRawPlan("free")
+        setRole(null)
         setLoading(false)
       }
     })
@@ -113,7 +137,7 @@ export function AuthProvider({ initialUser, children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, loading, plan, signIn, signUp, signOut, signInWithOAuth }}
+      value={{ user, session, loading, plan, rawPlan, role, signIn, signUp, signOut, signInWithOAuth }}
     >
       {children}
     </AuthContext.Provider>

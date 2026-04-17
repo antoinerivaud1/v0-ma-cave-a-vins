@@ -7,12 +7,25 @@ import { CaveList } from "./cave-list"
 import type { CaveListProps } from "./cave-list"
 import { WineDetailSheet } from "./wine-detail-sheet"
 import { WineMoveSheet } from "./wine-move-sheet"
+import { CaveSwitchSheet } from "./cave-switch-sheet"
 import { TastingScreen } from "./tasting-screen"
 import { Suggest } from "./suggest"
 import { Settings } from "./settings"
-import { useCaves } from "@/hooks/use-caves"
+import type { Cave } from "@/hooks/use-caves"
+import { useAuth } from "@/hooks/use-auth"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { sanitizeWineName } from "@/lib/wine-helpers"
 import type { Wine } from "@/data/apogee"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface AppShellProps {
   cave: Wine[]
@@ -22,16 +35,23 @@ interface AppShellProps {
   onClear: () => void | Promise<void>
   onAddWine: (wine: Wine) => void
   onReload?: () => void | Promise<void>
+  activeCave: Cave | null
+  caveCount: number
+  caves: Cave[]
+  activeCaveId: string | null
+  setActiveCave: (id: string) => Promise<void>
 }
 
-export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear, onAddWine, onReload }: AppShellProps) {
+export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear, onAddWine, onReload, activeCave, caveCount, caves, activeCaveId, setActiveCave }: AppShellProps) {
   const [activeTab, setActiveTab] = useState<TabId>("cave")
   const [listFilter, setListFilter] = useState<CaveListProps["initialFilter"]>(undefined)
   const [selectedWine, setSelectedWine] = useState<Wine | null>(null)
   const [moveSheetOpen, setMoveSheetOpen] = useState(false)
-  const { caves } = useCaves()
+  const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
+  const [caveSwitchOpen, setCaveSwitchOpen] = useState(false)
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
-  const canMoveSelectedWine = !!selectedWine?.id && caves.length > 1
+  const { isPremium } = useAuth()
+  const canMoveSelectedWine = !!selectedWine?.id && caveCount > 1
 
   const navigateTo = useCallback((tab: TabId, filter?: CaveListProps["initialFilter"]) => {
     setListFilter(tab === "liste" ? filter : undefined)
@@ -48,9 +68,18 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
           📶 Mode hors ligne — données mises en cache — les modifications sont désactivées
         </div>
       )}
-      {activeTab === "cave" && <Dashboard cave={cave} onNavigate={navigateTo} onAddWine={onAddWine} />}
+      {activeTab === "cave" && (
+        <Dashboard
+          cave={cave}
+          onNavigate={navigateTo}
+          onAddWine={onAddWine}
+          activeCave={activeCave}
+          caveCount={caveCount}
+          onCaveSwitch={isPremium ? () => setCaveSwitchOpen(true) : undefined}
+        />
+      )}
       {activeTab === "carnet" && <TastingScreen />}
-      {activeTab === "liste" && <CaveList cave={cave} initialFilter={listFilter} onAddWine={onAddWine} onWineSelect={setSelectedWine} />}
+      {activeTab === "liste" && <CaveList cave={cave} initialFilter={listFilter} onAddWine={onAddWine} onWineSelect={setSelectedWine} onWineMove={onReload} />}
       {activeTab === "accords" && <Suggest cave={cave} />}
       {activeTab === "reglages" && (
         <Settings
@@ -71,8 +100,11 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
             if (isOfflineCache) return
             const override = getOverrideForWine(selectedWine)
             const currentQty = override?.quantity ?? Number(selectedWine.bottle_quantity ?? 0)
-            const newQty = Math.max(0, currentQty - 1)
-            setOverrideForWine(selectedWine, { ...override, quantity: newQty })
+            if (currentQty <= 1) {
+              setShowLastBottleDialog(true)
+              return
+            }
+            setOverrideForWine(selectedWine, { ...override, quantity: currentQty - 1 })
           }}
           onActionsOpen={() => {
             if (canMoveSelectedWine) {
@@ -84,6 +116,44 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
           myRating={null}
           actionsLabel={canMoveSelectedWine ? "Déplacer" : "Fermer"}
         />
+      )}
+
+      {selectedWine && (
+        <AlertDialog open={showLastBottleDialog} onOpenChange={setShowLastBottleDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Dernière bouteille</AlertDialogTitle>
+              <AlertDialogDescription>
+                Vous avez consommé votre dernière bouteille de{" "}
+                {sanitizeWineName(selectedWine.wine_name) || "ce vin"}.
+                Que souhaitez-vous faire ?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  const override = getOverrideForWine(selectedWine)
+                  setOverrideForWine(selectedWine, { ...override, quantity: 0, archived: true })
+                  setShowLastBottleDialog(false)
+                }}
+                className="bg-muted text-foreground hover:bg-muted/80"
+              >
+                Archiver
+              </AlertDialogAction>
+              <AlertDialogAction
+                onClick={() => {
+                  const override = getOverrideForWine(selectedWine)
+                  setOverrideForWine(selectedWine, { ...override, quantity: 0, deleted: true })
+                  setShowLastBottleDialog(false)
+                }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Supprimer
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
 
       {selectedWine?.id && (
@@ -103,6 +173,16 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
           }}
         />
       )}
+
+      <CaveSwitchSheet
+        open={caveSwitchOpen}
+        onOpenChange={setCaveSwitchOpen}
+        caves={caves}
+        activeCaveId={activeCaveId}
+        onSelectCave={(id) => {
+          void setActiveCave(id)
+        }}
+      />
     </div>
   )
 }

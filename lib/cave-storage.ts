@@ -9,7 +9,12 @@ export const CAVE_STORAGE_KEYS = {
   wineEnrichments: "cave-wine-enrichments",
   tastings: "cave-tastings",
   activeCaveId: "cave-active-cave-id",
+  offlineCache: "cave-offline-cache",
 } as const
+
+// Clé de migration — séparée de CAVE_STORAGE_KEYS intentionnellement :
+// elle ne doit PAS être effacée par clearAllLocalCaveData (qui est appelée après import).
+export const MIGRATION_DONE_KEY = "cave-migration-done"
 
 export const ALL_CAVE_STORAGE_KEYS = Object.values(CAVE_STORAGE_KEYS)
 

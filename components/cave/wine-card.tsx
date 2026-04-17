@@ -2,13 +2,12 @@
 import { useState } from "react"
 import { ChevronDown, MessageSquare } from "lucide-react"
 import { CaveBadge } from "./cave-badge"
-import { WineExpertPanel } from "./wine-expert-panel"
 import { WineCardActions } from "./wine-card-actions"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from "@/lib/wine-helpers"
 import { getApogee } from "@/data/apogee"
-import { useWineEnrichment } from "@/hooks/use-wine-enrichment"
+import { useWineEnrichmentLegacy } from "@/hooks/use-wine-enrichment"
 import { WineEnrichmentPanel } from "./wine-enrichment-panel"
 import { useTastings } from "@/hooks/use-tastings"
 import { TastingPanel } from "./tasting-panel"
@@ -26,7 +25,9 @@ import {
 
 interface WineCardProps {
   wine: Wine
+  onWineSelect?: (wine: Wine) => void
   onWineUpdate?: (updates: Partial<Wine>) => void
+  onMoved?: () => void
 }
 
 const colorDotClasses: Record<string, string> = {
@@ -43,13 +44,13 @@ const colorBadgeVariant: Record<string, "gold" | "muted"> = {
   unknown: "muted",
 }
 
-export function WineCard({ wine, onWineUpdate }: WineCardProps) {
+export function WineCard({ wine, onWineSelect, onWineUpdate, onMoved }: WineCardProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
 
   const isManual = !!(wine._manual as boolean | undefined)
-  const { getEnrichment, isEnriching } = useWineEnrichment()
+  const { getEnrichment, isEnriching } = useWineEnrichmentLegacy()
   const enrichment = isManual
     ? getEnrichment(wine.wine_name ?? "", wine.millesime_year)
     : null
@@ -137,7 +138,7 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
     <div className="relative overflow-hidden rounded-xl border border-cave-border bg-card">
       <div className="flex w-full items-center gap-3 px-3.5 py-3">
         <button
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={() => onWineSelect ? onWineSelect(wine) : setIsOpen((prev) => !prev)}
           className="flex flex-1 items-center gap-3 text-left min-w-0"
           aria-expanded={isOpen}
         >
@@ -184,6 +185,9 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
           onArchive={handleArchive}
           onRestore={handleRestore}
           onDelete={handleDelete}
+          wineId={wine.id}
+          wineCaveId={wine.cave_id}
+          onMoved={onMoved}
         />
       </div>
 
@@ -216,15 +220,6 @@ export function WineCard({ wine, onWineUpdate }: WineCardProps) {
             ) : (
               <p className="text-sm text-muted-foreground italic">Aucune note pour ce vin.</p>
             )}
-
-            <div className="mt-3">
-              <WineExpertPanel
-                region={wine.wine_region}
-                cepage={typeof wine.wine_classification === "string" ? wine.wine_classification : undefined}
-                millesime={wine.millesime_year ? parseInt(String(wine.millesime_year)) : undefined}
-                wineName={sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || undefined}
-              />
-            </div>
 
             {isManual && (
               <WineEnrichmentPanel

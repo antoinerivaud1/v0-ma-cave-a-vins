@@ -95,38 +95,9 @@ export function useStockOverrides() {
   const overrides = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
   const isLoaded = hasLoadedOverrides
 
-  const getWineKey = useCallback((wineName: string | null, millesime: string | number | null): string => {
-    return `${wineName || ''}_${millesime || ''}`
-  }, [])
-
   const getWineKeyFromWine = useCallback((wine: Wine): string => {
     return getWineIdentityKey(wine)
   }, [])
-
-  const getOverride = useCallback(
-    (wineName: string | null, millesime: string | number | null): StockOverride | undefined => {
-      return overrides[getWineKey(wineName, millesime)]
-    },
-    [overrides, getWineKey]
-  )
-
-  const setOverride = useCallback(
-    (wineName: string | null, millesime: string | number | null, override: StockOverride) => {
-      const key = getWineKey(wineName, millesime)
-      persistOverrides({
-        ...overridesStore,
-        [key]: override,
-      })
-    },
-    [getWineKey]
-  )
-
-  const clearOverride = useCallback((wineName: string | null, millesime: string | number | null) => {
-    const key = getWineKey(wineName, millesime)
-    const next = { ...overridesStore }
-    delete next[key]
-    persistOverrides(next)
-  }, [getWineKey])
 
   const getOverrideForWine = useCallback((wine: Wine): StockOverride | undefined => {
     return overrides[getWineKeyFromWine(wine)]
@@ -150,10 +121,6 @@ export function useStockOverrides() {
   return {
     overrides,
     isLoaded,
-    getOverride,
-    setOverride,
-    clearOverride,
-    getWineKey,
     getWineKeyFromWine,
     getOverrideForWine,
     setOverrideForWine,
