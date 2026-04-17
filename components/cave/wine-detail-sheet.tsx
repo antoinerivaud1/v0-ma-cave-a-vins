@@ -79,14 +79,14 @@ export function WineDetailSheet({
   const wineName = sanitizeWineName(wine.wine_name)
   const apogeeResult = getApogee(wine)
 
-  const canEnrich = !!wineId && enrichment === null && !isLoading
-  const isAllowedPlan =
+  const isCollector =
     rawPlan === "collector" ||
-    rawPlan === "premium" ||
     role === "admin" ||
     role === "beta"
 
-  console.log("[MA-61]", { rawPlan, role, isCollector, wineId, enrichment: !!enrichment, isLoading })
+  const canEnrich = !!wineId && enrichment === null && !isLoading
+
+  console.log("[MA-61]", { rawPlan, role, isCollector, wineId, hasEnrichment: !!enrichment, isLoading })
 
   const heroGradient =
     wine.wine_type === "wine_white" || wine.wine_type === "wine_white_sparkling"
@@ -167,7 +167,7 @@ export function WineDetailSheet({
         </div>
 
         {/* Bouton "Analyser ce vin" — visible si pas d'enrichissement et wineId présent */}
-        {canEnrich && isAllowedPlan && (
+        {canEnrich && isCollector && (
           <div className="mx-5 mt-4 mb-1">
             <button
               onClick={enrich}
@@ -178,7 +178,7 @@ export function WineDetailSheet({
             </button>
           </div>
         )}
-        {canEnrich && !isAllowedPlan && (
+        {canEnrich && !isCollector && (
           <div className="mx-5 mt-4 mb-1">
             <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
               <Lock className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
