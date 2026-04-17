@@ -36,7 +36,7 @@ function ApogeeStatusBadge({ wine }: { wine: Wine }) {
 }
 
 function SkeletonLine({ className }: { className?: string }) {
-  return <div className={`bg-gray-100 rounded animate-pulse ${className ?? "h-4 w-full"}`} />
+  return <div className={`bg-muted rounded animate-pulse ${className ?? "h-4 w-full"}`} />
 }
 
 function TasteBar({
@@ -50,14 +50,11 @@ function TasteBar({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-400 w-14 text-right flex-shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-cave-bordeaux to-cave-terracotta"
-          style={{ width: `${value}%` }}
-        />
+      <span className="text-xs text-muted-foreground w-14 text-right flex-shrink-0">{label}</span>
+      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+        <div className="h-full rounded-full bg-cave-bordeaux" style={{ width: `${value}%` }} />
       </div>
-      <span className="text-xs font-semibold text-gray-500 w-16 flex-shrink-0">
+      <span className="text-xs font-semibold text-muted-foreground w-16 flex-shrink-0">
         {oppositeLabel}
       </span>
     </div>
@@ -79,9 +76,7 @@ export function WineDetailSheet({
   const wineName = sanitizeWineName(wine.wine_name)
   const apogeeResult = getApogee(wine)
 
-  // Gate Collectionneur pour le bouton "Analyser ce vin"
-  const isCollector =
-    rawPlan === "collector" || role === "admin" || role === "beta"
+  const isCollector = rawPlan === "collector" || role === "admin" || role === "beta"
 
   const heroGradient =
     wine.wine_type === "wine_white" || wine.wine_type === "wine_white_sparkling"
@@ -97,12 +92,9 @@ export function WineDetailSheet({
     wine_rose: "Rosé",
   }
 
-  // Apogée : préférence aux données enrichies, sinon fallback statique
   const apogeeStart = enrichment?.apogee_start ?? null
   const apogeeEnd = enrichment?.apogee_end ?? null
-  const hasEnrichedApogee = apogeeStart !== null && apogeeEnd !== null
-
-  // Prix : données enrichies
+  const hasEnrichedApogee = apogeeStart !== null
   const priceMin = enrichment?.price_min ?? null
   const priceMax = enrichment?.price_max ?? null
   const hasPrice = priceMin !== null
@@ -114,7 +106,7 @@ export function WineDetailSheet({
     >
       <div className="flex-1 overflow-y-auto">
 
-        {/* Section 1 : Hero visuel */}
+        {/* Hero visuel */}
         <div className={`relative h-64 bg-gradient-to-b ${heroGradient} flex items-end`}>
           {enrichment?.bottle_image_url && (
             <img
@@ -127,6 +119,7 @@ export function WineDetailSheet({
             onClick={onClose}
             className="absolute top-4 left-4 z-20 w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
             aria-label="Fermer"
+            style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
           >
             <X className="w-5 h-5 text-white" />
           </button>
@@ -161,16 +154,16 @@ export function WineDetailSheet({
           </div>
         </div>
 
-        {/* Bouton "Analyser ce vin" — visible si pas d'enrichissement et wineId présent */}
+        {/* Bouton "Analyser ce vin" — visible si pas d'enrichissement */}
         {!isLoading && !enrichment && wineId && (
           <div className="mx-5 mt-4 mb-1">
             {isCollector ? (
               <button
                 onClick={enrich}
-                className="w-full flex items-center justify-center gap-2 bg-cave-bordeaux rounded-2xl py-3.5 text-sm font-bold text-white"
+                className="w-full flex items-center justify-center gap-2 border border-cave-bordeaux bg-white rounded-2xl py-3.5 text-sm font-semibold text-cave-bordeaux"
               >
                 <Sparkles className="w-4 h-4" />
-                Analyser ce vin avec l&rsquo;IA
+                Analyser ce vin
               </button>
             ) : (
               <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
@@ -178,22 +171,12 @@ export function WineDetailSheet({
                 <div>
                   <p className="text-sm font-semibold text-gray-800">Analyse IA</p>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Disponible avec l&apos;abonnement Collectionneur — description, profil
+                    Disponible avec l&apos;abonnement Collectionneur ✨ — description, profil
                     gustatif, accords mets et bien plus.
                   </p>
                 </div>
               </div>
             )}
-          </div>
-        )}
-
-        {/* Skeleton global pendant le chargement initial */}
-        {isLoading && (
-          <div className="px-5 py-4 flex flex-col gap-3">
-            <SkeletonLine className="h-4 w-2/3" />
-            <SkeletonLine className="h-3.5 w-full" />
-            <SkeletonLine className="h-3.5 w-5/6" />
-            <SkeletonLine className="h-3.5 w-4/6" />
           </div>
         )}
 
@@ -204,11 +187,11 @@ export function WineDetailSheet({
           </div>
         )}
 
-        {/* Section 2 : Description du vin */}
+        {/* Section A : À propos de ce vin */}
         {(isLoading || enrichment?.description) && (
           <div className="px-5 py-4 border-b border-gray-100">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-              À propos du vin
+              À propos de ce vin
             </div>
             {isLoading ? (
               <div className="flex flex-col gap-2">
@@ -222,7 +205,83 @@ export function WineDetailSheet({
           </div>
         )}
 
-        {/* Section 3 : Informations domaine */}
+        {/* Section B : Profil gustatif */}
+        {(isLoading || enrichment?.taste_profile) && (
+          <div className="px-5 py-4 border-b border-gray-100">
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+              Profil gustatif
+            </div>
+            {isLoading ? (
+              <div className="flex flex-col gap-3">
+                <SkeletonLine className="h-3 w-full" />
+                <SkeletonLine className="h-3 w-full" />
+                <SkeletonLine className="h-3 w-full" />
+                <SkeletonLine className="h-3 w-full" />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <TasteBar label="Léger" oppositeLabel="Puissant" value={enrichment!.taste_profile!.body} />
+                {enrichment!.taste_profile!.tannins > 0 && (
+                  <TasteBar label="Souple" oppositeLabel="Tannique" value={enrichment!.taste_profile!.tannins} />
+                )}
+                <TasteBar label="Doux" oppositeLabel="Acide" value={enrichment!.taste_profile!.acidity} />
+                <TasteBar label="Simple" oppositeLabel="Complexe" value={enrichment!.taste_profile!.complexity} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Section C : Accords mets & vins */}
+        {(isLoading || (enrichment?.food_pairings && enrichment.food_pairings.length > 0)) && (
+          <div className="px-5 py-4 border-b border-gray-100">
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+              Accords mets &amp; vins
+            </div>
+            {isLoading ? (
+              <div className="flex gap-2 flex-wrap">
+                <SkeletonLine className="h-7 w-28 rounded-full" />
+                <SkeletonLine className="h-7 w-24 rounded-full" />
+                <SkeletonLine className="h-7 w-32 rounded-full" />
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {enrichment!.food_pairings!.map((pairing, i) => (
+                  <span
+                    key={i}
+                    className="text-sm bg-muted text-muted-foreground rounded-full px-3 py-1"
+                  >
+                    {pairing}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Section D : Période d'apogée */}
+        {(isLoading || hasEnrichedApogee || apogeeResult) && (
+          <div className="px-5 py-4 border-b border-gray-100">
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+              Période d&apos;apogée
+            </div>
+            {isLoading ? (
+              <SkeletonLine className="h-5 w-48" />
+            ) : hasEnrichedApogee ? (
+              <p className="text-sm font-semibold text-gray-800">
+                {apogeeEnd
+                  ? `À boire entre ${apogeeStart} et ${apogeeEnd}`
+                  : `Dès ${apogeeStart}`}
+              </p>
+            ) : apogeeResult ? (
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold text-gray-800">{apogeeResult.label}</p>
+                <ApogeeStatusBadge wine={wine} />
+              </div>
+            ) : null}
+          </div>
+        )}
+
+        {/* Section E : Le domaine */}
         {(isLoading || enrichment?.domaine_history || enrichment?.domaine_style) && (
           <div className="px-5 py-4 border-b border-gray-100">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
@@ -250,170 +309,61 @@ export function WineDetailSheet({
           </div>
         )}
 
-        {/* Section 4 : Note critique */}
-        <div className="px-5 py-4 border-b border-gray-100">
-          <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-            Notes &amp; avis
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-50 rounded-2xl p-3 text-center">
-              {isLoading ? (
-                <SkeletonLine className="h-7 w-16 mx-auto mb-1" />
-              ) : enrichment?.critic_score ? (
-                <div className="text-2xl font-black text-cave-bordeaux">
-                  {enrichment.critic_score}
-                  <span className="text-sm font-normal text-gray-400">/100</span>
-                </div>
-              ) : (
-                <div className="text-2xl font-black text-gray-200">—</div>
-              )}
-              <div className="flex justify-center gap-0.5 my-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star
-                    key={i}
-                    className="w-3 h-3"
-                    fill={enrichment?.critic_score ? "#f59e0b" : "#e5e7eb"}
-                    stroke="none"
-                  />
-                ))}
-              </div>
-              <div className="text-xs text-gray-400">Note des experts</div>
-            </div>
-            <div className="bg-gray-50 rounded-2xl p-3 text-center">
-              {myRating != null ? (
-                <div className="text-2xl font-black text-cave-bordeaux">{myRating}/5</div>
-              ) : (
-                <div className="text-2xl font-black text-gray-200">—</div>
-              )}
-              <div className="flex justify-center gap-0.5 my-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star
-                    key={i}
-                    className="w-3 h-3"
-                    fill={myRating && i <= myRating ? "#f59e0b" : "#e5e7eb"}
-                    stroke="none"
-                  />
-                ))}
-              </div>
-              <div className="text-xs text-gray-400">
-                {myRating ? "Ma note" : "Pas encore noté"}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Section 5 : Profil gustatif */}
-        {(isLoading || enrichment?.taste_profile) && (
+        {/* Section F : Note critique */}
+        {(isLoading || enrichment?.critic_score != null) && (
           <div className="px-5 py-4 border-b border-gray-100">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-              Profil gustatif
+              Note critique
             </div>
             {isLoading ? (
-              <div className="flex flex-col gap-3">
-                <SkeletonLine className="h-3 w-full" />
-                <SkeletonLine className="h-3 w-full" />
-                <SkeletonLine className="h-3 w-full" />
-              </div>
+              <SkeletonLine className="h-10 w-24" />
             ) : (
-              <div className="flex flex-col gap-3">
-                <TasteBar
-                  label="Léger"
-                  oppositeLabel="Puissant"
-                  value={enrichment!.taste_profile!.body}
-                />
-                {enrichment!.taste_profile!.tannins > 0 && (
-                  <TasteBar
-                    label="Souple"
-                    oppositeLabel="Tannique"
-                    value={enrichment!.taste_profile!.tannins}
-                  />
-                )}
-                <TasteBar
-                  label="Doux"
-                  oppositeLabel="Acide"
-                  value={enrichment!.taste_profile!.acidity}
-                />
-                <TasteBar
-                  label="Simple"
-                  oppositeLabel="Complexe"
-                  value={enrichment!.taste_profile!.complexity}
-                />
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-cave-bordeaux">
+                  {enrichment!.critic_score}
+                </span>
+                <span className="text-lg text-muted-foreground">/100</span>
               </div>
             )}
           </div>
         )}
 
-        {/* Section 6 : Accords mets */}
-        {(isLoading || (enrichment?.food_pairings && enrichment.food_pairings.length > 0)) && (
+        {/* Section G : Prix estimé */}
+        {(isLoading || hasPrice) && (
           <div className="px-5 py-4 border-b border-gray-100">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-              Accords mets
+              Prix estimé
             </div>
             {isLoading ? (
-              <div className="flex gap-2 flex-wrap">
-                <SkeletonLine className="h-7 w-28 rounded-full" />
-                <SkeletonLine className="h-7 w-24 rounded-full" />
-                <SkeletonLine className="h-7 w-32 rounded-full" />
-              </div>
+              <SkeletonLine className="h-5 w-36" />
             ) : (
-              <div className="flex flex-wrap gap-2">
-                {enrichment!.food_pairings!.map((pairing, i) => (
-                  <span
-                    key={i}
-                    className="text-xs font-medium bg-cave-bordeaux/10 text-cave-bordeaux px-3 py-1.5 rounded-full"
-                  >
-                    {pairing}
-                  </span>
-                ))}
-              </div>
+              <p className="text-sm font-semibold text-gray-800">
+                {priceMax && priceMin !== priceMax
+                  ? `Entre ${priceMin}€ et ${priceMax}€`
+                  : `À partir de ${priceMin}€`}
+              </p>
             )}
           </div>
         )}
 
-        {/* Section 7 : Apogée & Prix */}
-        {(apogeeResult || hasEnrichedApogee || hasPrice || isLoading) && (
+        {/* Ma note personnelle */}
+        {myRating != null && (
           <div className="px-5 py-4 border-b border-gray-100">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-              Apogée &amp; Prix
+              Ma note
             </div>
-            <div className="flex gap-3">
-              {/* Apogée : enrichi en priorité, sinon statique */}
-              {isLoading ? (
-                <div className="flex-1 bg-gray-50 rounded-2xl p-3">
-                  <SkeletonLine className="h-3 w-24 mb-2" />
-                  <SkeletonLine className="h-5 w-20" />
-                </div>
-              ) : hasEnrichedApogee ? (
-                <div className="flex-1 bg-gray-50 rounded-2xl p-3">
-                  <div className="text-xs text-gray-400 mb-1">Fenêtre idéale</div>
-                  <div className="text-base font-black text-gray-800">
-                    {apogeeStart} – {apogeeEnd}
-                  </div>
-                  <ApogeeStatusBadge wine={wine} />
-                </div>
-              ) : apogeeResult ? (
-                <div className="flex-1 bg-gray-50 rounded-2xl p-3">
-                  <div className="text-xs text-gray-400 mb-1">Fenêtre idéale</div>
-                  <div className="text-base font-black text-gray-800">{apogeeResult.label}</div>
-                  <ApogeeStatusBadge wine={wine} />
-                </div>
-              ) : null}
-
-              {/* Prix estimé */}
-              {isLoading ? (
-                <div className="flex-1 bg-gray-50 rounded-2xl p-3">
-                  <SkeletonLine className="h-3 w-20 mb-2" />
-                  <SkeletonLine className="h-5 w-16" />
-                </div>
-              ) : hasPrice ? (
-                <div className="flex-1 bg-gray-50 rounded-2xl p-3">
-                  <div className="text-xs text-gray-400 mb-1">Prix estimé</div>
-                  <div className="text-base font-black text-cave-bordeaux">
-                    {priceMin === priceMax ? `${priceMin}€` : `${priceMin}–${priceMax}€`}
-                  </div>
-                  <div className="text-xs text-gray-400">/ bouteille</div>
-                </div>
-              ) : null}
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-black text-cave-bordeaux">{myRating}/5</span>
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star
+                    key={i}
+                    className="w-4 h-4"
+                    fill={i <= myRating ? "#f59e0b" : "#e5e7eb"}
+                    stroke="none"
+                  />
+                ))}
+              </div>
             </div>
           </div>
         )}
