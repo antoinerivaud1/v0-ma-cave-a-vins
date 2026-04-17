@@ -25,6 +25,7 @@ import {
 
 interface WineCardProps {
   wine: Wine
+  onWineSelect?: (wine: Wine) => void
   onWineUpdate?: (updates: Partial<Wine>) => void
   onMoved?: () => void
 }
@@ -43,7 +44,7 @@ const colorBadgeVariant: Record<string, "gold" | "muted"> = {
   unknown: "muted",
 }
 
-export function WineCard({ wine, onWineUpdate, onMoved }: WineCardProps) {
+export function WineCard({ wine, onWineSelect, onWineUpdate, onMoved }: WineCardProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
@@ -137,7 +138,7 @@ export function WineCard({ wine, onWineUpdate, onMoved }: WineCardProps) {
     <div className="relative overflow-hidden rounded-xl border border-cave-border bg-card">
       <div className="flex w-full items-center gap-3 px-3.5 py-3">
         <button
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={() => onWineSelect ? onWineSelect(wine) : setIsOpen((prev) => !prev)}
           className="flex flex-1 items-center gap-3 text-left min-w-0"
           aria-expanded={isOpen}
         >

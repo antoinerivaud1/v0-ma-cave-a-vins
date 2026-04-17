@@ -66,7 +66,7 @@ export interface CaveListProps {
   initialFilter?: { color?: string; level?: string }
 }
 
-export function CaveList({ cave, initialFilter, onAddWine, onWineSelect: _onWineSelect, onWineMove }: CaveListProps) {
+export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineMove }: CaveListProps) {
   const [colorFilter, setColorFilter] = useState(initialFilter?.color || "all")
   const [levelFilter, setLevelFilter] = useState(initialFilter?.level || "all")
   const [searchQuery, setSearchQuery] = useState("")
@@ -215,6 +215,7 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect: _onWine
           <WineCard
             key={`${wine.wine_name}-${wine.millesime_year}-${index}`}
             wine={wine}
+            onWineSelect={onWineSelect}
             onMoved={onWineMove}
           />
         ))}
