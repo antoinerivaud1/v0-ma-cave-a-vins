@@ -66,8 +66,11 @@ export function clearAllStockOverrides() {
 
 export function useStockOverrides() {
   useEffect(() => {
+    const wasLoaded = hasLoadedOverrides
     loadOverridesFromStorage()
-    emitChange()
+    if (!wasLoaded) {
+      emitChange()
+    }
 
     const handleStorage = (event: StorageEvent) => {
       if (event.key !== STORAGE_KEY) return
