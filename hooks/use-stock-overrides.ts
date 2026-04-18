@@ -100,7 +100,11 @@ export function useStockOverrides() {
   }, [])
 
   const getOverrideForWine = useCallback((wine: Wine): StockOverride | undefined => {
-    return overrides[getWineKeyFromWine(wine)]
+    const newKey = getWineKeyFromWine(wine)
+    if (overrides[newKey] !== undefined) return overrides[newKey]
+    // Fallback: read legacy keys written as "${wine_name}_${millesime_year}" before PR #38
+    const legacyKey = `${wine.wine_name ?? ""}_${wine.millesime_year ?? ""}`
+    return overrides[legacyKey]
   }, [getWineKeyFromWine, overrides])
 
   const setOverrideForWine = useCallback((wine: Wine, override: StockOverride) => {
