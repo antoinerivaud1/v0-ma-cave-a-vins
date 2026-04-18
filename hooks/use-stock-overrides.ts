@@ -9,6 +9,8 @@ const STORAGE_KEY = CAVE_STORAGE_KEYS.stockOverrides
 
 type OverridesMap = Record<string, StockOverride>
 
+const EMPTY_OVERRIDE = Object.freeze({}) as StockOverride
+
 let overridesStore: OverridesMap = {}
 let hasLoadedOverrides = false
 const listeners = new Set<() => void>()
@@ -66,8 +68,13 @@ export function clearAllStockOverrides() {
 
 export function useStockOverrides() {
   useEffect(() => {
+    const wasLoaded = hasLoadedOverrides
     loadOverridesFromStorage()
-    emitChange()
+    // Only emit if this mount triggered the initial load — prevents N×N re-renders
+    // when multiple WineCards mount simultaneously via useSyncExternalStore.
+    if (!wasLoaded) {
+      emitChange()
+    }
 
     const handleStorage = (event: StorageEvent) => {
       if (event.key !== STORAGE_KEY) return
@@ -99,12 +106,12 @@ export function useStockOverrides() {
     return getWineIdentityKey(wine)
   }, [])
 
-  const getOverrideForWine = useCallback((wine: Wine): StockOverride | undefined => {
+  const getOverrideForWine = useCallback((wine: Wine): StockOverride => {
     const newKey = getWineKeyFromWine(wine)
     if (overrides[newKey] !== undefined) return overrides[newKey]
     // Fallback: read legacy keys written as "${wine_name}_${millesime_year}" before PR #38
     const legacyKey = `${wine.wine_name ?? ""}_${wine.millesime_year ?? ""}`
-    return overrides[legacyKey]
+    return overrides[legacyKey] ?? EMPTY_OVERRIDE
   }, [getWineKeyFromWine, overrides])
 
   const setOverrideForWine = useCallback((wine: Wine, override: StockOverride) => {
