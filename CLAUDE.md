@@ -1,7 +1,7 @@
 # CLAUDE.md — Ma Cave à Vins
 
 > Fichier de contexte pour Claude Code et Codex. Toujours synchronisé avec `.cursorrules`.
-> Dernière mise à jour : 13 avril 2026
+> Dernière mise à jour : 18 avril 2026
 
 ---
 
@@ -195,3 +195,58 @@ pnpm exec vitest run                # tests (11 passent)
 - [ ] Pas de `console.log` oublié
 - [ ] PR cible `develop` (vérifier visuellement sur GitHub)
 - [ ] Si CLAUDE.md modifié → `cp CLAUDE.md .cursorrules` dans le même commit
+
+---
+
+## Évolution des skills et capitalisation
+
+### Principe
+Les skills (`/mnt/skills/user/`) sont des documents vivants.
+Ils doivent évoluer après chaque session où un apprentissage significatif a eu lieu.
+Un skill qui ne s'améliore pas est un skill qui sera contourné.
+
+### Quand mettre à jour un skill
+
+| Événement | Skill à mettre à jour |
+|---|---|
+| Bug résolu après investigation | `debug` — ajouter le pattern et la règle absolue |
+| Nouvelle convention de code établie | `dev-code-prompt` — contraintes NON-NÉGOCIABLES |
+| Nouvelle règle iOS / Tailwind / Supabase | `dev-code-prompt` + `CLAUDE.md` |
+| Workflow de session amélioré | `start` ou `end` |
+| Nouveau type de PR ou conflit résolu | `deploy` |
+
+### Qui met à jour les skills
+Claude met à jour les skills en fin de session (via le skill `end`).
+Antoine valide et installe les fichiers dans `/mnt/skills/user/[skill]/SKILL.md`.
+
+### Format de versioning
+- `+0.0.1` : ajout d'un pattern ou correction mineure
+- `+0.1.0` : nouvelle règle absolue issue d'une expérience terrain
+- `+1.0.0` : restructuration majeure
+
+---
+
+## Règles capitalisées — expérience terrain
+
+Ces règles complètent les NON-NÉGOCIABLES. Elles ont été apprises en production.
+
+**[2026-04-18] Initialisation de store React partagé :**
+Tout store partagé entre N composants (useSyncExternalStore) doit être initialisé
+au niveau module, pas dans un useEffect. Un useEffect d'initialisation appelé par
+N composants crée une race condition si tous montent dans le même tick React.
+Fichier concerné : `hooks/use-stock-overrides.ts`.
+
+**[2026-04-18] Rebases et conflits de merge :**
+Ne jamais utiliser `git rebase` pour résoudre un conflit de merge sur une PR.
+Ouvrir une nouvelle branche propre depuis develop et y réécrire le fix.
+Un rebase mal exécuté peut produire une PR avec 0 commits et se fermer automatiquement.
+
+**[2026-04-18] Validation fonctionnelle vs typecheck :**
+`pnpm tsc --noEmit` valide les types mais pas le comportement runtime.
+Tout fix de bug doit être validé sur le preview Vercel avec un test
+utilisateur concret (cliquer le bouton, observer le résultat) avant merge.
+
+**[2026-04-18] Nommage des branches de bug :**
+Les branches de fix doivent nommer la CAUSE, pas le symptôme.
+OK : `fix/emitchange-race-condition-mount`
+KO : `fix/freeze-bouton-consommer`
