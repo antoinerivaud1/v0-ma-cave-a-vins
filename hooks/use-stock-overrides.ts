@@ -9,6 +9,10 @@ const STORAGE_KEY = CAVE_STORAGE_KEYS.stockOverrides
 
 type OverridesMap = Record<string, StockOverride>
 
+// Stable reference returned when a wine has no override — prevents new-object-per-call
+// from dirtying useMemo / useEffect dependency arrays.
+const EMPTY_OVERRIDE: StockOverride = Object.freeze({})
+
 let overridesStore: OverridesMap = {}
 let hasLoadedOverrides = false
 const listeners = new Set<() => void>()
@@ -66,8 +70,14 @@ export function clearAllStockOverrides() {
 
 export function useStockOverrides() {
   useEffect(() => {
-    loadOverridesFromStorage()
-    emitChange()
+    // Guard: only load + emit when this is the first mounted subscriber.
+    // Without this guard, every WineCard calling useStockOverrides() would
+    // call emitChange() on mount, triggering N×N synchronous re-renders via
+    // useSyncExternalStore and freezing the UI on large lists.
+    if (!hasLoadedOverrides) {
+      loadOverridesFromStorage()
+      emitChange()
+    }
 
     const handleStorage = (event: StorageEvent) => {
       if (event.key !== STORAGE_KEY) return
@@ -99,12 +109,16 @@ export function useStockOverrides() {
     return getWineIdentityKey(wine)
   }, [])
 
-  const getOverrideForWine = useCallback((wine: Wine): StockOverride | undefined => {
+  const getOverrideForWine = useCallback((wine: Wine): StockOverride => {
+    // Primary key: new identity format (id: or fallback:…)
     const newKey = getWineKeyFromWine(wine)
-    if (overrides[newKey] !== undefined) return overrides[newKey]
-    // Fallback: read legacy keys written as "${wine_name}_${millesime_year}" before PR #38
+    const stored = overrides[newKey]
+    if (stored !== undefined) return stored
+
+    // Legacy fallback: old "name_millesime" format used before b1dd216 / PR #38.
+    // Keeps existing overrides readable after the key-format migration.
     const legacyKey = `${wine.wine_name ?? ""}_${wine.millesime_year ?? ""}`
-    return overrides[legacyKey]
+    return overrides[legacyKey] ?? EMPTY_OVERRIDE
   }, [getWineKeyFromWine, overrides])
 
   const setOverrideForWine = useCallback((wine: Wine, override: StockOverride) => {
