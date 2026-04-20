@@ -62,13 +62,17 @@ export function WineSearchSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl">
-        <SheetHeader className="mb-6">
+      <SheetContent side="bottom" className="rounded-t-2xl max-h-[90dvh] flex flex-col">
+        <SheetHeader
+          className="mb-6"
+          style={{ paddingTop: "calc(env(safe-area-inset-top) + 16px)" }}
+        >
           <SheetTitle className="text-center font-serif text-xl">
             {fullTitle}
           </SheetTitle>
         </SheetHeader>
 
+        <div className="overflow-y-auto flex-1">
         {/* Search links */}
         <div className="flex flex-col gap-3 mb-6">
           {searchLinks.map((link) => (
@@ -91,6 +95,7 @@ export function WineSearchSheet({
         <p className="text-center text-xs text-muted-foreground">
           Les prix peuvent varier selon les revendeurs
         </p>
+        </div>
       </SheetContent>
     </Sheet>
   )
