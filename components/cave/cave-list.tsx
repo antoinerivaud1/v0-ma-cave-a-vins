@@ -7,6 +7,7 @@ import { FilterBar } from "./filter-bar"
 import { SortFilterDropdown, type SortFilterState } from "./sort-filter-dropdown"
 import { WineCard } from "./wine-card"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { useCaves } from "@/hooks/use-caves"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { formatRegion } from "@/lib/wine-helpers"
 import { getApogee } from "@/data/apogee"
@@ -78,6 +79,7 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
   const [showArchived, setShowArchived] = useState(false)
   const [showAddSheet, setShowAddSheet] = useState(false)
   const { getOverrideForWine, isLoaded } = useStockOverrides()
+  const { caves } = useCaves()
 
   const filtered = useMemo(() => {
     if (!isLoaded) return []
@@ -215,6 +217,7 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
           <WineCard
             key={`${wine.wine_name}-${wine.millesime_year}-${index}`}
             wine={wine}
+            caves={caves}
             onWineSelect={onWineSelect}
             onMoved={onWineMove}
           />
@@ -236,7 +239,7 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
             <div className="mt-2 flex flex-col gap-2.5 px-4 pb-4">
               {archivedWines.map((wine, index) => (
                 <div key={`archived-${wine.wine_name}-${wine.millesime_year}-${index}`} className="relative">
-                  <WineCard wine={wine} />
+                  <WineCard wine={wine} caves={caves} />
                   <div className="absolute top-3 right-3 z-10">
                     <span className="inline-block px-2 py-1 text-xs font-medium rounded-md bg-muted text-muted-foreground">
                       Archivé

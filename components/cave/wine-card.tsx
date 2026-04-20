@@ -12,6 +12,7 @@ import { WineEnrichmentPanel } from "./wine-enrichment-panel"
 import { useTastings } from "@/hooks/use-tastings"
 import { TastingPanel } from "./tasting-panel"
 import type { Wine } from "@/data/apogee"
+import type { Cave } from "@/hooks/use-caves"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +26,7 @@ import {
 
 interface WineCardProps {
   wine: Wine
+  caves: Cave[]
   onWineSelect?: (wine: Wine) => void
   onWineUpdate?: (updates: Partial<Wine>) => void
   onMoved?: () => void
@@ -44,7 +46,7 @@ const colorBadgeVariant: Record<string, "gold" | "muted"> = {
   unknown: "muted",
 }
 
-export function WineCard({ wine, onWineSelect, onWineUpdate, onMoved }: WineCardProps) {
+export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: WineCardProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
@@ -188,6 +190,7 @@ export function WineCard({ wine, onWineSelect, onWineUpdate, onMoved }: WineCard
           wineId={wine.id}
           wineCaveId={wine.cave_id}
           onMoved={onMoved}
+          caves={caves}
         />
       </div>
 
