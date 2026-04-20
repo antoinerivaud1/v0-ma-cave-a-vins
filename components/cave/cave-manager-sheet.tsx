@@ -89,8 +89,11 @@ export function CaveManagerSheet({ open, onOpenChange }: CaveManagerSheetProps) 
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-0">
-          <SheetHeader className="px-5 pb-3">
+        <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-0 max-h-[90dvh] flex flex-col z-[60]">
+          <SheetHeader
+            className="px-5 pb-3"
+            style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
+          >
             <SheetTitle className="font-serif text-lg">Mes caves</SheetTitle>
           </SheetHeader>
 
@@ -119,7 +122,7 @@ export function CaveManagerSheet({ open, onOpenChange }: CaveManagerSheetProps) 
                           {/* Active dot */}
                           <span
                             className={`h-2.5 w-2.5 shrink-0 rounded-full transition-colors ${
-                              isActive ? "bg-[#722F37]" : "bg-transparent border border-muted-foreground/30"
+                              isActive ? "bg-cave-bordeaux" : "bg-transparent border border-muted-foreground/30"
                             }`}
                             aria-label={isActive ? "Cave active" : ""}
                           />
@@ -161,7 +164,7 @@ export function CaveManagerSheet({ open, onOpenChange }: CaveManagerSheetProps) 
                               </span>
 
                               {isActive && (
-                                <span className="mr-1 text-xs text-[#722F37]">Active</span>
+                                <span className="mr-1 text-xs text-cave-bordeaux">Active</span>
                               )}
 
                               {/* 3-dot menu */}
@@ -234,7 +237,7 @@ export function CaveManagerSheet({ open, onOpenChange }: CaveManagerSheetProps) 
                 style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
               >
                 {isPremiumGated ? (
-                  <div className="flex items-center gap-3 rounded-xl border border-[#722F37]/20 bg-[#722F37]/10 px-4 py-3">
+                  <div className="flex items-center gap-3 rounded-xl border border-cave-bordeaux/20 bg-cave-bordeaux/10 px-4 py-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-foreground">Nouvelle cave</span>

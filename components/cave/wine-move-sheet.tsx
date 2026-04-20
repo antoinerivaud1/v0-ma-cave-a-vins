@@ -120,7 +120,10 @@ export function WineMoveSheet({ wine, open, onOpenChange, onMoved }: WineMoveShe
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[90dvh] flex flex-col rounded-t-2xl px-0 pb-0 z-[60]">
-        <SheetHeader className="px-5 pb-3">
+        <SheetHeader
+          className="px-5 pb-3"
+          style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
+        >
           <SheetTitle className="font-serif text-lg">Déplacer vers...</SheetTitle>
           <SheetDescription className="text-sm text-muted-foreground">
             {sanitizeWineName(wine.name) || "Vin"}

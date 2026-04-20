@@ -127,11 +127,15 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-0">
-        <SheetHeader className="px-6 pt-2 pb-4">
+      <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-0 max-h-[90dvh] flex flex-col">
+        <SheetHeader
+          className="px-6 pb-4"
+          style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
+        >
           <SheetTitle className="font-serif text-lg">Mon compte</SheetTitle>
         </SheetHeader>
 
+        <div className="overflow-y-auto flex-1">
         <Tabs value={tab} onValueChange={(v) => { setTab(v as "login" | "signup"); resetError() }}>
           <TabsList className="mx-6 mb-4 w-[calc(100%-3rem)]">
             <TabsTrigger value="login" className="flex-1">Connexion</TabsTrigger>
@@ -251,6 +255,7 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
               Continuer avec Google
             </Button>
           </div>
+        </div>
         </div>
       </SheetContent>
     </Sheet>
