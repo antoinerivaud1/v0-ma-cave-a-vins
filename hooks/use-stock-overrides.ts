@@ -11,6 +11,7 @@ type OverridesMap = Record<string, StockOverride>
 
 let overridesStore: OverridesMap = {}
 let hasLoadedOverrides = false
+let hasMigratedLegacyKeys = false
 const listeners = new Set<() => void>()
 
 function emitChange() {
@@ -51,6 +52,39 @@ function persistOverrides(nextOverrides: OverridesMap) {
   }
 
   emitChange()
+}
+
+function migrateLegacyKeys(overrides: OverridesMap, wines: Wine[]): OverridesMap {
+  let next: OverridesMap | null = null
+
+  for (const wine of wines) {
+    const legacyKey = `${wine.wine_name ?? ""}_${wine.millesime_year ?? ""}`
+    const source = next ?? overrides
+    if (!(legacyKey in source)) continue
+
+    const newKey = getWineIdentityKey(wine)
+    if (newKey === legacyKey) continue
+
+    if (next === null) next = { ...overrides }
+    if (!(newKey in next)) {
+      next[newKey] = next[legacyKey]
+    }
+    delete next[legacyKey]
+  }
+
+  return next ?? overrides
+}
+
+export function triggerLegacyMigration(wines: Wine[]): void {
+  if (hasMigratedLegacyKeys || typeof window === "undefined") return
+  hasMigratedLegacyKeys = true
+
+  loadOverridesFromStorage()
+
+  const migrated = migrateLegacyKeys(overridesStore, wines)
+  if (migrated !== overridesStore) {
+    persistOverrides(migrated)
+  }
 }
 
 export function clearAllStockOverrides() {
@@ -100,11 +134,7 @@ export function useStockOverrides() {
   }, [])
 
   const getOverrideForWine = useCallback((wine: Wine): StockOverride | undefined => {
-    const newKey = getWineKeyFromWine(wine)
-    if (overrides[newKey] !== undefined) return overrides[newKey]
-    // Fallback: read legacy keys written as "${wine_name}_${millesime_year}" before PR #38
-    const legacyKey = `${wine.wine_name ?? ""}_${wine.millesime_year ?? ""}`
-    return overrides[legacyKey]
+    return overrides[getWineKeyFromWine(wine)]
   }, [getWineKeyFromWine, overrides])
 
   const setOverrideForWine = useCallback((wine: Wine, override: StockOverride) => {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { BottomNav, type TabId } from "./bottom-nav"
 import { Dashboard } from "./dashboard"
 import { CaveList } from "./cave-list"
@@ -13,7 +13,7 @@ import { Suggest } from "./suggest"
 import { Settings } from "./settings"
 import type { Cave } from "@/hooks/use-caves"
 import { useAuth } from "@/hooks/use-auth"
-import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { useStockOverrides, triggerLegacyMigration } from "@/hooks/use-stock-overrides"
 import { sanitizeWineName } from "@/lib/wine-helpers"
 import type { Wine } from "@/data/apogee"
 import {
@@ -51,6 +51,12 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
   const [caveSwitchOpen, setCaveSwitchOpen] = useState(false)
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
   const { isPremium } = useAuth()
+
+  useEffect(() => {
+    if (cave.length > 0) {
+      triggerLegacyMigration(cave)
+    }
+  }, [cave])
   const canMoveSelectedWine = !!selectedWine?.id && caveCount > 1
 
   const navigateTo = useCallback((tab: TabId, filter?: CaveListProps["initialFilter"]) => {
