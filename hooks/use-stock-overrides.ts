@@ -29,7 +29,7 @@ function getSnapshot() {
 }
 
 function loadOverridesFromStorage() {
-  if (hasLoadedOverrides || typeof window === 'undefined') return
+  if (hasLoadedOverrides || typeof window === "undefined") return
 
   hasLoadedOverrides = true
 
@@ -39,14 +39,18 @@ function loadOverridesFromStorage() {
   try {
     overridesStore = JSON.parse(stored)
   } catch (e) {
-    console.error('[v0] Failed to parse stock overrides:', e)
+    console.error("[v0] Failed to parse stock overrides:", e)
   }
 }
+
+// Initialisation au niveau module : exécutée une seule fois à l'import du fichier,
+// jamais en boucle au mount de N composants.
+loadOverridesFromStorage()
 
 function persistOverrides(nextOverrides: OverridesMap) {
   overridesStore = nextOverrides
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextOverrides))
   }
 
@@ -66,9 +70,6 @@ export function clearAllStockOverrides() {
 
 export function useStockOverrides() {
   useEffect(() => {
-    loadOverridesFromStorage()
-    emitChange()
-
     const handleStorage = (event: StorageEvent) => {
       if (event.key !== STORAGE_KEY) return
 
@@ -82,13 +83,13 @@ export function useStockOverrides() {
         overridesStore = JSON.parse(event.newValue)
         emitChange()
       } catch (e) {
-        console.error('[v0] Failed to parse stock overrides:', e)
+        console.error("[v0] Failed to parse stock overrides:", e)
       }
     }
 
-    window.addEventListener('storage', handleStorage)
+    window.addEventListener("storage", handleStorage)
     return () => {
-      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener("storage", handleStorage)
     }
   }, [])
 
