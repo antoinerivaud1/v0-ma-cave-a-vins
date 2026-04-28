@@ -7,6 +7,8 @@ import { CAVE_STORAGE_KEYS } from "@/lib/cave-storage"
 
 const STORAGE_KEY = CAVE_STORAGE_KEYS.stockOverrides
 
+let emitCount = 0
+
 type OverridesMap = Record<string, StockOverride>
 
 let overridesStore: OverridesMap = {}
@@ -14,6 +16,8 @@ let hasLoadedOverrides = false
 const listeners = new Set<() => void>()
 
 function emitChange() {
+  console.warn("[DEBUG] emitChange #" + (++emitCount), new Error().stack?.split("\n")[2]?.trim())
+  if (emitCount > 100) { throw new Error("INFINITE LOOP DETECTED at emitChange #" + emitCount) }
   listeners.forEach((listener) => listener())
 }
 
@@ -48,6 +52,7 @@ function loadOverridesFromStorage() {
 loadOverridesFromStorage()
 
 function persistOverrides(nextOverrides: OverridesMap) {
+  console.warn("[DEBUG] persistOverrides called", new Error().stack?.split("\n")[2]?.trim())
   overridesStore = nextOverrides
 
   if (typeof window !== "undefined") {
