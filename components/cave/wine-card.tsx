@@ -120,7 +120,8 @@ export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: W
   }
 
   const handleRestore = () => {
-    setOverrideForWine(wine, { ...override, archived: false })
+    const restoredQty = displayQuantity === 0 ? 1 : displayQuantity
+    setOverrideForWine(wine, { ...override, quantity: restoredQty, archived: false })
   }
 
   const handleDelete = () => {
