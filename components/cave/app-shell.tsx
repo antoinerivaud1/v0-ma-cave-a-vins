@@ -120,7 +120,7 @@ export function AppShell({ cave, lastUpdated, isOfflineCache, onImport, onClear,
 
       {selectedWine && (
         <AlertDialog open={showLastBottleDialog} onOpenChange={setShowLastBottleDialog}>
-          <AlertDialogContent>
+          <AlertDialogContent className="z-[70]">
             <AlertDialogHeader>
               <AlertDialogTitle>Dernière bouteille</AlertDialogTitle>
               <AlertDialogDescription>
