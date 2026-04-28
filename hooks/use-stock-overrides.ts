@@ -110,16 +110,20 @@ export function useStockOverrides() {
 
   const setOverrideForWine = useCallback((wine: Wine, override: StockOverride) => {
     const key = getWineKeyFromWine(wine)
-    persistOverrides({
-      ...overridesStore,
-      [key]: override,
-    })
+    const legacyKey = `${wine.wine_name ?? ""}_${wine.millesime_year ?? ""}`
+    const next = { ...overridesStore, [key]: override }
+    // Lazy migration: remove legacy key so the fallback in getOverrideForWine never returns stale data
+    delete next[legacyKey]
+    persistOverrides(next)
   }, [getWineKeyFromWine])
 
   const clearOverrideForWine = useCallback((wine: Wine) => {
     const key = getWineKeyFromWine(wine)
+    const legacyKey = `${wine.wine_name ?? ""}_${wine.millesime_year ?? ""}`
     const next = { ...overridesStore }
     delete next[key]
+    // Also clear legacy key so it cannot resurface via the fallback read path
+    delete next[legacyKey]
     persistOverrides(next)
   }, [getWineKeyFromWine])
 
