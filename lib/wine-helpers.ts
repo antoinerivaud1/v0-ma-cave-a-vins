@@ -32,12 +32,32 @@ export function sanitizeWineName(name: string | null | undefined): string {
   return String(name).replace(/_/g, ' ').trim()
 }
 
-/** Format a wine_region key to a nice label */
-export function formatRegion(key: string): string {
+/** Format a wine_region key to a human-readable French label */
+export function formatRegion(key: string | null | undefined): string {
+  if (!key) return ""
   const region = REGIONS[key]
   if (region) return region.label
   return key
-    .split('_')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+export const formatRegionLabel = formatRegion
+
+export type DrinkingStatus = "trop_tot" | "a_point" | "trop_tard" | "unknown"
+
+export function getDrinkingStatus(
+  peakYearStart: string | number | null | undefined,
+  peakYearEnd: string | number | null | undefined
+): DrinkingStatus {
+  if (!peakYearStart || !peakYearEnd) return "unknown"
+
+  const now = new Date().getFullYear()
+  const start = Number(peakYearStart)
+  const end = Number(peakYearEnd)
+
+  if (isNaN(start) || isNaN(end)) return "unknown"
+  if (now < start) return "trop_tot"
+  if (now >= start && now <= end) return "a_point"
+  return "trop_tard"
 }

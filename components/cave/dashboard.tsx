@@ -11,7 +11,7 @@ import { getDailyTip } from "@/data/wine-tips"
 import { useUserProfile } from "@/hooks/use-user-profile"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
-import { sanitizeWineName } from "@/lib/wine-helpers"
+import { sanitizeWineName, formatRegion } from "@/lib/wine-helpers"
 import type { Wine as WineType } from "@/data/apogee"
 import type { TabId } from "./bottom-nav"
 import type { CaveListProps } from "./cave-list"
@@ -187,7 +187,7 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
                     </p>
                     <p className="text-xs text-muted-foreground">
                       <span className="font-sans font-semibold tabular-nums">{wine.millesime_year}</span>
-                      {wine.wine_region ? ` · ${sanitizeWineName(wine.wine_region)}` : ""}
+                      {wine.wine_region ? ` · ${formatRegion(wine.wine_region)}` : ""}
                     </p>
                   </div>
                   {apogee && (
@@ -216,7 +216,7 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
                   </p>
                   <p className="text-xs text-muted-foreground">
                     <span className="font-sans font-semibold tabular-nums">{wine.millesime_year}</span>
-                    {wine.wine_region ? ` · ${sanitizeWineName(wine.wine_region)}` : ""}
+                    {wine.wine_region ? ` · ${formatRegion(wine.wine_region)}` : ""}
                   </p>
                 </div>
               </div>

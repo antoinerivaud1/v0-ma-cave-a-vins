@@ -35,19 +35,19 @@ export const REGIONS: Record<
     appellations: ['Apremont', 'Abymes', 'Chignin', 'Roussette de Savoie'],
   },
   vallee_du_rhone: {
-    label: 'Vallee du Rhone',
+    label: "Vallée du Rhône",
     cx: 340,
     cy: 370,
     appellations: [
-      'Hermitage',
-      'Crozes-Hermitage',
-      'Chateauneuf-du-Pape',
-      'Gigondas',
-      'Cotes du Rhone',
+      "Hermitage",
+      "Crozes-Hermitage",
+      "Chateauneuf-du-Pape",
+      "Gigondas",
+      "Cotes du Rhone",
     ],
   },
   vallee_de_la_loire: {
-    label: 'Val de Loire',
+    label: "Vallée de la Loire",
     cx: 186,
     cy: 230,
     appellations: ['Muscadet', 'Vouvray', 'Sancerre', 'Chinon', 'Anjou', 'Reuilly', 'Touraine'],
@@ -210,6 +210,50 @@ export const REGIONS: Record<
     cx: 0,
     cy: 0,
     appellations: ["Sauvignon Blanc", "Pinot Noir", "Pinot Gris"],
+  },
+
+  // ── Autres régions françaises ────────────────────────────────────────────────
+  languedoc_roussillon: {
+    label: "Languedoc-Roussillon",
+    cx: 290,
+    cy: 440,
+    appellations: ["Pic Saint-Loup", "Fitou", "Corbières", "Minervois"],
+  },
+  provence: {
+    label: "Provence",
+    cx: 360,
+    cy: 430,
+    appellations: ["Bandol", "Côtes de Provence", "Cassis"],
+  },
+  sud_ouest: {
+    label: "Sud-Ouest",
+    cx: 160,
+    cy: 430,
+    appellations: ["Cahors", "Madiran", "Bergerac", "Gaillac"],
+  },
+  beaujolais: {
+    label: "Beaujolais",
+    cx: 340,
+    cy: 290,
+    appellations: ["Moulin-à-Vent", "Morgon", "Fleurie", "Brouilly"],
+  },
+  jura: {
+    label: "Jura",
+    cx: 400,
+    cy: 250,
+    appellations: ["Arbois", "Château-Chalon", "L'Étoile"],
+  },
+  savoie: {
+    label: "Savoie",
+    cx: 424,
+    cy: 300,
+    appellations: ["Apremont", "Abymes", "Roussette de Savoie"],
+  },
+  corse: {
+    label: "Corse",
+    cx: 440,
+    cy: 490,
+    appellations: ["Patrimonio", "Ajaccio", "Porto-Vecchio"],
   },
 
   // ── Afrique du Sud ───────────────────────────────────────────────────────

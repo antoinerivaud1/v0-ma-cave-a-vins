@@ -1,7 +1,7 @@
 "use client"
 
 import { X, Star, Sparkles, Lock } from "lucide-react"
-import { sanitizeWineName, getLabel } from "@/lib/wine-helpers"
+import { sanitizeWineName, getLabel, formatRegion, getDrinkingStatus } from "@/lib/wine-helpers"
 import { WineBottleThumb } from "@/components/cave/wine-bottle-thumb"
 import type { Wine } from "@/data/apogee"
 import { getApogee } from "@/data/apogee"
@@ -27,6 +27,29 @@ function ApogeeStatusBadge({ wine }: { wine: Wine }) {
     wait: { label: "⏳ Attendre", className: "bg-yellow-100 text-yellow-700" },
   }
   const info = map[apogee.st as keyof typeof map]
+  if (!info) return null
+  return (
+    <span className={`text-xs font-semibold px-3 py-1 rounded-full ${info.className}`}>
+      {info.label}
+    </span>
+  )
+}
+
+function DrinkingStatusBadge({
+  start,
+  end,
+}: {
+  start: string | number | null | undefined
+  end: string | number | null | undefined
+}) {
+  const status = getDrinkingStatus(start, end)
+  if (status === "unknown") return null
+  const map = {
+    trop_tot: { label: "⏳ Trop tôt", className: "bg-amber-100 text-amber-700" },
+    a_point: { label: "🍃 À point", className: "bg-green-100 text-green-700" },
+    trop_tard: { label: "🔴 Trop tard", className: "bg-red-200 text-red-800" },
+  }
+  const info = map[status]
   if (!info) return null
   return (
     <span className={`text-xs font-semibold px-3 py-1 rounded-full ${info.className}`}>
@@ -153,7 +176,7 @@ export function WineDetailSheet({
               <div className="text-white/70 text-sm mt-0.5">{wine.wine_domain}</div>
             )}
             {wine.wine_region && (
-              <div className="text-white/50 text-xs mt-0.5">{wine.wine_region}</div>
+              <div className="text-white/50 text-xs mt-0.5">{formatRegion(wine.wine_region)}</div>
             )}
           </div>
         </div>
@@ -387,7 +410,7 @@ export function WineDetailSheet({
                   <div className="text-base font-black text-gray-800">
                     {apogeeStart} – {apogeeEnd}
                   </div>
-                  <ApogeeStatusBadge wine={wine} />
+                  <DrinkingStatusBadge start={apogeeStart} end={apogeeEnd} />
                 </div>
               ) : apogeeResult ? (
                 <div className="flex-1 bg-gray-50 rounded-2xl p-3">
