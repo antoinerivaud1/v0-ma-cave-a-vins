@@ -36,6 +36,7 @@ const colorDotClasses: Record<string, string> = {
   red: "bg-red-500",
   white: "bg-amber-200",
   sparkling: "bg-sky-300",
+  rose: "bg-pink-300",
   unknown: "bg-muted-foreground",
 }
 
@@ -43,6 +44,7 @@ const colorBadgeVariant: Record<string, "gold" | "muted"> = {
   red: "gold",
   white: "muted",
   sparkling: "muted",
+  rose: "muted",
   unknown: "muted",
 }
 
