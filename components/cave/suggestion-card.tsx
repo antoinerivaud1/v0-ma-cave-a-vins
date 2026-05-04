@@ -18,6 +18,7 @@ const colorBadgeVariant: Record<string, 'gold' | 'muted'> = {
   red: 'gold',
   white: 'muted',
   sparkling: 'muted',
+  rose: 'muted',
   unknown: 'muted',
 }
 
