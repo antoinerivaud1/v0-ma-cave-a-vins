@@ -21,8 +21,8 @@ function ApogeeStatusBadge({ wine }: { wine: Wine }) {
   const apogee = getApogee(wine)
   if (!apogee) return null
   const map = {
-    urgent: { label: "⏰ À boire", className: "bg-red-100 text-red-700" },
-    late: { label: "🔴 Trop tard", className: "bg-red-200 text-red-800" },
+    urgent: { label: "🔴 Trop tard", className: "bg-red-200 text-red-800" },
+    late: { label: "⏰ À boire", className: "bg-orange-100 text-orange-700" },
     ok: { label: "🍃 En forme", className: "bg-green-100 text-green-700" },
     wait: { label: "⏳ Attendre", className: "bg-yellow-100 text-yellow-700" },
   }
