@@ -52,9 +52,9 @@ ou des blocs `DO $$ ... $$` pour éviter les erreurs lors d'un rejeu.
 | `20260401000000_stock_overrides.sql` | 1 avril 2026 | Table `stock_overrides` + RLS |
 | `20260406_add_missing_columns.sql` | 6 avril 2026 | Colonnes manquantes `wines` + trigger `updated_at` |
 | `20260407_add_stock_overrides_table.sql` | 7 avril 2026 | Variante stock_overrides avec `archived`/`deleted` |
-| `20260414000000_wine_enrichments.sql` | 14 avril 2026 | Table `wine_enrichments` + RLS |
 | `20260414000001_profiles_plan_check.sql` | 14 avril 2026 | Colonnes `plan`/`role` + contrainte freemium |
-| `20260414_create_wine_enrichments.sql` | 14 avril 2026 | Migration originale `wine_enrichments` (référence) |
+| `20260414000002_wine_enrichments.sql` | 14 avril 2026 | Table `wine_enrichments` schéma complet + RLS (MA-81) |
+| `20260513000000_wine_enrichments_idempotent_fix.sql` | 13 mai 2026 | Rattrapage idempotent `wine_enrichments` — supprime `domain_info`, ajoute `apogee_status`, `domaine_history`, `domaine_style`, `bottle_image_url` (MA-81) |
 
 ## RLS — règle universelle
 
@@ -129,7 +129,10 @@ Ne jamais créer une table sans activer RLS et ajouter les policies correspondan
 | price_max | NUMERIC | |
 | apogee_start | INTEGER | |
 | apogee_end | INTEGER | |
+| apogee_status | TEXT | trop_jeune / a_boire / passe |
 | food_pairings | JSONB | |
-| domain_info | JSONB | |
+| domaine_history | TEXT | |
+| domaine_style | TEXT | |
+| bottle_image_url | TEXT | |
 | created_at | TIMESTAMPTZ | |
 | updated_at | TIMESTAMPTZ | trigger auto |
