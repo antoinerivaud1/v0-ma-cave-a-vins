@@ -9,6 +9,7 @@ interface ScanLabelSheetProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   onAdd: (wine: WineType) => void
+  onPaywallRequired?: () => void
 }
 
 type ScanStep = "capture" | "scanning" | "result" | "error"
@@ -78,7 +79,7 @@ function ScanViewfinder() {
   )
 }
 
-export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetProps) {
+export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired }: ScanLabelSheetProps) {
   const [step, setStep] = useState<ScanStep>("capture")
   const [preview, setPreview] = useState<string | null>(null)
   const [result, setResult] = useState<ScanLabelResult | null>(null)
@@ -128,6 +129,11 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd }: ScanLabelSheetPr
         })
 
         if (!res.ok) {
+          if (res.status === 403) {
+            onOpenChange(false)
+            onPaywallRequired?.()
+            return
+          }
           const err = await res.json()
           if (res.status === 503) {
             setErrorMsg("La cle API n'est pas encore configuree. Contactez l'administrateur.")
