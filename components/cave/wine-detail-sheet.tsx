@@ -1,7 +1,7 @@
 "use client"
 
 import { X, Star, Sparkles, Lock } from "lucide-react"
-import { sanitizeWineName } from "@/lib/wine-helpers"
+import { sanitizeWineName, getLabel } from "@/lib/wine-helpers"
 import { WineBottleThumb } from "@/components/cave/wine-bottle-thumb"
 import type { Wine } from "@/data/apogee"
 import { getApogee } from "@/data/apogee"
@@ -21,8 +21,8 @@ function ApogeeStatusBadge({ wine }: { wine: Wine }) {
   const apogee = getApogee(wine)
   if (!apogee) return null
   const map = {
-    urgent: { label: "⏰ À boire", className: "bg-red-100 text-red-700" },
-    late: { label: "🔴 Trop tard", className: "bg-red-200 text-red-800" },
+    urgent: { label: "🔴 Trop tard", className: "bg-red-200 text-red-800" },
+    late: { label: "⏰ À boire", className: "bg-orange-100 text-orange-700" },
     ok: { label: "🍃 En forme", className: "bg-green-100 text-green-700" },
     wait: { label: "⏳ Attendre", className: "bg-yellow-100 text-yellow-700" },
   }
@@ -93,13 +93,6 @@ export function WineDetailSheet({
       ? "from-cave-rose-noir via-cave-rose-profond to-cave-rose-vif"
       : "from-cave-bg via-cave-rouge-sombre to-cave-bordeaux"
 
-  const WINE_TYPE_LABELS: Record<string, string> = {
-    wine_red: "Rouge",
-    wine_white: "Blanc",
-    wine_white_sparkling: "Pétillant",
-    wine_rose: "Rosé",
-  }
-
   // Apogée : préférence aux données enrichies, sinon fallback statique
   const apogeeStart = enrichment?.apogee_start ?? null
   const apogeeEnd = enrichment?.apogee_end ?? null
@@ -143,9 +136,9 @@ export function WineDetailSheet({
           </div>
           <div className="relative z-10 w-full px-5 pb-4 pt-16 bg-gradient-to-t from-black/60 to-transparent">
             <div className="flex flex-wrap gap-1.5 mb-2">
-              {wine.wine_type && (
+              {wine.wine_type && getLabel(wine.wine_type) !== "Inconnu" && (
                 <span className="text-xs font-semibold bg-white/20 text-white px-2.5 py-1 rounded-full">
-                  {WINE_TYPE_LABELS[wine.wine_type] ?? wine.wine_type}
+                  {getLabel(wine.wine_type)}
                 </span>
               )}
               {wine.millesime_year && (

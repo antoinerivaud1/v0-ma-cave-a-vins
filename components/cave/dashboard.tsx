@@ -191,7 +191,7 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
                     </p>
                   </div>
                   {apogee && (
-                    <CaveBadge label={apogee.st === "urgent" ? "Urgent" : "Bientot"} variant={apogee.st === "urgent" ? "urgent" : "late"} />
+                    <CaveBadge label={apogee.st === "urgent" ? "Urgent" : "Bientôt"} variant={apogee.st === "urgent" ? "urgent" : "late"} />
                   )}
                 </div>
               )

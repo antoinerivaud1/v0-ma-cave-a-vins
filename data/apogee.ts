@@ -104,7 +104,7 @@ export function getApogee(wine: Wine): ApogeeResult | null {
   if (age > rule.max) {
     return {
       st: 'urgent',
-      label: `Apogee depassee (${from}-${until})`,
+      label: `Apogée dépassée (${from}-${until})`,
       cls: 'apogee-urgent',
     }
   }
@@ -121,14 +121,14 @@ export function getApogee(wine: Wine): ApogeeResult | null {
   if (until - now <= 2) {
     return {
       st: 'late',
-      label: `A boire bientot (avant ${until})`,
+      label: `À boire bientôt (avant ${until})`,
       cls: 'apogee-late',
     }
   }
 
   return {
     st: 'ok',
-    label: `Apogee jusqu'en ${until}`,
+    label: `Apogée jusqu'en ${until}`,
     cls: 'apogee-ok',
   }
 }

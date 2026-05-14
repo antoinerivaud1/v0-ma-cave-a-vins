@@ -75,12 +75,15 @@ export function AddWineSheet({ isOpen, onOpenChange, onAdd }: AddWineSheetProps)
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) reset(); onOpenChange(open) }}>
-      <SheetContent side="bottom" className="rounded-t-2xl max-h-[92dvh] overflow-y-auto">
-        <SheetHeader className="mb-5">
+      <SheetContent side="bottom" className="rounded-t-2xl max-h-[90dvh] flex flex-col">
+        <SheetHeader
+          className="mb-5"
+          style={{ paddingTop: "calc(env(safe-area-inset-top) + 16px)" }}
+        >
           <SheetTitle className="font-serif text-xl text-center">Ajouter un vin</SheetTitle>
         </SheetHeader>
 
-        <div className="flex flex-col gap-4 pb-8">
+        <div className="overflow-y-auto flex-1 flex flex-col gap-4 pb-8">
 
           {/* Nom */}
           <div className="flex flex-col gap-1.5">

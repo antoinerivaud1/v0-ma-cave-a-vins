@@ -12,6 +12,7 @@ import { WineEnrichmentPanel } from "./wine-enrichment-panel"
 import { useTastings } from "@/hooks/use-tastings"
 import { TastingPanel } from "./tasting-panel"
 import type { Wine } from "@/data/apogee"
+import type { Cave } from "@/hooks/use-caves"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +26,7 @@ import {
 
 interface WineCardProps {
   wine: Wine
+  caves: Cave[]
   onWineSelect?: (wine: Wine) => void
   onWineUpdate?: (updates: Partial<Wine>) => void
   onMoved?: () => void
@@ -34,6 +36,7 @@ const colorDotClasses: Record<string, string> = {
   red: "bg-red-500",
   white: "bg-amber-200",
   sparkling: "bg-sky-300",
+  rose: "bg-pink-300",
   unknown: "bg-muted-foreground",
 }
 
@@ -41,10 +44,11 @@ const colorBadgeVariant: Record<string, "gold" | "muted"> = {
   red: "gold",
   white: "muted",
   sparkling: "muted",
+  rose: "muted",
   unknown: "muted",
 }
 
-export function WineCard({ wine, onWineSelect, onWineUpdate, onMoved }: WineCardProps) {
+export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: WineCardProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
@@ -118,7 +122,8 @@ export function WineCard({ wine, onWineSelect, onWineUpdate, onMoved }: WineCard
   }
 
   const handleRestore = () => {
-    setOverrideForWine(wine, { ...override, archived: false })
+    const restoredQty = displayQuantity === 0 ? 1 : displayQuantity
+    setOverrideForWine(wine, { ...override, quantity: restoredQty, archived: false })
   }
 
   const handleDelete = () => {
@@ -188,6 +193,7 @@ export function WineCard({ wine, onWineSelect, onWineUpdate, onMoved }: WineCard
           wineId={wine.id}
           wineCaveId={wine.cave_id}
           onMoved={onMoved}
+          caves={caves}
         />
       </div>
 

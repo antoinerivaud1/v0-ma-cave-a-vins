@@ -29,7 +29,7 @@ function getSnapshot() {
 }
 
 function loadOverridesFromStorage() {
-  if (hasLoadedOverrides || typeof window === 'undefined') return
+  if (hasLoadedOverrides || typeof window === "undefined") return
 
   hasLoadedOverrides = true
 
@@ -39,14 +39,18 @@ function loadOverridesFromStorage() {
   try {
     overridesStore = JSON.parse(stored)
   } catch (e) {
-    console.error('[v0] Failed to parse stock overrides:', e)
+    console.error("[v0] Failed to parse stock overrides:", e)
   }
 }
+
+// Initialisation au niveau module : exécutée une seule fois à l'import du fichier,
+// jamais en boucle au mount de N composants.
+loadOverridesFromStorage()
 
 function persistOverrides(nextOverrides: OverridesMap) {
   overridesStore = nextOverrides
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextOverrides))
   }
 
@@ -66,9 +70,6 @@ export function clearAllStockOverrides() {
 
 export function useStockOverrides() {
   useEffect(() => {
-    loadOverridesFromStorage()
-    emitChange()
-
     const handleStorage = (event: StorageEvent) => {
       if (event.key !== STORAGE_KEY) return
 
@@ -82,13 +83,13 @@ export function useStockOverrides() {
         overridesStore = JSON.parse(event.newValue)
         emitChange()
       } catch (e) {
-        console.error('[v0] Failed to parse stock overrides:', e)
+        console.error("[v0] Failed to parse stock overrides:", e)
       }
     }
 
-    window.addEventListener('storage', handleStorage)
+    window.addEventListener("storage", handleStorage)
     return () => {
-      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener("storage", handleStorage)
     }
   }, [])
 
@@ -100,21 +101,29 @@ export function useStockOverrides() {
   }, [])
 
   const getOverrideForWine = useCallback((wine: Wine): StockOverride | undefined => {
-    return overrides[getWineKeyFromWine(wine)]
+    const newKey = getWineKeyFromWine(wine)
+    if (overrides[newKey] !== undefined) return overrides[newKey]
+    // Fallback: read legacy keys written as "${wine_name}_${millesime_year}" before PR #38
+    const legacyKey = `${wine.wine_name ?? ""}_${wine.millesime_year ?? ""}`
+    return overrides[legacyKey]
   }, [getWineKeyFromWine, overrides])
 
   const setOverrideForWine = useCallback((wine: Wine, override: StockOverride) => {
     const key = getWineKeyFromWine(wine)
-    persistOverrides({
-      ...overridesStore,
-      [key]: override,
-    })
+    const legacyKey = `${wine.wine_name ?? ""}_${wine.millesime_year ?? ""}`
+    const next = { ...overridesStore, [key]: override }
+    // Lazy migration: remove legacy key so the fallback in getOverrideForWine never returns stale data
+    delete next[legacyKey]
+    persistOverrides(next)
   }, [getWineKeyFromWine])
 
   const clearOverrideForWine = useCallback((wine: Wine) => {
     const key = getWineKeyFromWine(wine)
+    const legacyKey = `${wine.wine_name ?? ""}_${wine.millesime_year ?? ""}`
     const next = { ...overridesStore }
     delete next[key]
+    // Also clear legacy key so it cannot resurface via the fallback read path
+    delete next[legacyKey]
     persistOverrides(next)
   }, [getWineKeyFromWine])
 

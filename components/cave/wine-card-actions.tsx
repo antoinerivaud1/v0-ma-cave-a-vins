@@ -22,7 +22,7 @@ import {
 import { WineSearchSheet } from "./wine-search-sheet"
 import { WineMoveSheet } from "./wine-move-sheet"
 import { useAuth } from "@/hooks/use-auth"
-import { useCaves } from "@/hooks/use-caves"
+import type { Cave } from "@/hooks/use-caves"
 
 export interface WineCardActionsProps {
   wineName: string
@@ -42,6 +42,8 @@ export interface WineCardActionsProps {
   wineCaveId?: string | null
   /** Callback fired after the wine has been moved to another cave */
   onMoved?: () => void
+  /** List of caves — injected by the parent to avoid N+1 Supabase calls */
+  caves: Cave[]
 }
 
 export function WineCardActions({
@@ -59,9 +61,9 @@ export function WineCardActions({
   wineId,
   wineCaveId,
   onMoved,
+  caves,
 }: WineCardActionsProps) {
   const { user, rawPlan, role } = useAuth()
-  const { caves } = useCaves()
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isEditingQuantity, setIsEditingQuantity] = useState(false)
