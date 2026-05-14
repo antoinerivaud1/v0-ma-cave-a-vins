@@ -9,6 +9,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { ScanLabelSheet } from "./scan-label-sheet"
+import { PaywallSheet } from "./paywall-sheet"
+import { useAuth } from "@/hooks/use-auth"
 import { sanitizeWineName } from "@/lib/wine-helpers"
 import type { TastingInput } from "@/hooks/use-tastings"
 
@@ -29,8 +31,10 @@ interface WineData {
 }
 
 export function TastingSheet({ open, onOpenChange, onSave }: TastingSheetProps) {
+  const { isPremium } = useAuth()
   const [step, setStep] = useState<Step>("identify")
   const [scanOpen, setScanOpen] = useState(false)
+  const [showScanPaywall, setShowScanPaywall] = useState(false)
   const [wineData, setWineData] = useState<WineData | null>(null)
   const [manualName, setManualName] = useState("")
   const [manualMillesime, setManualMillesime] = useState("")
@@ -126,7 +130,13 @@ export function TastingSheet({ open, onOpenChange, onSave }: TastingSheetProps) 
 
                 {/* Scanner */}
                 <button
-                  onClick={() => setScanOpen(true)}
+                  onClick={() => {
+                    if (isPremium) {
+                      setScanOpen(true)
+                    } else {
+                      setShowScanPaywall(true)
+                    }
+                  }}
                   className="flex items-center gap-3 rounded-xl border border-cave-border bg-card px-4 py-3 text-left"
                 >
                   <Camera className="h-5 w-5 text-primary shrink-0" />
@@ -277,6 +287,14 @@ export function TastingSheet({ open, onOpenChange, onSave }: TastingSheetProps) 
         isOpen={scanOpen}
         onOpenChange={setScanOpen}
         onAdd={handleScanResult}
+      />
+      <PaywallSheet
+        isOpen={showScanPaywall}
+        onOpenChange={setShowScanPaywall}
+        featureName="Scanner une étiquette avec l'IA"
+        featureDescription="Identifiez et enrichissez instantanément un vin pour votre carnet de dégustation."
+        planRequired="amateur"
+        planPrice="3,49 €/mois"
       />
     </>
   )
