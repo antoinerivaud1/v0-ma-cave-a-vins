@@ -5,9 +5,11 @@ import { Wine, GlassWater, Sparkles, Clock, Plus, Lightbulb, Sparkle, ChevronRig
 import { CaveBadge } from "./cave-badge"
 import { AddWineSheet } from "./add-wine-sheet"
 import { ScanLabelSheet } from "./scan-label-sheet"
+import { PaywallSheet } from "./paywall-sheet"
 import { ComingSoonOverlay } from "./coming-soon-badge"
 import { getApogee } from "@/data/apogee"
 import { getDailyTip } from "@/data/wine-tips"
+import { useAuth } from "@/hooks/use-auth"
 import { useUserProfile } from "@/hooks/use-user-profile"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
@@ -35,7 +37,9 @@ function getGreeting(firstName?: string): string {
 export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, onCaveSwitch }: DashboardProps) {
   const [showAddSheet, setShowAddSheet] = useState(false)
   const [showScanSheet, setShowScanSheet] = useState(false)
+  const [showScanPaywall, setShowScanPaywall] = useState(false)
   const [fabOpen, setFabOpen] = useState(false)
+  const { isPremium } = useAuth()
   const { getOverrideForWine } = useStockOverrides()
   const { profile } = useUserProfile()
   const tip = getDailyTip()
@@ -62,8 +66,14 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
 
   const handleFabAction = (action: "scan" | "manual") => {
     setFabOpen(false)
-    if (action === "scan") setShowScanSheet(true)
-    else setShowAddSheet(true)
+    if (action === "scan") {
+      if (isPremium) {
+        setShowScanSheet(true)
+      } else {
+        setShowScanPaywall(true)
+      }
+    }
+    if (action === "manual") setShowAddSheet(true)
   }
 
   return (
@@ -271,6 +281,15 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
 
       <AddWineSheet isOpen={showAddSheet} onOpenChange={setShowAddSheet} onAdd={onAddWine} />
       <ScanLabelSheet isOpen={showScanSheet} onOpenChange={setShowScanSheet} onAdd={onAddWine} />
+      <PaywallSheet
+        isOpen={showScanPaywall}
+        onOpenChange={setShowScanPaywall}
+        featureName="Scanner une étiquette avec l'IA"
+        featureDescription="Identifiez instantanément n'importe quel vin en photographiant son étiquette. Obtenez le nom, le millésime, la région et l'appellation en quelques secondes."
+        planRequired="amateur"
+        planPrice="3,49 €/mois"
+        onManualAdd={() => setShowAddSheet(true)}
+      />
     </div>
   )
 }
