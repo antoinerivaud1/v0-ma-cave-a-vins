@@ -109,17 +109,16 @@ export function TastingSheet({ open, onOpenChange, onSave }: TastingSheetProps) 
   }
 
   return (
-    <>
-      <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent
-          side="bottom"
-          className="max-h-[90dvh] flex flex-col rounded-t-2xl z-[60]"
-        >
-          <SheetHeader className="flex-shrink-0">
-            <SheetTitle className="text-left">Nouvelle dégustation</SheetTitle>
-          </SheetHeader>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetContent
+        side="bottom"
+        className="max-h-[90dvh] flex flex-col rounded-t-2xl z-[60]"
+      >
+        <SheetHeader className="flex-shrink-0">
+          <SheetTitle className="text-left">Nouvelle dégustation</SheetTitle>
+        </SheetHeader>
 
-          <div className="overflow-y-auto flex-1 px-1 pb-4">
+        <div className="overflow-y-auto flex-1 px-1 pb-4">
 
             {/* STEP 1 — Identifier le vin */}
             {step === "identify" && (
@@ -278,24 +277,23 @@ export function TastingSheet({ open, onOpenChange, onSave }: TastingSheetProps) 
                 </button>
               </div>
             )}
-          </div>
-        </SheetContent>
-      </Sheet>
+        </div>
 
-      {/* Scanner réutilisé */}
-      <ScanLabelSheet
-        isOpen={scanOpen}
-        onOpenChange={setScanOpen}
-        onAdd={handleScanResult}
-      />
-      <PaywallSheet
-        isOpen={showScanPaywall}
-        onOpenChange={setShowScanPaywall}
-        featureName="Scanner une étiquette avec l'IA"
-        featureDescription="Identifiez et enrichissez instantanément un vin pour votre carnet de dégustation."
-        planRequired="amateur"
-        planPrice="3,49 €/mois"
-      />
-    </>
+        {/* Scanner réutilisé — déplacé INSIDE SheetContent */}
+        <ScanLabelSheet
+          isOpen={scanOpen}
+          onOpenChange={setScanOpen}
+          onAdd={handleScanResult}
+        />
+        <PaywallSheet
+          isOpen={showScanPaywall}
+          onOpenChange={setShowScanPaywall}
+          featureName="Scanner une étiquette avec l'IA"
+          featureDescription="Identifiez et enrichissez instantanément un vin pour votre carnet de dégustation."
+          planRequired="amateur"
+          planPrice="3,49 €/mois"
+        />
+      </SheetContent>
+    </Sheet>
   )
 }
