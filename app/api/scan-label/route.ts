@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import Anthropic from "@anthropic-ai/sdk"
 import { z } from "zod"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { checkRateLimit, buildRateLimitHeaders } from "@/lib/rate-limit"
 
 export interface ScanLabelResult {
   wineName?: string
@@ -95,6 +96,38 @@ export async function POST(req: NextRequest) {
       { error: "Scan IA reservé aux plans Amateur et Collectionneur" },
       { status: 403 }
     )
+  }
+
+  const { data: profileData } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single()
+  const userRole = (profileData as { role?: string } | null)?.role ?? "user"
+
+  // Rate limiting — admin exempt
+  if (userRole !== "admin") {
+    const minuteLimit = await checkRateLimit(user.id, "scan-label", 5, 1)
+    if (!minuteLimit.allowed) {
+      return NextResponse.json(
+        { error: "Trop de requêtes. Réessayez dans quelques instants." },
+        {
+          status: 429,
+          headers: buildRateLimitHeaders(minuteLimit, 5),
+        }
+      )
+    }
+
+    const hourLimit = await checkRateLimit(user.id, "scan-label-hour", 30, 60)
+    if (!hourLimit.allowed) {
+      return NextResponse.json(
+        { error: "Limite horaire atteinte. Réessayez plus tard." },
+        {
+          status: 429,
+          headers: buildRateLimitHeaders(hourLimit, 30),
+        }
+      )
+    }
   }
 
   try {

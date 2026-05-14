@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import { z } from "zod"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { sanitizeWineName } from "@/lib/wine-helpers"
+import { checkRateLimit, buildRateLimitHeaders } from "@/lib/rate-limit"
 
 export interface WineEnrichment {
   description: string
@@ -135,6 +136,38 @@ export async function POST(req: NextRequest) {
       { error: "Fonctionnalité réservée aux abonnés Amateur et Collectionneur" },
       { status: 403 }
     )
+  }
+
+  const { data: profileData } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single()
+  const userRole = (profileData as { role?: string } | null)?.role ?? "user"
+
+  // Rate limiting — admin exempt
+  if (userRole !== "admin") {
+    const minuteLimit = await checkRateLimit(user.id, "enrich-wine", 10, 1)
+    if (!minuteLimit.allowed) {
+      return NextResponse.json(
+        { error: "Trop de requêtes. Réessayez dans quelques instants." },
+        {
+          status: 429,
+          headers: buildRateLimitHeaders(minuteLimit, 10),
+        }
+      )
+    }
+
+    const hourLimit = await checkRateLimit(user.id, "enrich-wine-hour", 100, 60)
+    if (!hourLimit.allowed) {
+      return NextResponse.json(
+        { error: "Limite horaire atteinte. Réessayez plus tard." },
+        {
+          status: 429,
+          headers: buildRateLimitHeaders(hourLimit, 100),
+        }
+      )
+    }
   }
 
   try {
