@@ -114,6 +114,9 @@ export function TastingSheet({ open, onOpenChange, onSave }: TastingSheetProps) 
         <SheetContent
           side="bottom"
           className="max-h-[90dvh] flex flex-col rounded-t-2xl z-[60]"
+          onPointerDownOutside={(e) => {
+            if (scanOpen || showScanPaywall) e.preventDefault()
+          }}
         >
           <SheetHeader className="flex-shrink-0">
             <SheetTitle className="text-left">Nouvelle dégustation</SheetTitle>
