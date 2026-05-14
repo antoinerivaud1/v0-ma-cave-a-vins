@@ -53,8 +53,27 @@ async function requireAuthenticatedUser() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  return { user, supabase }
+}
 
-  return user
+async function checkUserPlan(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  userId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("plan, role")
+    .eq("id", userId)
+    .single()
+  const raw = data as { plan?: string; role?: string } | null
+  const rawPlan = raw?.plan ?? "free"
+  const role = raw?.role ?? null
+  return (
+    rawPlan === "amateur" ||
+    rawPlan === "collector" ||
+    role === "admin" ||
+    role === "beta"
+  )
 }
 
 export async function POST(req: NextRequest) {
@@ -65,9 +84,17 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const user = await requireAuthenticatedUser()
+  const { user, supabase } = await requireAuthenticatedUser()
   if (!user) {
     return NextResponse.json({ error: "Authentification requise" }, { status: 401 })
+  }
+
+  const isAllowed = await checkUserPlan(supabase, user.id)
+  if (!isAllowed) {
+    return NextResponse.json(
+      { error: "Scan IA reservé aux plans Amateur et Collectionneur" },
+      { status: 403 }
+    )
   }
 
   try {
