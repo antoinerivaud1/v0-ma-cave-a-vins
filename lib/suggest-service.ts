@@ -1,10 +1,10 @@
-import type { Wine } from '@/data/apogee'
-import type { Accord } from '@/data/accords'
-import { getSuggestionsStatic } from './suggest-helpers'
+import type { Wine } from "@/data/apogee"
+import type { Accord } from "@/data/accords"
+import { getSuggestionsStatic } from "./suggest-helpers"
 
 // ──────────────────────── Types ────────────────────────
 
-export type SuggestMode = 'static' | 'ai'
+export type SuggestMode = "static" | "ai"
 
 export interface SuggestResult {
   wine: Wine
@@ -48,7 +48,7 @@ export class AISuggestService implements SuggestService {
     // TODO Phase 2 : appel Claude API
     // Le prompt sera construit ici avec meal + cave serialisee
     // Pour l'instant : fallback sur StaticSuggestService
-    console.log('AI suggest not yet implemented, falling back to static')
+    console.log("AI suggest not yet implemented, falling back to static")
     return new StaticSuggestService().getSuggestions(meal, cave)
   }
 }
@@ -56,7 +56,7 @@ export class AISuggestService implements SuggestService {
 // ──────────────────────── Factory ────────────────────────
 
 const SUGGEST_MODE: SuggestMode =
-  (process.env.NEXT_PUBLIC_SUGGEST_MODE as SuggestMode) || 'static'
+  (process.env.NEXT_PUBLIC_SUGGEST_MODE as SuggestMode) || "static"
 
 export const suggestService: SuggestService =
-  SUGGEST_MODE === 'ai' ? new AISuggestService() : new StaticSuggestService()
+  SUGGEST_MODE === "ai" ? new AISuggestService() : new StaticSuggestService()

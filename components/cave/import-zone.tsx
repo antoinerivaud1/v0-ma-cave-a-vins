@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { useCallback, useRef, useState } from 'react'
-import { Upload, FileSpreadsheet, Loader2 } from 'lucide-react'
+import { useCallback, useRef, useState } from "react"
+import { Upload, FileSpreadsheet, Loader2 } from "lucide-react"
 
 interface ImportZoneProps {
   onFileSelected: (file: File) => void
@@ -15,8 +15,8 @@ export function ImportZone({ onFileSelected, isParsing = false, compact = false 
 
   const handleFile = useCallback(
     (file: File) => {
-      const ext = file.name.split('.').pop()?.toLowerCase()
-      if (ext === 'xlsx' || ext === 'xls' || ext === 'csv') {
+      const ext = file.name.split(".").pop()?.toLowerCase()
+      if (ext === "xlsx" || ext === "xls" || ext === "csv") {
         onFileSelected(file)
       }
     },
@@ -53,7 +53,7 @@ export function ImportZone({ onFileSelected, isParsing = false, compact = false 
         ) : (
           <Upload className="h-4 w-4 text-primary" />
         )}
-        {isParsing ? 'Import en cours...' : 'Importer un fichier'}
+        {isParsing ? "Import en cours..." : "Importer un fichier"}
         <input
           ref={inputRef}
           type="file"
@@ -77,12 +77,12 @@ export function ImportZone({ onFileSelected, isParsing = false, compact = false 
       onDragLeave={() => setIsDragging(false)}
       onClick={() => inputRef.current?.click()}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click()
+        if (e.key === "Enter" || e.key === " ") inputRef.current?.click()
       }}
       className={`flex cursor-pointer flex-col items-center gap-4 rounded-xl border-2 border-dashed p-8 transition-colors ${
         isDragging
-          ? 'border-primary bg-primary/10'
-          : 'border-cave-border hover:border-primary/50'
+          ? "border-primary bg-primary/10"
+          : "border-cave-border hover:border-primary/50"
       }`}
     >
       {isParsing ? (
@@ -94,7 +94,7 @@ export function ImportZone({ onFileSelected, isParsing = false, compact = false 
       )}
       <div className="text-center">
         <p className="font-serif text-lg text-foreground">
-          {isParsing ? 'Lecture du fichier...' : 'Deposez votre fichier ici'}
+          {isParsing ? "Lecture du fichier..." : "Deposez votre fichier ici"}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
           Formats acceptes : .xlsx, .xls, .csv

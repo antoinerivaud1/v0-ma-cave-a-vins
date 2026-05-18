@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { useCallback, useState } from 'react'
-import type { Wine } from '@/data/apogee'
+import { useCallback, useState } from "react"
+import type { Wine } from "@/data/apogee"
 
 export function useFileParser() {
   const [isParsing, setIsParsing] = useState(false)
@@ -12,9 +12,9 @@ export function useFileParser() {
     setError(null)
 
     try {
-      const XLSX = await import('xlsx')
+      const XLSX = await import("xlsx")
       const buffer = await file.arrayBuffer()
-      const workbook = XLSX.read(buffer, { type: 'array' })
+      const workbook = XLSX.read(buffer, { type: "array" })
       const sheetName = workbook.SheetNames[0]
       const sheet = workbook.Sheets[sheetName]
       const rawData = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet)
@@ -27,8 +27,8 @@ export function useFileParser() {
             const normalizedKey = key
               .toLowerCase()
               .trim()
-              .replace(/\s+/g, '_')
-              .replace(/[^a-z0-9_]/g, '')
+              .replace(/\s+/g, "_")
+              .replace(/[^a-z0-9_]/g, "")
             wine[normalizedKey] = value as string | number
           }
           return wine
@@ -42,7 +42,7 @@ export function useFileParser() {
       setIsParsing(false)
       return wines
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Erreur de lecture du fichier'
+      const message = e instanceof Error ? e.message : "Erreur de lecture du fichier"
       setError(message)
       setIsParsing(false)
       return []

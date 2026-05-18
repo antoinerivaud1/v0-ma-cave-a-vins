@@ -37,7 +37,7 @@ export interface Wine {
 }
 
 export interface ApogeeResult {
-  st: 'urgent' | 'late' | 'wait' | 'ok'
+  st: "urgent" | "late" | "wait" | "ok"
   label: string
   cls: string
 }
@@ -93,8 +93,8 @@ export function getApogee(wine: Wine): ApogeeResult | null {
   const y = parseInt(String(wine.millesime_year))
   if (!y || isNaN(y)) return null
 
-  const typeRules = APOGEE[wine.wine_type || ''] || APOGEE.wine_unknown
-  const rule = typeRules[wine.wine_region || ''] || typeRules.default
+  const typeRules = APOGEE[wine.wine_type || ""] || APOGEE.wine_unknown
+  const rule = typeRules[wine.wine_region || ""] || typeRules.default
 
   const now = new Date().getFullYear()
   const age = now - y
@@ -103,32 +103,32 @@ export function getApogee(wine: Wine): ApogeeResult | null {
 
   if (age > rule.max) {
     return {
-      st: 'urgent',
+      st: "urgent",
       label: `Apogée dépassée (${from}-${until})`,
-      cls: 'apogee-urgent',
+      cls: "apogee-urgent",
     }
   }
 
   if (age < rule.min) {
     const l = from - now
     return {
-      st: 'wait',
-      label: `Attendre ~${l} an${l > 1 ? 's' : ''}`,
-      cls: 'apogee-wait',
+      st: "wait",
+      label: `Attendre ~${l} an${l > 1 ? "s" : ""}`,
+      cls: "apogee-wait",
     }
   }
 
   if (until - now <= 2) {
     return {
-      st: 'late',
+      st: "late",
       label: `À boire bientôt (avant ${until})`,
-      cls: 'apogee-late',
+      cls: "apogee-late",
     }
   }
 
   return {
-    st: 'ok',
+    st: "ok",
     label: `Apogée jusqu'en ${until}`,
-    cls: 'apogee-ok',
+    cls: "apogee-ok",
   }
 }

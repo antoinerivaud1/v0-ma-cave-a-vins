@@ -1,14 +1,14 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { ExternalLink } from 'lucide-react'
+import { useState } from "react"
+import { ExternalLink } from "lucide-react"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet'
-import { sanitizeWineName } from '@/lib/wine-helpers'
+} from "@/components/ui/sheet"
+import { sanitizeWineName } from "@/lib/wine-helpers"
 
 interface WineSearchSheetProps {
   wineName?: string
@@ -25,28 +25,28 @@ interface SearchLink {
 
 const searchLinks: SearchLink[] = [
   {
-    name: 'Vivino',
+    name: "Vivino",
     buildUrl: (name, year) =>
-      `https://www.vivino.com/search/wines?q=${encodeURIComponent(name + ' ' + year)}`,
-    borderColor: 'border-l-4 border-l-red-500',
+      `https://www.vivino.com/search/wines?q=${encodeURIComponent(name + " " + year)}`,
+    borderColor: "border-l-4 border-l-red-500",
   },
   {
-    name: 'Wine-Searcher',
+    name: "Wine-Searcher",
     buildUrl: (name, year) =>
-      `https://www.wine-searcher.com/find/${encodeURIComponent(name + ' ' + year)}`,
-    borderColor: 'border-l-4 border-l-blue-900',
+      `https://www.wine-searcher.com/find/${encodeURIComponent(name + " " + year)}`,
+    borderColor: "border-l-4 border-l-blue-900",
   },
   {
-    name: 'Google Shopping',
+    name: "Google Shopping",
     buildUrl: (name, year) =>
-      `https://www.google.com/search?q=${encodeURIComponent(name + ' ' + year + ' acheter')}&tbm=shop`,
-    borderColor: 'border-l-4 border-l-blue-500',
+      `https://www.google.com/search?q=${encodeURIComponent(name + " " + year + " acheter")}&tbm=shop`,
+    borderColor: "border-l-4 border-l-blue-500",
   },
   {
-    name: 'IdealWine',
+    name: "IdealWine",
     buildUrl: (name, year) =>
-      `https://www.idealwine.com/fr/recherche/?search=${encodeURIComponent(name + ' ' + year)}`,
-    borderColor: 'border-l-4 border-l-primary',
+      `https://www.idealwine.com/fr/recherche/?search=${encodeURIComponent(name + " " + year)}`,
+    borderColor: "border-l-4 border-l-primary",
   },
 ]
 
@@ -56,9 +56,9 @@ export function WineSearchSheet({
   isOpen,
   onOpenChange,
 }: WineSearchSheetProps) {
-  const displayName = sanitizeWineName(wineName) || 'Vin inconnu'
-  const displayYear = millesime ? String(millesime) : ''
-  const fullTitle = `${displayName}${displayYear ? ` ${displayYear}` : ''}`
+  const displayName = sanitizeWineName(wineName) || "Vin inconnu"
+  const displayYear = millesime ? String(millesime) : ""
+  const fullTitle = `${displayName}${displayYear ? ` ${displayYear}` : ""}`
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>

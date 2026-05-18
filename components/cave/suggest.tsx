@@ -1,25 +1,25 @@
-'use client'
+"use client"
 
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { Mic, Search, UtensilsCrossed, Loader2 } from 'lucide-react'
-import { PageHeader } from './page-header'
-import { SuggestionCard } from './suggestion-card'
-import { suggestService, type SuggestResponse } from '@/lib/suggest-service'
-import type { Wine } from '@/data/apogee'
-import { useStockOverrides } from '@/hooks/use-stock-overrides'
-import { getEffectiveWineState } from '@/lib/stock-overrides'
+import { useState, useRef, useCallback, useEffect } from "react"
+import { Mic, Search, UtensilsCrossed, Loader2 } from "lucide-react"
+import { PageHeader } from "./page-header"
+import { SuggestionCard } from "./suggestion-card"
+import { suggestService, type SuggestResponse } from "@/lib/suggest-service"
+import type { Wine } from "@/data/apogee"
+import { useStockOverrides } from "@/hooks/use-stock-overrides"
+import { getEffectiveWineState } from "@/lib/stock-overrides"
 
 interface SuggestProps {
   cave: Wine[]
 }
 
 export function Suggest({ cave }: SuggestProps) {
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState("")
   const [result, setResult] = useState<SuggestResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [recording, setRecording] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const recognitionRef = useRef<any>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const { getOverrideForWine } = useStockOverrides()
@@ -40,13 +40,13 @@ export function Suggest({ cave }: SuggestProps) {
 
       const trimmed = text.trim()
       if (!trimmed) {
-        setError('Decrivez un repas ou un plat pour obtenir un accord.')
+        setError("Decrivez un repas ou un plat pour obtenir un accord.")
         setResult(null)
         return
       }
 
       if (availableWines.length === 0) {
-        setError('Votre cave est vide. Importez des vins pour commencer.')
+        setError("Votre cave est vide. Importez des vins pour commencer.")
         setResult(null)
         return
       }
@@ -56,7 +56,7 @@ export function Suggest({ cave }: SuggestProps) {
         const response = await suggestService.getSuggestions(trimmed, availableWines)
         setResult(response)
       } catch {
-        setError('Une erreur est survenue. Veuillez reessayer.')
+        setError("Une erreur est survenue. Veuillez reessayer.")
         setResult(null)
       } finally {
         setLoading(false)
@@ -71,7 +71,7 @@ export function Suggest({ cave }: SuggestProps) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
+      if (e.key === "Enter") {
         e.preventDefault()
         handleSearch()
       }
@@ -81,12 +81,12 @@ export function Suggest({ cave }: SuggestProps) {
 
   const startVoice = useCallback(() => {
     const SpeechRecognitionAPI =
-      typeof window !== 'undefined'
+      typeof window !== "undefined"
         ? window.SpeechRecognition || window.webkitSpeechRecognition
         : null
 
     if (!SpeechRecognitionAPI) {
-      alert('La reconnaissance vocale necessite Chrome ou un navigateur compatible.')
+      alert("La reconnaissance vocale necessite Chrome ou un navigateur compatible.")
       return
     }
 
@@ -97,12 +97,12 @@ export function Suggest({ cave }: SuggestProps) {
     }
 
     const recognition = new SpeechRecognitionAPI()
-    recognition.lang = 'fr-FR'
+    recognition.lang = "fr-FR"
     recognition.interimResults = false
     recognition.maxAlternatives = 1
 
     recognition.onresult = (event: any) => {
-      const transcript = event.results[0]?.[0]?.transcript || ''
+      const transcript = event.results[0]?.[0]?.transcript || ""
       setQuery(transcript)
       setRecording(false)
       // Auto-search after voice input
@@ -137,8 +137,8 @@ export function Suggest({ cave }: SuggestProps) {
           <div
             className={`flex flex-1 items-center gap-2 rounded-xl border bg-card px-3 py-2.5 transition-colors ${
               recording
-                ? 'animate-pulse border-destructive'
-                : 'border-cave-border focus-within:border-primary/50'
+                ? "animate-pulse border-destructive"
+                : "border-cave-border focus-within:border-primary/50"
             }`}
           >
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -157,10 +157,10 @@ export function Suggest({ cave }: SuggestProps) {
               onClick={startVoice}
               className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
                 recording
-                  ? 'bg-destructive/20 text-destructive'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? "bg-destructive/20 text-destructive"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
-              aria-label={recording ? 'Arreter la dictee' : 'Dicter un plat'}
+              aria-label={recording ? "Arreter la dictee" : "Dicter un plat"}
               disabled={loading}
             >
               <Mic className="h-4 w-4" />
@@ -178,7 +178,7 @@ export function Suggest({ cave }: SuggestProps) {
           ) : (
             <UtensilsCrossed className="h-4 w-4" />
           )}
-          {loading ? 'Recherche...' : 'Accorder'}
+          {loading ? "Recherche..." : "Accorder"}
         </button>
       </div>
 
@@ -201,7 +201,7 @@ export function Suggest({ cave }: SuggestProps) {
       {result && !loading && (
         <div className="mt-6 flex flex-col gap-4 px-4">
           <p className="text-sm text-muted-foreground">
-            {'Accord pour : '}
+            {"Accord pour : "}
             <span className="font-medium text-foreground">{`\u00AB ${query.trim()} \u00BB`}</span>
           </p>
 

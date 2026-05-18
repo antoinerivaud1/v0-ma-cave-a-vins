@@ -1,6 +1,6 @@
-import type { Wine } from '@/data/apogee'
-import { getApogee } from '@/data/apogee'
-import { ACCORDS, FALLBACK_ACCORDS, type Accord } from '@/data/accords'
+import type { Wine } from "@/data/apogee"
+import { getApogee } from "@/data/apogee"
+import { ACCORDS, FALLBACK_ACCORDS, type Accord } from "@/data/accords"
 
 export interface ScoredWine {
   wine: Wine
@@ -13,15 +13,15 @@ export interface ScoredWine {
 function normalize(s: string): string {
   return s
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .trim()
 }
 
 // ──────────────────────── Keyword matching ────────────────────────
 
-const ITALIAN_HINTS = ['italien', 'italienne', 'pizza', 'pasta', 'pates', 'lasagne', 'bolognaise', 'risotto', 'osso']
-const ASIAN_HINTS = ['asiatique', 'epice', 'curry', 'thai', 'japonais', 'sushi', 'sashimi', 'chinois', 'wok', 'dim sum', 'pad thai', 'maki']
+const ITALIAN_HINTS = ["italien", "italienne", "pizza", "pasta", "pates", "lasagne", "bolognaise", "risotto", "osso"]
+const ASIAN_HINTS = ["asiatique", "epice", "curry", "thai", "japonais", "sushi", "sashimi", "chinois", "wok", "dim sum", "pad thai", "maki"]
 const SPANISH_HINTS = ["espagnol", "espagnole", "tapas", "paella", "chorizo", "jambon iberico", "tortilla"]
 const AMERICAN_HINTS = ["americain", "burger", "bbq", "barbecue", "cote de boeuf americaine", "steak"]
 
@@ -73,7 +73,7 @@ export function findAccord(query: string): Accord {
  */
 function scoreWine(wine: Wine, accord: Accord): number {
   let score = 0
-  const wType = wine.wine_type || ''
+  const wType = wine.wine_type || ""
   const typeIdx = accord.t.indexOf(wType)
 
   // Type priority
@@ -83,21 +83,21 @@ function scoreWine(wine: Wine, accord: Accord): number {
   else score += 1
 
   // Region bonus
-  const wRegion = wine.wine_region || ''
+  const wRegion = wine.wine_region || ""
   if (wRegion && accord.r.includes(wRegion)) score += 4
 
   // Freshness bonus for whites
   const year = parseInt(String(wine.millesime_year))
   const now = new Date().getFullYear()
-  if (!isNaN(year) && (wType === 'wine_white' || wType === 'wine_white_sparkling')) {
+  if (!isNaN(year) && (wType === "wine_white" || wType === "wine_white_sparkling")) {
     if (now - year < 5) score += 3
   }
 
   // Apogee bonus / malus
   const apogee = getApogee(wine)
   if (apogee) {
-    if (apogee.st === 'ok') score += 2
-    else if (apogee.st === 'urgent') score -= 2
+    if (apogee.st === "ok") score += 2
+    else if (apogee.st === "urgent") score -= 2
   }
 
   return score
@@ -123,7 +123,7 @@ export function suggestWines(cave: Wine[], accord: Accord): Wine[] {
 
   // Try to diversify: find a second wine of a different type
   const secondDiff = scored.find(
-    (s) => s !== first && (s.wine.wine_type || '') !== (first.wine.wine_type || '')
+    (s) => s !== first && (s.wine.wine_type || "") !== (first.wine.wine_type || "")
   )
 
   if (secondDiff) {

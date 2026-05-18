@@ -13,11 +13,11 @@ interface WineExpertPanelProps {
   wineName?: string
 }
 
-const potentielStyles: Record<WineExpert['potentiel'], string> = {
-  wait: 'bg-sky-950/40 text-sky-400 border-sky-800/40',
-  apogee: 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40',
-  drink: 'bg-amber-950/40 text-amber-400 border-amber-800/40',
-  urgent: 'bg-destructive/15 text-destructive border-destructive/30',
+const potentielStyles: Record<WineExpert["potentiel"], string> = {
+  wait: "bg-sky-950/40 text-sky-400 border-sky-800/40",
+  apogee: "bg-emerald-950/40 text-emerald-400 border-emerald-800/40",
+  drink: "bg-amber-950/40 text-amber-400 border-amber-800/40",
+  urgent: "bg-destructive/15 text-destructive border-destructive/30",
 }
 
 export function WineExpertPanel({ region, cepage, millesime, wineName }: WineExpertPanelProps) {
