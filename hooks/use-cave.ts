@@ -26,7 +26,7 @@ export function useCave() {
         setLastUpdated(ts)
       }
     } catch (e) {
-      console.error('Error loading cave data:', e)
+      console.error("Error loading cave data:", e)
     }
     setIsLoaded(true)
   }, [])
@@ -38,7 +38,7 @@ export function useCave() {
       localStorage.setItem(CAVE_KEY, JSON.stringify(data))
       localStorage.setItem(CAVE_TS_KEY, ts)
     } catch (e) {
-      console.error('Error saving cave data:', e)
+      console.error("Error saving cave data:", e)
     }
     setCave(data)
     setLastUpdated(ts)
@@ -50,7 +50,7 @@ export function useCave() {
       localStorage.removeItem(CAVE_KEY)
       localStorage.removeItem(CAVE_TS_KEY)
     } catch (e) {
-      console.error('Error clearing cave data:', e)
+      console.error("Error clearing cave data:", e)
     }
     setCave([])
     setLastUpdated(null)

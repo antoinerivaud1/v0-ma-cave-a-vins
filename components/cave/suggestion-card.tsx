@@ -1,10 +1,10 @@
-'use client'
+"use client"
 
-import { Thermometer, Wine as WineGlass, Sparkles } from 'lucide-react'
-import { CaveBadge } from './cave-badge'
-import { getIcon, getLabel, getColor, formatRegion } from '@/lib/wine-helpers'
-import { getApogee } from '@/data/apogee'
-import type { Wine } from '@/data/apogee'
+import { Thermometer, Wine as WineGlass, Sparkles } from "lucide-react"
+import { CaveBadge } from "./cave-badge"
+import { getIcon, getLabel, getColor, formatRegion } from "@/lib/wine-helpers"
+import { getApogee } from "@/data/apogee"
+import type { Wine } from "@/data/apogee"
 
 interface SuggestionCardProps {
   wine: Wine
@@ -14,12 +14,12 @@ interface SuggestionCardProps {
   aiGenerated?: boolean
 }
 
-const colorBadgeVariant: Record<string, 'gold' | 'muted'> = {
-  red: 'gold',
-  white: 'muted',
-  sparkling: 'muted',
-  rose: 'muted',
-  unknown: 'muted',
+const colorBadgeVariant: Record<string, "gold" | "muted"> = {
+  red: "gold",
+  white: "muted",
+  sparkling: "muted",
+  rose: "muted",
+  unknown: "muted",
 }
 
 export function SuggestionCard({
@@ -30,13 +30,13 @@ export function SuggestionCard({
   aiGenerated,
 }: SuggestionCardProps) {
   const apogee = getApogee(wine)
-  const color = getColor(wine.wine_type || '')
-  const icon = getIcon(wine.wine_type || '')
-  const label = getLabel(wine.wine_type || '')
-  const region = formatRegion(wine.wine_region || '')
+  const color = getColor(wine.wine_type || "")
+  const icon = getIcon(wine.wine_type || "")
+  const label = getLabel(wine.wine_type || "")
+  const region = formatRegion(wine.wine_region || "")
 
   const apogeeBadgeVariant = apogee
-    ? (apogee.st as 'urgent' | 'ok' | 'wait' | 'late')
+    ? (apogee.st as "urgent" | "ok" | "wait" | "late")
     : undefined
 
   return (
@@ -53,7 +53,7 @@ export function SuggestionCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-start gap-2">
             <p className="flex-1 font-serif text-lg font-semibold leading-tight text-foreground">
-              {wine.wine_name || wine.wine_appellation || 'Vin inconnu'}
+              {wine.wine_name || wine.wine_appellation || "Vin inconnu"}
               {wine.millesime_year ? (
                 <span className="ml-1.5 text-sm font-normal text-muted-foreground">
                   {wine.millesime_year}
@@ -68,8 +68,8 @@ export function SuggestionCard({
             )}
           </div>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {wine.wine_domain ? `${wine.wine_domain}` : ''}
-            {wine.wine_domain && region ? ' \u00B7 ' : ''}
+            {wine.wine_domain ? `${wine.wine_domain}` : ""}
+            {wine.wine_domain && region ? " \u00B7 " : ""}
             {region}
           </p>
         </div>

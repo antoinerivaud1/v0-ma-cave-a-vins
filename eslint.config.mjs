@@ -9,6 +9,7 @@ const eslintConfig = [
       "react-hooks/set-state-in-effect": "off",
       "react-hooks/purity": "off",
       "react-hooks/preserve-manual-memoization": "off",
+      "quotes": ["error", "double", { "avoidEscape": true, "allowTemplateLiterals": false }],
     },
   },
   {

@@ -1,16 +1,16 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { ChevronDown, Check } from 'lucide-react'
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Button } from '@/components/ui/button'
-import type { Wine } from '@/data/apogee'
+import { useState } from "react"
+import { ChevronDown, Check } from "lucide-react"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
+import type { Wine } from "@/data/apogee"
 
 export interface SortFilterState {
-  millesimeSort: 'asc' | 'desc' | null
+  millesimeSort: "asc" | "desc" | null
   selectedRegions: string[]
-  apogeeSort: 'asc' | 'desc' | null
+  apogeeSort: "asc" | "desc" | null
 }
 
 interface SortFilterDropdownProps {
@@ -23,13 +23,13 @@ export function SortFilterDropdown({ cave, state, onStateChange }: SortFilterDro
   const [open, setOpen] = useState(false)
 
   // Get unique regions from cave
-  const uniqueRegions = Array.from(new Set(cave.map((w) => String(w.wine_region || ''))))
+  const uniqueRegions = Array.from(new Set(cave.map((w) => String(w.wine_region || ""))))
     .filter(Boolean)
     .sort()
 
   const activeCount = (state.millesimeSort ? 1 : 0) + state.selectedRegions.length + (state.apogeeSort ? 1 : 0)
 
-  const handleMillesimeClick = (dir: 'asc' | 'desc') => {
+  const handleMillesimeClick = (dir: "asc" | "desc") => {
     onStateChange({
       ...state,
       millesimeSort: state.millesimeSort === dir ? null : dir,
@@ -43,7 +43,7 @@ export function SortFilterDropdown({ cave, state, onStateChange }: SortFilterDro
     onStateChange({ ...state, selectedRegions: updated })
   }
 
-  const handleApogeeClick = (dir: 'asc' | 'desc') => {
+  const handleApogeeClick = (dir: "asc" | "desc") => {
     onStateChange({
       ...state,
       apogeeSort: state.apogeeSort === dir ? null : dir,
@@ -80,15 +80,15 @@ export function SortFilterDropdown({ cave, state, onStateChange }: SortFilterDro
           <div className="space-y-2">
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox
-                checked={state.millesimeSort === 'asc'}
-                onCheckedChange={() => handleMillesimeClick('asc')}
+                checked={state.millesimeSort === "asc"}
+                onCheckedChange={() => handleMillesimeClick("asc")}
               />
               <span className="text-sm text-foreground">Ancien → Récent</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox
-                checked={state.millesimeSort === 'desc'}
-                onCheckedChange={() => handleMillesimeClick('desc')}
+                checked={state.millesimeSort === "desc"}
+                onCheckedChange={() => handleMillesimeClick("desc")}
               />
               <span className="text-sm text-foreground">Récent → Ancien</span>
             </label>
@@ -119,15 +119,15 @@ export function SortFilterDropdown({ cave, state, onStateChange }: SortFilterDro
           <div className="space-y-2">
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox
-                checked={state.apogeeSort === 'asc'}
-                onCheckedChange={() => handleApogeeClick('asc')}
+                checked={state.apogeeSort === "asc"}
+                onCheckedChange={() => handleApogeeClick("asc")}
               />
               <span className="text-sm text-foreground">Urgent en premier</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox
-                checked={state.apogeeSort === 'desc'}
-                onCheckedChange={() => handleApogeeClick('desc')}
+                checked={state.apogeeSort === "desc"}
+                onCheckedChange={() => handleApogeeClick("desc")}
               />
               <span className="text-sm text-foreground">Plus tard en premier</span>
             </label>
