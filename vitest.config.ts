@@ -10,5 +10,6 @@ export default defineConfig({
     include: ["tests/**/*.test.ts"],
     clearMocks: true,
     restoreMocks: true,
+    setupFiles: ["./vitest.setup.ts"],
   },
 })
