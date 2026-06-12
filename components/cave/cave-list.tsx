@@ -1,11 +1,13 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Search, X, Wine as WineGlass, ChevronDown, Plus } from "lucide-react"
+import { Search, X, ChevronDown, Plus } from "lucide-react"
 import { AddWineSheet } from "./add-wine-sheet"
 import { FilterBar } from "./filter-bar"
 import { SortFilterDropdown, type SortFilterState } from "./sort-filter-dropdown"
 import { WineCard } from "./wine-card"
+import { FilterPill } from "./synthese/filter-pill"
+import { BigTile } from "./synthese/big-tile"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { useCaves } from "@/hooks/use-caves"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
@@ -15,21 +17,22 @@ import type { Wine } from "@/data/apogee"
 
 const COLOR_FILTERS = [
   { key: "all", label: "Tous" },
-  { key: "wine_red", label: "🍷 Rouge" },
-  { key: "wine_white", label: "🥂 Blanc" },
-  { key: "wine_white_sparkling", label: "✨ Petillant" },
+  { key: "wine_red", label: "Rouges" },
+  { key: "wine_white", label: "Blancs" },
+  { key: "wine_white_sparkling", label: "Bulles" },
+  { key: "wine_rose", label: "Rosés" },
 ]
 
 const LEVEL_FILTERS = [
   { key: "all", label: "Tous" },
-  { key: "exceptional", label: "⭐ Exceptionnels" },
-  { key: "drink", label: "⏰ A boire" },
+  { key: "exceptional", label: "Exceptionnels" },
+  { key: "drink", label: "À boire" },
 ]
 
 function normalize(value: string): string {
   return value
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
 }
 
@@ -47,7 +50,7 @@ function isDrinkNow(wine: Wine): boolean {
 function normalizeForSort(value: string): string {
   return value
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
 }
 
@@ -155,18 +158,56 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
 
   return (
     <div className="pb-4">
-      <div className="flex items-start justify-between px-4" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}>
+      {/* Header kicker + title + count + add button */}
+      <div
+        className="flex items-start justify-between px-4"
+        style={{ paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}
+      >
         <div className="pb-2">
-          <h1 className="font-serif text-2xl font-semibold text-foreground">Mes Vins</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            <span className="font-sans font-semibold tabular-nums">{totalBottles}</span>
-            {" "}bouteille{totalBottles !== 1 ? "s" : ""}
-          </p>
+          <div
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--ink-soft)",
+              marginBottom: 2,
+            }}
+          >
+            {totalBottles} BOUTEILLE{totalBottles !== 1 ? "S" : ""}
+          </div>
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontStyle: "italic",
+              fontWeight: 600,
+              fontSize: 28,
+              lineHeight: 1.05,
+              color: "var(--ink)",
+            }}
+          >
+            Mes Vins
+          </h1>
         </div>
         {onAddWine && (
           <button
             onClick={() => setShowAddSheet(true)}
-            className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-transform active:scale-95"
+            style={{
+              marginTop: 4,
+              display: "flex",
+              height: 36,
+              width: 36,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "50%",
+              background: "var(--ink)",
+              color: "var(--bg)",
+              border: "var(--border-hard)",
+              boxShadow: "var(--shadow-hard)",
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
             aria-label="Ajouter un vin"
           >
             <Plus className="h-5 w-5" />
@@ -174,20 +215,37 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
         )}
       </div>
 
-      <div className="sticky top-0 z-20 bg-background/80 px-4 pb-2 pt-1 backdrop-blur-md">
+      {/* Search bar */}
+      <div className="sticky top-0 z-20 px-4 pb-2 pt-1" style={{ background: "var(--bg)", backdropFilter: "blur(12px)" }}>
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
+            style={{ color: "var(--ink-soft)" }}
+          />
           <input
             type="text"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Rechercher un vin, region, cepage, millesime..."
-            className="h-10 w-full rounded-lg border border-cave-border bg-card pl-9 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
+            style={{
+              height: 40,
+              width: "100%",
+              borderRadius: 12,
+              border: "var(--border-hard)",
+              background: "var(--paper-2)",
+              paddingLeft: 36,
+              paddingRight: 36,
+              fontSize: 13,
+              color: "var(--ink)",
+              fontFamily: "var(--font-sans)",
+              outline: "none",
+            }}
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-0.5"
+              style={{ color: "var(--ink-soft)", cursor: "pointer", background: "none", border: "none" }}
               aria-label="Effacer la recherche"
             >
               <X className="h-4 w-4" />
@@ -196,21 +254,70 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
         </div>
       </div>
 
-      <FilterBar options={COLOR_FILTERS} activeKey={colorFilter} onSelect={setColorFilter} />
+      {/* Color filter pills — Synthese v1 style */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          overflowX: "auto",
+          padding: "10px 0 6px",
+          marginLeft: 0,
+          paddingLeft: 16,
+          paddingRight: 16,
+          scrollbarWidth: "none",
+        }}
+      >
+        {COLOR_FILTERS.map((f) => (
+          <FilterPill
+            key={f.key}
+            label={f.label}
+            active={colorFilter === f.key}
+            onClick={() => setColorFilter(f.key)}
+          />
+        ))}
+      </div>
+
+      {/* Level filter — keep FilterBar for secondary filter */}
       <FilterBar options={LEVEL_FILTERS} activeKey={levelFilter} onSelect={setLevelFilter} />
       <SortFilterDropdown cave={cave} state={sortFilterState} onStateChange={setSortFilterState} />
 
       <div className="mt-2 flex flex-col gap-2.5 px-4">
         {filtered.length === 0 && (
-          <div className="rounded-xl border border-cave-border bg-card p-8 text-center">
-            <WineGlass className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-            <p className="font-serif text-base text-foreground">Aucun vin trouve</p>
-            <p className="mt-1 text-sm text-muted-foreground">
+          <BigTile
+            bg="var(--paper-2)"
+            fg="var(--ink)"
+            shadow={false}
+            style={{
+              border: "2px dashed var(--ink-faint)",
+              boxShadow: "none",
+              textAlign: "center",
+              padding: 32,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontStyle: "italic",
+                fontWeight: 500,
+                fontSize: 20,
+                color: "var(--ink)",
+                marginBottom: 6,
+              }}
+            >
+              Aucun vin trouve
+            </div>
+            <p
+              style={{
+                fontSize: 13,
+                color: "var(--ink-soft)",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
               {searchQuery.trim()
                 ? "Aucun vin trouve pour cette recherche."
                 : "Aucun vin ne correspond aux filtres selectionnes."}
             </p>
-          </div>
+          </BigTile>
         )}
 
         {filtered.map((wine, index) => (
@@ -226,13 +333,36 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
 
       {archivedWines.length > 0 && (
         <>
-          <div className="mt-6 border-t border-cave-border" />
+          <div
+            style={{
+              marginTop: 24,
+              borderTop: "var(--border-hard)",
+            }}
+          />
           <button
             onClick={() => setShowArchived(!showArchived)}
-            className="mx-4 mt-4 flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+            style={{
+              margin: "16px 16px 0",
+              display: "flex",
+              width: "calc(100% - 32px)",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderRadius: 12,
+              padding: "8px 12px",
+              textAlign: "left",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--ink-soft)",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "var(--font-sans)",
+            }}
           >
             <span>Cave archivée ({archivedWines.length})</span>
-            <ChevronDown className={`h-4 w-4 transition-transform ${showArchived ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${showArchived ? "rotate-180" : ""}`}
+            />
           </button>
 
           {showArchived && (
@@ -241,7 +371,19 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
                 <div key={`archived-${wine.wine_name}-${wine.millesime_year}-${index}`} className="relative">
                   <WineCard wine={wine} caves={caves} />
                   <div className="absolute top-3 right-3 z-10">
-                    <span className="inline-block px-2 py-1 text-xs font-medium rounded-md bg-muted text-muted-foreground">
+                    <span
+                      style={{
+                        display: "inline-block",
+                        padding: "3px 8px",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        borderRadius: 6,
+                        background: "var(--paper-2)",
+                        color: "var(--ink-soft)",
+                        border: "1.5px solid var(--ink-faint)",
+                        fontFamily: "var(--font-sans)",
+                      }}
+                    >
                       Archivé
                     </span>
                   </div>
