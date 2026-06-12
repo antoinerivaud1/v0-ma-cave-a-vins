@@ -3,7 +3,7 @@
 import { Thermometer, Wine as WineGlass, Sparkles } from "lucide-react"
 import { CaveBadge } from "./cave-badge"
 import { getIcon, getLabel, getColor, formatRegion } from "@/lib/wine-helpers"
-import { getApogee } from "@/data/apogee"
+import { getUnifiedApogee, unifiedToLegacySt } from "@/lib/apogee-unified"
 import type { Wine } from "@/data/apogee"
 
 interface SuggestionCardProps {
@@ -29,15 +29,13 @@ export function SuggestionCard({
   serving,
   aiGenerated,
 }: SuggestionCardProps) {
-  const apogee = getApogee(wine)
+  const unified = getUnifiedApogee(wine)
   const color = getColor(wine.wine_type || "")
   const icon = getIcon(wine.wine_type || "")
   const label = getLabel(wine.wine_type || "")
   const region = formatRegion(wine.wine_region || "")
 
-  const apogeeBadgeVariant = apogee
-    ? (apogee.st as "urgent" | "ok" | "wait" | "late")
-    : undefined
+  const apogeeBadgeVariant = unified ? unifiedToLegacySt(unified.status) : undefined
 
   return (
     <div className="overflow-hidden rounded-xl border border-cave-border bg-card">
@@ -78,8 +76,8 @@ export function SuggestionCard({
       {/* Badges */}
       <div className="flex flex-wrap items-center gap-1.5 px-4 pb-3">
         <CaveBadge label={`${icon} ${label}`} variant={colorBadgeVariant[color]} />
-        {apogee && apogeeBadgeVariant && (
-          <CaveBadge label={apogee.label} variant={apogeeBadgeVariant} />
+        {unified && apogeeBadgeVariant && (
+          <CaveBadge label={unified!.label} variant={apogeeBadgeVariant} />
         )}
       </div>
 

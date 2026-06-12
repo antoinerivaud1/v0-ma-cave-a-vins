@@ -9,7 +9,7 @@ import { AddWineSheet } from "./add-wine-sheet"
 import { ScanLabelSheet } from "./scan-label-sheet"
 import { PaywallSheet } from "./paywall-sheet"
 import { ComingSoonOverlay } from "./coming-soon-badge"
-import { getApogee } from "@/data/apogee"
+import { getUnifiedApogee } from "@/lib/apogee-unified"
 import { getDailyTip } from "@/data/wine-tips"
 import { useAuth } from "@/hooks/use-auth"
 import { useUserProfile } from "@/hooks/use-user-profile"
@@ -59,8 +59,8 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
       w.wine_type === "wine_white_sparkling" || w.wine_color === "Petillant" || w.wine_color === "Effervescent"
     ).reduce((s, w) => s + getEffectiveWineState(w, getOverrideForWine(w)).quantity, 0)
     const toDrink = active.filter((w) => {
-      const a = getApogee(w)
-      return a && (a.st === "urgent" || a.st === "late")
+      const unified = getUnifiedApogee(w)
+      return unified && unified.status === "urgent"
     })
     const recent = active.filter((w) => (w as any)._manual).slice(0, 3)
     return { total, reds, whites, sparkling, toDrink, recent }
@@ -266,8 +266,8 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {stats.toDrink.slice(0, 3).map((wine, i) => {
-              const apogee = getApogee(wine)
-              const isUrgent = apogee?.st === "urgent"
+              const unified = getUnifiedApogee(wine)
+              const isUrgent = unified?.status === "urgent"
               return (
                 <div
                   key={`drink-${wine.wine_name}-${i}`}

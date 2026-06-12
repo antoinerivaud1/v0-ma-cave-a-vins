@@ -6,7 +6,7 @@ import { WineCardActions } from "./wine-card-actions"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { getLabel, getColor, formatRegion, sanitizeWineName } from "@/lib/wine-helpers"
-import { getApogee } from "@/data/apogee"
+import { getUnifiedApogee, unifiedToLegacySt } from "@/lib/apogee-unified"
 import { useWineEnrichmentLegacy } from "@/hooks/use-wine-enrichment"
 import { WineEnrichmentPanel } from "./wine-enrichment-panel"
 import { useTastings } from "@/hooks/use-tastings"
@@ -104,7 +104,7 @@ export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: W
     setIsSavingTasting(false)
   }
 
-  const apogee = getApogee(wine)
+  const unifiedApogee = getUnifiedApogee(wine)
   const color = getColor(wine.wine_type || "")
   const label = getLabel(wine.wine_type || "")
   const region = formatRegion(wine.wine_region || "")
@@ -114,8 +114,8 @@ export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: W
   const effectiveState = getEffectiveWineState(wine, override)
   const displayQuantity = effectiveState.quantity
   const isArchived = effectiveState.archived
-  const apogeeBadgeVariant = apogee
-    ? (apogee.st as "urgent" | "ok" | "wait" | "late")
+  const apogeeBadgeVariant = unifiedApogee
+    ? unifiedToLegacySt(unifiedApogee.status)
     : undefined
 
   const surf = wineSurface[color] ?? wineSurface.unknown
@@ -243,8 +243,8 @@ export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: W
         style={{ position: "relative", zIndex: 1 }}
       >
         <CaveBadge label={label} variant={colorBadgeVariant[color]} />
-        {apogee && apogeeBadgeVariant && (
-          <CaveBadge label={apogee.label} variant={apogeeBadgeVariant} />
+        {unifiedApogee && apogeeBadgeVariant && (
+          <CaveBadge label={unifiedApogee.label} variant={apogeeBadgeVariant} />
         )}
       </div>
 
