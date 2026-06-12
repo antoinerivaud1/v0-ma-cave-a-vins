@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Synthèse v1 — Spacing, Shadows & Borders</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  .token-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .token-card {
+    border: var(--border-hard); border-radius: 14px; background: var(--bg);
+    padding: 18px; box-shadow: var(--shadow-hard);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .token-name { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 22px; line-height: 1; }
+  .token-code { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--ink-soft); }
+  .token-vis { flex: 1; min-height: 90px; display: grid; place-items: center; }
+  .spacer { background: var(--ink); height: 6px; border-radius: 2px; }
+  .radius-vis {
+    width: 76px; height: 76px; background: var(--paper-2);
+    border: var(--border-hard); 
+  }
+  .shadow-vis {
+    width: 90px; height: 56px; background: var(--bg);
+    border: var(--border-hard); border-radius: 12px;
+  }
+  .border-vis { display: flex; gap: 8px; align-items: center; }
+  .border-line {
+    width: 110px; height: 0; border-top: var(--border-hard);
+  }
+
+  .shadow-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  .shadow-demo {
+    background: var(--bg); border: var(--border-hard); border-radius: 14px;
+    padding: 22px; min-height: 110px; display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 18px;
+  }
+  .shadow-demo.hard { box-shadow: var(--shadow-hard); }
+  .shadow-demo.accent { box-shadow: var(--shadow-accent); }
+
+  .layout-vis {
+    display: grid; grid-template-columns: 90px 1fr 90px; gap: 0;
+    border: var(--border-hard); border-radius: 14px; overflow: hidden;
+    background: var(--paper-2); height: 240px;
+  }
+  .layout-pad-l, .layout-pad-r { background: repeating-linear-gradient(45deg, var(--paper-2), var(--paper-2) 6px, var(--ink-faint) 6px, var(--ink-faint) 7px); opacity: 0.4; }
+  .layout-content { padding: 20px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); border-left: 1.5px solid var(--ink); border-right: 1.5px solid var(--ink); }
+  .layout-stub { background: var(--paper-2); border: 1.5px solid var(--ink); border-radius: 10px; height: 32px; }
+  .layout-stub.tall { height: 64px; }
+
+  .gap-stack { display: flex; flex-direction: column; gap: var(--gap-card); }
+  .gap-card { background: var(--rouge); height: 30px; border: var(--border-hard); border-radius: 10px; }
+
+  .ds-pad-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  .pad-card {
+    background: var(--bg); border: var(--border-hard); border-radius: 14px; box-shadow: var(--shadow-hard);
+    overflow: hidden;
+  }
+  .pad-meta { padding: 12px 14px; border-top: 1.5px solid var(--ink); }
+  .pad-meta-name { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 18px; line-height: 1; }
+  .pad-meta-code { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+</style>
+</head>
+<body>
+<main class="ds-page">
+
+  <div class="ds-eyebrow">Synthèse v1 · Fondations</div>
+  <h1 class="ds-title">Espacement, ombres & bordures</h1>
+  <p class="ds-intro">
+    La signature visuelle tient en trois règles : <em>bordure dure 2px</em>,
+    <em>offset shadow 3px 3px 0</em>, <em>rayon de 16px</em> sur les cartes.
+    Tout le reste découle de là.
+  </p>
+
+  <!-- ─── Bordures ─── -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Bordures</h2>
+    <p class="ds-section-sub">Une seule largeur, une seule couleur. La bordure tient le design.</p>
+    <div class="token-grid">
+      <article class="token-card">
+        <div class="token-vis"><div class="border-vis"><div class="border-line"></div></div></div>
+        <div>
+          <div class="token-name">2px solid ink</div>
+          <div class="token-code">--border-hard<br>2px solid var(--ink)</div>
+        </div>
+      </article>
+      <article class="token-card">
+        <div class="token-vis"><div class="border-vis"><div class="border-line" style="border-top: 1.5px solid var(--ink);"></div></div></div>
+        <div>
+          <div class="token-name">1.5px (divider)</div>
+          <div class="token-code">Séparateurs internes des cartes empilées (réglages, etc.).</div>
+        </div>
+      </article>
+      <article class="token-card">
+        <div class="token-vis"><div class="border-vis"><div class="border-line" style="border-top: 1.5px dashed var(--ink);"></div></div></div>
+        <div>
+          <div class="token-name">1.5px dashed</div>
+          <div class="token-code">Tip / "Le saviez-vous ?" — exception assumée.</div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ─── Rayons ─── -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Rayons</h2>
+    <p class="ds-section-sub">Quatre rayons couvrent tous les usages.</p>
+    <div class="token-grid">
+      <article class="token-card">
+        <div class="token-vis"><div class="radius-vis" style="border-radius: 16px;"></div></div>
+        <div>
+          <div class="token-name">Card · 16px</div>
+          <div class="token-code">--radius-card</div>
+        </div>
+      </article>
+      <article class="token-card">
+        <div class="token-vis"><div class="radius-vis" style="border-radius: 10px;"></div></div>
+        <div>
+          <div class="token-name">Input · 10px</div>
+          <div class="token-code">--radius-input</div>
+        </div>
+      </article>
+      <article class="token-card">
+        <div class="token-vis"><div class="radius-vis" style="border-radius: 999px; width: 120px;"></div></div>
+        <div>
+          <div class="token-name">Pill · 999px</div>
+          <div class="token-code">--radius-pill</div>
+        </div>
+      </article>
+      <article class="token-card">
+        <div class="token-vis"><div class="radius-vis" style="border-radius: 50%; width: 76px; height: 76px;"></div></div>
+        <div>
+          <div class="token-name">FAB · 50%</div>
+          <div class="token-code">--radius-fab</div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ─── Ombres ─── -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Ombres — offset hard</h2>
+    <p class="ds-section-sub">Pas de blur. L'ombre est un offset solide à 3px 3px. Le CTA primaire utilise l'accent rouge à la place.</p>
+    <div class="shadow-pair">
+      <div class="shadow-demo hard">Shadow hard</div>
+      <div class="shadow-demo accent">Shadow accent</div>
+    </div>
+    <div class="ds-code" style="margin-top: 14px;">--shadow-hard:   3px 3px 0 0 var(--ink);
+--shadow-accent: 3px 3px 0 0 var(--rouge);  /* CTA primaires uniquement */</div>
+    <p class="ds-section-sub" style="margin-top: 18px;">
+      Au tap (<code>:active</code>), la carte se décale de 2px et l'ombre se réduit à 1px 1px —
+      effet "appui" éditorial, jamais un scale.
+    </p>
+  </section>
+
+  <!-- ─── Padding ─── -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Padding & layout mobile</h2>
+    <p class="ds-section-sub">Tout est calé sur 16px. Mobile-first, max-width 390px.</p>
+    <div class="ds-pad-grid">
+      <div class="pad-card">
+        <div class="layout-vis">
+          <div class="layout-pad-l"></div>
+          <div class="layout-content">
+            <div class="layout-stub tall"></div>
+            <div class="layout-stub"></div>
+            <div class="layout-stub"></div>
+          </div>
+          <div class="layout-pad-r"></div>
+        </div>
+        <div class="pad-meta">
+          <div class="pad-meta-name">Page padding</div>
+          <div class="pad-meta-code">--page-pad : 16px (mobile)</div>
+        </div>
+      </div>
+      <div class="pad-card">
+        <div style="padding: 18px; min-height: 240px; background: var(--paper-2); display: flex; flex-direction: column; gap: var(--gap-card);">
+          <div class="gap-card"></div>
+          <div class="gap-card" style="background: var(--blanc); border-color: var(--ink);"></div>
+          <div class="gap-card" style="background: var(--bulle);"></div>
+          <div class="gap-card" style="background: var(--optimal);"></div>
+        </div>
+        <div class="pad-meta">
+          <div class="pad-meta-name">Gap entre cartes</div>
+          <div class="pad-meta-code">--gap-card : 10px</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Tokens ─── -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Référence tokens</h2>
+    <div class="ds-code">/* Espacements & rayons */
+--radius-card:   16px
+--radius-pill:   999px
+--radius-input:  10px
+--radius-fab:    50%
+--gap-card:      10px
+--page-pad:      16px (mobile)
+
+/* Bordures & ombres */
+--border-hard:   2px solid var(--ink)
+--shadow-hard:   3px 3px 0 0 var(--ink)
+--shadow-accent: 3px 3px 0 0 var(--rouge)   /* CTA hero uniquement */
+
+/* Filigranes */
+--watermark-opacity: 0.22  /* sur fond de couleur */</div>
+  </section>
+
+  <div class="ds-rule"></div>
+
+  <section class="ds-section" style="margin-top: 0;">
+    <h2 class="ds-section-title">Règles</h2>
+    <ul style="margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; color: var(--ink); max-width: 60ch;">
+      <li><strong>Toujours</strong> bordure + offset shadow ensemble sur les cartes principales.</li>
+      <li><strong>Jamais</strong> de blur, jamais d'ombre douce. L'élévation est graphique, pas physique.</li>
+      <li><strong>Tap state</strong> : translate(2px, 2px) + shadow réduite à 1px 1px. Pas de scale.</li>
+      <li><strong>Safe-area</strong> : <code>env(safe-area-inset-top/bottom)</code> sur headers et bottom nav.</li>
+      <li><strong>Bottom sheets</strong> : <code>max-h-[90dvh] flex flex-col</code> + <code>overflow-y-auto flex-1</code> + <code>z-[60]</code>.</li>
+    </ul>
+  </section>
+
+</main>
+</body>
+</html>

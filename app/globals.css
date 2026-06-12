@@ -1,127 +1,197 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
-
-@custom-variant dark (&:is(.dark *));
+@import "tailwindcss";
+@import "tw-animate-css";
 
 :root {
-  /* Ma Cave a Vins — Dark Luxury Wine Theme */
-  --background: #0d0500;
-  --foreground: #f0e0c8;
-  --card: #1a0e06;
-  --card-foreground: #f0e0c8;
-  --popover: #1a0e06;
-  --popover-foreground: #f0e0c8;
-  --primary: #c9a84c;
-  --primary-foreground: #0d0500;
-  --secondary: #1f1209;
-  --secondary-foreground: #f0e0c8;
-  --muted: #1f1209;
-  --muted-foreground: #8a7060;
-  --accent: #c9a84c;
-  --accent-foreground: #0d0500;
-  --destructive: #a63d2f;
-  --destructive-foreground: #f0e0c8;
-  --border: #2a1a0e;
-  --input: #2a1a0e;
-  --ring: #c9a84c;
-  --chart-1: #c9a84c;
-  --chart-2: #8a7060;
-  --chart-3: #a63d2f;
-  --chart-4: #f0e0c8;
-  --chart-5: #1f1209;
-  --radius: 0.625rem;
-  --cave-gold: #c9a84c;
-  --cave-bg: #0d0500;
-  --cave-text: #f0e0c8;
-  --cave-muted: #8a7060;
-  --cave-card: #1a0e06;
-  --cave-border: #2a1a0e;
-  --cave-bordeaux: #722F37;
-  /* Wine type color palette */
-  --cave-terracotta: #c0664a;
-  --cave-rouge-noir: #1a0505;
-  --cave-rouge-sombre: #3a0f0f;
-  --cave-rouge-profond: #5c1a1a;
-  --cave-rouge-vif: #7a2020;
-  --cave-blanc-noir: #1a1800;
-  --cave-blanc-sombre: #2a2810;
-  --cave-blanc-profond: #3a3410;
-  --cave-blanc-moyen: #6b6020;
-  --cave-blanc-dore: #7a7020;
-  --cave-rose-noir: #1a0510;
-  --cave-rose-sombre: #3a1018;
-  --cave-rose-profond: #5a1030;
-  --cave-rose-medium: #7a2035;
-  --cave-rose-vif: #b05070;
-  --cave-bulles-noir: #0a1a2a;
-  --cave-bulles-profond: #1a3a5a;
-  --cave-bulles-vif: #2a5a8a;
+  /* ─── Synthese v1 — Surfaces ───────────────────────── */
+  --bg:           #F5EFE2;
+  --paper-2:      #ECE3D0;
+  --ink:          #1A1411;
+  --ink-soft:     #6B5B4A;
+  --ink-faint:    #B8A98F;
+
+  /* ─── Synthese v1 — Vins ───────────────────────────── */
+  --rouge:        #B33A2E;
+  --rouge-fg:     #F9F1E3;
+  --blanc:        #4A6FA5;
+  --blanc-fg:     #F9F1E3;
+  --bulle:        #D9A852;
+  --bulle-fg:     #1A1411;
+  --rose:         #C97A8F;
+  --rose-fg:      #1A1411;
+
+  /* ─── Synthese v1 — Semantique ────────────────────── */
+  --urgent:       #C1452A;
+  --apogee:       #B33A2E;
+  --optimal:      #6B7A3E;
+  --garde:        #4A6FA5;
+  --destructive:  #C1452A;
+  --success:      #6B7A3E;
+  --gold:         #D9A852;
+
+  /* ─── Synthese v1 — Espacements & rayons ──────────── */
+  --radius-card:  16px;
+  --radius-pill:  999px;
+  --radius-input: 10px;
+  --radius-fab:   50%;
+  --gap-card:     10px;
+  --page-pad:     16px;
+
+  /* ─── Synthese v1 — Bordures & ombres ─────────────── */
+  --border-hard:       2px solid var(--ink);
+  --shadow-hard:       3px 3px 0 0 var(--ink);
+  --shadow-accent:     3px 3px 0 0 var(--rouge);
+
+  /* ─── Synthese v1 — Filigranes ─────────────────────── */
+  --watermark-opacity: 0.22;
+
+  /* ─── shadcn mapping → Synthese v1 ─────────────────── */
+  --background:             #F5EFE2;
+  --foreground:             #1A1411;
+  --card:                   #ECE3D0;
+  --card-foreground:        #1A1411;
+  --popover:                #ECE3D0;
+  --popover-foreground:     #1A1411;
+  --primary:                #B33A2E;
+  --primary-foreground:     #F9F1E3;
+  --secondary:              #ECE3D0;
+  --secondary-foreground:   #1A1411;
+  --muted:                  #ECE3D0;
+  --muted-foreground:       #6B5B4A;
+  --accent:                 #D9A852;
+  --accent-foreground:      #1A1411;
+  --destructive-foreground: #F9F1E3;
+  --border:                 #1A1411;
+  --input:                  #ECE3D0;
+  --ring:                   #B33A2E;
+  --chart-1:                #B33A2E;
+  --chart-2:                #4A6FA5;
+  --chart-3:                #D9A852;
+  --chart-4:                #C97A8F;
+  --chart-5:                #6B7A3E;
+  --radius:                 0.625rem;
+
+  /* ─── Alias de transition cave-* → Synthese v1 ─────── */
+  --cave-gold:            #D9A852;
+  --cave-bg:              #F5EFE2;
+  --cave-text:            #1A1411;
+  --cave-muted:           #6B5B4A;
+  --cave-card:            #ECE3D0;
+  --cave-border:          #1A1411;
+  --cave-bordeaux:        #B33A2E;
+  --cave-terracotta:      #B33A2E;
+
+  /* Alias palette rouge */
+  --cave-rouge-noir:      #2A100C;
+  --cave-rouge-sombre:    #5C1A14;
+  --cave-rouge-profond:   #8A2820;
+  --cave-rouge-vif:       #B33A2E;
+
+  /* Alias palette blanc */
+  --cave-blanc-noir:      #1A1C0A;
+  --cave-blanc-sombre:    #2E3514;
+  --cave-blanc-profond:   #3C4A1C;
+  --cave-blanc-moyen:     #3D5C85;
+  --cave-blanc-dore:      #4A6FA5;
+
+  /* Alias palette rose */
+  --cave-rose-noir:       #2A1018;
+  --cave-rose-sombre:     #5A2035;
+  --cave-rose-profond:    #8A3050;
+  --cave-rose-medium:     #B05070;
+  --cave-rose-vif:        #C97A8F;
+
+  /* Alias palette bulles */
+  --cave-bulles-noir:     #1A2535;
+  --cave-bulles-profond:  #2E4A6A;
+  --cave-bulles-vif:      #4A6FA5;
 }
 
 @theme inline {
-  --font-sans: 'Inter', sans-serif;
-  --font-serif: 'Cormorant Garamond', serif;
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
+  --font-sans:    var(--font-inter);
+  --font-serif:   var(--font-cormorant);
+  --font-display: var(--font-cormorant);
+  --font-mono:    "Geist Mono", "Geist Mono Fallback";
+
+  /* Couleurs Synthese v1 exposees comme --color-* */
+  --color-rouge:     var(--rouge);
+  --color-blanc:     var(--blanc);
+  --color-bulle:     var(--bulle);
+  --color-rose:      var(--rose);
+  --color-urgent:    var(--urgent);
+  --color-apogee:    var(--apogee);
+  --color-optimal:   var(--optimal);
+  --color-garde:     var(--garde);
+  --color-gold:      var(--gold);
+  --color-ink:       var(--ink);
+  --color-ink-soft:  var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-paper-2:   var(--paper-2);
+
+  /* shadcn color tokens */
+  --color-background:             var(--background);
+  --color-foreground:             var(--foreground);
+  --color-card:                   var(--card);
+  --color-card-foreground:        var(--card-foreground);
+  --color-popover:                var(--popover);
+  --color-popover-foreground:     var(--popover-foreground);
+  --color-primary:                var(--primary);
+  --color-primary-foreground:     var(--primary-foreground);
+  --color-secondary:              var(--secondary);
+  --color-secondary-foreground:   var(--secondary-foreground);
+  --color-muted:                  var(--muted);
+  --color-muted-foreground:       var(--muted-foreground);
+  --color-accent:                 var(--accent);
+  --color-accent-foreground:      var(--accent-foreground);
+  --color-destructive:            var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-cave-gold: var(--cave-gold);
-  --color-cave-bg: var(--cave-bg);
-  --color-cave-text: var(--cave-text);
-  --color-cave-muted: var(--cave-muted);
-  --color-cave-card: var(--cave-card);
-  --color-cave-border: var(--cave-border);
-  --color-cave-bordeaux: var(--cave-bordeaux);
-  /* Wine type color palette */
-  --color-cave-terracotta: var(--cave-terracotta);
-  --color-cave-rouge-noir: var(--cave-rouge-noir);
-  --color-cave-rouge-sombre: var(--cave-rouge-sombre);
-  --color-cave-rouge-profond: var(--cave-rouge-profond);
-  --color-cave-rouge-vif: var(--cave-rouge-vif);
-  --color-cave-blanc-noir: var(--cave-blanc-noir);
-  --color-cave-blanc-sombre: var(--cave-blanc-sombre);
-  --color-cave-blanc-profond: var(--cave-blanc-profond);
-  --color-cave-blanc-moyen: var(--cave-blanc-moyen);
-  --color-cave-blanc-dore: var(--cave-blanc-dore);
-  --color-cave-rose-noir: var(--cave-rose-noir);
-  --color-cave-rose-sombre: var(--cave-rose-sombre);
-  --color-cave-rose-profond: var(--cave-rose-profond);
-  --color-cave-rose-medium: var(--cave-rose-medium);
-  --color-cave-rose-vif: var(--cave-rose-vif);
-  --color-cave-bulles-noir: var(--cave-bulles-noir);
+  --color-border:                 var(--border);
+  --color-input:                  var(--input);
+  --color-ring:                   var(--ring);
+  --color-chart-1:                var(--chart-1);
+  --color-chart-2:                var(--chart-2);
+  --color-chart-3:                var(--chart-3);
+  --color-chart-4:                var(--chart-4);
+  --color-chart-5:                var(--chart-5);
+
+  /* cave-* alias exposes comme --color-cave-* */
+  --color-cave-gold:           var(--cave-gold);
+  --color-cave-bg:             var(--cave-bg);
+  --color-cave-text:           var(--cave-text);
+  --color-cave-muted:          var(--cave-muted);
+  --color-cave-card:           var(--cave-card);
+  --color-cave-border:         var(--cave-border);
+  --color-cave-bordeaux:       var(--cave-bordeaux);
+  --color-cave-terracotta:     var(--cave-terracotta);
+  --color-cave-rouge-noir:     var(--cave-rouge-noir);
+  --color-cave-rouge-sombre:   var(--cave-rouge-sombre);
+  --color-cave-rouge-profond:  var(--cave-rouge-profond);
+  --color-cave-rouge-vif:      var(--cave-rouge-vif);
+  --color-cave-blanc-noir:     var(--cave-blanc-noir);
+  --color-cave-blanc-sombre:   var(--cave-blanc-sombre);
+  --color-cave-blanc-profond:  var(--cave-blanc-profond);
+  --color-cave-blanc-moyen:    var(--cave-blanc-moyen);
+  --color-cave-blanc-dore:     var(--cave-blanc-dore);
+  --color-cave-rose-noir:      var(--cave-rose-noir);
+  --color-cave-rose-sombre:    var(--cave-rose-sombre);
+  --color-cave-rose-profond:   var(--cave-rose-profond);
+  --color-cave-rose-medium:    var(--cave-rose-medium);
+  --color-cave-rose-vif:       var(--cave-rose-vif);
+  --color-cave-bulles-noir:    var(--cave-bulles-noir);
   --color-cave-bulles-profond: var(--cave-bulles-profond);
-  --color-cave-bulles-vif: var(--cave-bulles-vif);
+  --color-cave-bulles-vif:     var(--cave-bulles-vif);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* ─── Utilitaire conserve : font-cormorant (utilise dans components/) ── */
 @utility font-cormorant {
   font-family: var(--font-cormorant);
 }
 
+/* ─── Keyframe scan utilise dans scan-label-sheet.tsx ────────────────── */
 @keyframes scan {
   0%, 100% { transform: translateY(0); opacity: 0.3; }
   50% { transform: translateY(180px); opacity: 0.8; }

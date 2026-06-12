@@ -1,0 +1,129 @@
+/* ════════════════════════════════════════════════════
+   Ma Cave à Vins — Synthèse v1
+   Design tokens (canonical)
+   ════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ─── Surfaces ─────────────────────────────────────── */
+  --bg:           #F5EFE2;  /* fond principal, crème chaud */
+  --paper-2:      #ECE3D0;  /* cards muted, sections expandées */
+  --ink:          #1A1411;  /* texte principal + bordures dures */
+  --ink-soft:     #6B5B4A;  /* texte secondaire, labels */
+  --ink-faint:    #B8A98F;  /* placeholder, inactif */
+
+  /* ─── Vins ─────────────────────────────────────────── */
+  --rouge:        #B33A2E;  --rouge-fg:  #F9F1E3;
+  --blanc:        #4A6FA5;  --blanc-fg:  #F9F1E3;
+  --bulle:        #D9A852;  --bulle-fg:  #1A1411;
+  --rose:         #C97A8F;  --rose-fg:   #1A1411;
+
+  /* ─── Sémantique ───────────────────────────────────── */
+  --urgent:       #C1452A;  /* pic > 85% — fenêtre courte */
+  --apogee:       #B33A2E;  /* 50–85% — à ouvrir */
+  --optimal:      #6B7A3E;  /* 30–50% — bonne fenêtre */
+  --garde:        #4A6FA5;  /* < 30% — attendre */
+  --destructive:  #C1452A;
+  --success:      #6B7A3E;
+  --gold:         #D9A852;  /* accent doré décoratif (marqueurs de pic) */
+
+  /* ─── Typographie ──────────────────────────────────── */
+  --font-display: "Cormorant Garamond", serif;
+  --font-sans:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-hand:    "Cormorant Garamond", serif; /* annotations = italic du display */
+  --hand-style:   italic;
+
+  /* ─── Espacements & rayons ─────────────────────────── */
+  --radius-card:   16px;
+  --radius-pill:   999px;
+  --radius-input:  10px;
+  --radius-fab:    50%;
+  --gap-card:      10px;
+  --page-pad:      16px;
+
+  /* ─── Bordures & ombres (signature visuelle) ──────── */
+  --border-hard:   2px solid var(--ink);
+  --shadow-hard:   3px 3px 0 0 var(--ink);
+  --shadow-accent: 3px 3px 0 0 var(--rouge);
+
+  /* ─── Filigranes ──────────────────────────────────── */
+  --watermark-opacity: 0.22;
+}
+
+/* ─── Document defaults ─── */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ─── Typography classes ─────────────────────────────── */
+.h1 {
+  font-family: var(--font-display); font-style: italic; font-weight: 500;
+  font-size: 28px; line-height: 1.05;
+  text-wrap: balance; letter-spacing: -0.005em;
+}
+.h2 {
+  font-family: var(--font-display); font-style: italic; font-weight: 500;
+  font-size: 19px; line-height: 1.15;
+}
+.kicker, .label-tracked {
+  font-family: var(--font-sans); font-weight: 600;
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--ink-soft);
+}
+
+/* ─── Doc shell (utilisé sur chaque page du DS) ─────── */
+.ds-page {
+  max-width: 880px; margin: 0 auto; padding: 56px 32px 80px;
+}
+.ds-eyebrow {
+  font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft);
+}
+.ds-title {
+  font-family: var(--font-display); font-style: italic; font-weight: 500;
+  font-size: 48px; line-height: 1; margin: 12px 0 8px;
+  letter-spacing: -0.01em;
+}
+.ds-intro {
+  font-family: var(--font-display); font-style: italic; font-weight: 500;
+  font-size: 19px; line-height: 1.45; color: var(--ink-soft);
+  max-width: 60ch; text-wrap: pretty;
+}
+.ds-section {
+  margin-top: 56px;
+}
+.ds-section-title {
+  font-family: var(--font-display); font-style: italic; font-weight: 500;
+  font-size: 26px; line-height: 1.1; margin-bottom: 6px;
+}
+.ds-section-sub {
+  font-size: 13px; color: var(--ink-soft); margin-bottom: 22px; max-width: 56ch;
+}
+.ds-rule {
+  height: 2px; background: var(--ink); margin: 56px 0; opacity: 0.9;
+}
+.ds-grid {
+  display: grid; gap: 14px;
+}
+.ds-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px; background: var(--paper-2);
+  border: var(--border-hard); border-radius: 12px;
+  padding: 14px 16px; white-space: pre; overflow-x: auto;
+  color: var(--ink); box-shadow: var(--shadow-hard);
+}
+.ds-meta {
+  font-size: 11px; color: var(--ink-soft); margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.ds-card {
+  background: var(--bg); border: var(--border-hard); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-hard); padding: 18px;
+}

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ma Cave à Vins — Synthèse v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=EB+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  /* Surfaces */
+  --bg:           #F5EFE2;
+  --paper-2:      #ECE3D0;
+  --ink:          #1A1411;
+  --ink-soft:     #6B5B4A;
+  --ink-faint:    #B8A98F;
+
+  /* Vins */
+  --rouge:        #B33A2E;
+  --rouge-fg:     #F9F1E3;
+  --blanc:        #4A6FA5;
+  --blanc-fg:    #F9F1E3;
+  --bulle:        #D9A852;
+  --bulle-fg:     #1A1411;
+  --rose:         #C97A8F;
+  --rose-fg:      #1A1411;
+
+  /* Sémantique */
+  --urgent:       #C1452A;
+  --apogee:       #B33A2E;
+  --optimal:      #6B7A3E;
+  --garde:        #4A6FA5;
+  --destructive:  #C1452A;
+  --success:      #6B7A3E;
+  --gold:         #D9A852;
+
+  /* Espacements & rayons */
+  --radius-card:  16px;
+  --radius-pill:  999px;
+  --radius-input: 10px;
+  --radius-fab:   50%;
+  --border-hard:  2px solid var(--ink);
+  --shadow-hard:  3px 3px 0 0 var(--ink);
+  --shadow-accent: 3px 3px 0 0 var(--rouge);
+  --gap-card:     10px;
+  --page-pad:     16px;
+
+  --watermark-opacity: 0.18;
+
+  /* Fonts */
+  --font-sans:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Cormorant Garamond", "EB Garamond", serif;
+  --font-hand:    "Caveat", "Bradley Hand", cursive;
+}
+
+html, body { background: #0e0a07; font-family: var(--font-sans); color: var(--ink); height: 100%; overflow: hidden; }
+
+#root { height: 100%; }
+
+/* ─── Stage: center the phone, scale on small viewports ─── */
+.stage {
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  background: radial-gradient(120% 80% at 50% 30%, #1c150d 0%, #0e0a07 80%);
+  padding: 20px;
+  overflow: hidden;
+}
+.phone-shell {
+  position: relative;
+  filter: drop-shadow(0 30px 60px rgba(0,0,0,.5));
+}
+
+/* ─── Phone (iPhone-ish) ─── */
+.phone {
+  width: 390px; height: 844px;
+  background: var(--bg);
+  border-radius: 48px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 2px #2a2218,
+    0 0 0 8px #19130c,
+    0 0 0 10px #322618;
+}
+
+/* notch */
+.phone::before {
+  content: ""; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 110px; height: 30px; background: #0a0704; border-radius: 999px; z-index: 100;
+}
+
+/* Status bar */
+.status-bar {
+  position: relative; z-index: 50;
+  height: 48px;
+  padding: 14px 28px 0;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+  color: var(--ink);
+}
+.status-icons { display: flex; align-items: center; gap: 5px; color: var(--ink); }
+.battery { display: inline-block; width: 22px; height: 11px; border: 1px solid var(--ink); border-radius: 3px; position: relative; opacity: 0.85; }
+.battery::after { content: ""; position: absolute; right: -3px; top: 3px; width: 2px; height: 5px; background: var(--ink); border-radius: 0 1px 1px 0; }
+.battery-fill { display: block; width: 70%; height: 7px; margin: 1px; background: var(--ink); border-radius: 1px; }
+
+/* Screen scroll area */
+.screen {
+  position: absolute;
+  top: 48px; bottom: 70px; left: 0; right: 0;
+  overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+.screen::-webkit-scrollbar { display: none; }
+
+.screen-pad { padding: 0 var(--page-pad) 16px; }
+
+/* ─── Typography helpers ─── */
+.h1 {
+  font-family: var(--font-display); font-style: italic; font-weight: 500;
+  font-size: 28px; line-height: 1.05; color: var(--ink);
+  text-wrap: balance; letter-spacing: -0.005em;
+}
+.h2 {
+  font-family: var(--font-display); font-style: italic; font-weight: 500;
+  font-size: 19px; line-height: 1.15; color: var(--ink);
+}
+.kicker, .label-tracked {
+  font-family: var(--font-sans); font-weight: 600;
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--ink-soft);
+}
+.hand-greeting {
+  font-family: var(--font-sans); font-weight: 500;
+  font-size: 22px; line-height: 1.1; color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.hand-mini {
+  font-family: var(--font-hand); font-style: var(--hand-style, italic); font-weight: 500;
+  font-size: 15px; color: var(--ink-soft);
+}
+
+.section-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  margin-bottom: 6px;
+}
+
+/* ─── Bottom nav ─── */
+.bottom-nav {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 70px;
+  background: var(--bg);
+  border-top: 2px solid var(--ink);
+  display: flex; justify-content: space-around; align-items: flex-start;
+  padding-top: 10px;
+  z-index: 50;
+}
+.nav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: none; border: none; cursor: pointer;
+  padding: 2px 8px;
+}
+.nav-lbl {
+  font-family: var(--font-sans); font-size: 9px; letter-spacing: 0.05em;
+}
+
+/* ─── FAB ─── */
+.fab {
+  position: absolute; bottom: 86px; right: 16px;
+  width: 56px; height: 56px;
+  background: var(--ink); color: var(--bg);
+  border: var(--border-hard); border-radius: 50%;
+  box-shadow: 3px 3px 0 0 var(--rouge);
+  cursor: pointer;
+  display: grid; place-items: center;
+  z-index: 55;
+  transition: transform .12s;
+}
+.fab:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 0 var(--rouge); }
+
+/* ─── Interactions ─── */
+.press { transition: transform .12s; }
+.press:active { transform: scale(.96); }
+.wine-tile { transition: transform .14s, box-shadow .14s; }
+.wine-tile:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 0 var(--ink); }
+.no-scroll::-webkit-scrollbar { display: none; }
+.no-scroll { scrollbar-width: none; }
+
+/* Detail poster fade-up entry */
+.screen { animation: enter .22s ease-out; }
+@keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Hover for desktop preview */
+@media (hover: hover) {
+  .wine-tile:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 0 var(--ink); }
+  .fab:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 0 var(--rouge); }
+}
+
+/* Mobile responsive: scale phone if viewport too small */
+@media (max-height: 900px) {
+  .stage { padding: 0; }
+}
+</style>
+
+<script type="application/json" id="om-edit-keys">["accent","displayFont","density","showWatermarks"]</script>
+</head>
+<body>
+<div id="root" class="stage"></div>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script src="data.js"></script>
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="screens.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+
+<script>
+/* Auto-scale phone if window too small */
+(function() {
+  function fit() {
+    const stage = document.querySelector('.stage');
+    const phone = document.querySelector('.phone-shell');
+    if (!stage || !phone) return;
+    const sw = stage.clientWidth - 40;
+    const sh = stage.clientHeight - 40;
+    const scale = Math.min(1, sw / 410, sh / 870);
+    phone.style.transform = scale < 1 ? `scale(${scale})` : "none";
+    phone.style.transformOrigin = "center";
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('load', fit);
+  setInterval(fit, 1000);
+})();
+</script>
+</body>
+</html>
