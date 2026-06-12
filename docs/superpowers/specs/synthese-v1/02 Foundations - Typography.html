@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Synthèse v1 — Typography</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  .specimen {
+    border: var(--border-hard); border-radius: 14px; box-shadow: var(--shadow-hard);
+    padding: 28px 26px; background: var(--bg);
+  }
+  .specimen + .specimen { margin-top: 14px; }
+  .spec-meta {
+    display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; color: var(--ink-soft);
+  }
+  .spec-meta b { color: var(--ink); font-weight: 600; }
+
+  .scale-tab {
+    display: grid; grid-template-columns: 130px 1fr 120px; gap: 18px;
+    align-items: baseline; padding: 14px 0;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .scale-tab:last-child { border-bottom: none; }
+  .scale-tab-key { font-family: var(--font-sans); font-weight: 600; font-size: 11px; color: var(--ink-soft); letter-spacing: 0.05em; }
+  .scale-tab-eg  { color: var(--ink); }
+  .scale-tab-meta { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; color: var(--ink-soft); text-align: right; }
+
+  .pair-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .pair-grid { grid-template-columns: 1fr; } }
+  .pair-card { border: var(--border-hard); border-radius: 14px; padding: 22px; background: var(--paper-2); }
+  .pair-card .lbl { font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); }
+  .pair-card .display-sample {
+    font-family: var(--font-display); font-style: italic; font-weight: 500;
+    font-size: 36px; line-height: 1; margin-top: 6px;
+  }
+  .pair-card .body-sample {
+    font-family: var(--font-sans); font-size: 13px; color: var(--ink-soft); margin-top: 10px; line-height: 1.55;
+  }
+</style>
+</head>
+<body>
+<main class="ds-page">
+
+  <div class="ds-eyebrow">Synthèse v1 · Fondations</div>
+  <h1 class="ds-title">Typographie</h1>
+  <p class="ds-intro">
+    Deux polices, deux rôles. Cormorant Garamond italique porte la voix éditoriale —
+    titres, citations, marginalia. Inter porte la fonction — UI, métriques, labels.
+    Toutes les nuances "manuscrites" passent par l'italique du serif.
+  </p>
+
+  <!-- ─── Système ─── -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Système</h2>
+    <p class="ds-section-sub">Une paire serif éditorial + sans neutre. C'est tout.</p>
+    <div class="pair-grid">
+      <div class="pair-card">
+        <div class="lbl">DISPLAY</div>
+        <div class="display-sample">Cormorant Garamond</div>
+        <div class="body-sample">
+          Poids : 500–600 · italique privilégié pour les titres et citations.
+          Usages : H1 d'écran, nom de vin, big numbers du dashboard, filigrane, marginalia.
+        </div>
+      </div>
+      <div class="pair-card" style="background: var(--ink); color: var(--bg);">
+        <div class="lbl" style="color: rgba(245,239,226,0.7);">SANS</div>
+        <div class="display-sample" style="font-style: normal; font-family: var(--font-sans); font-weight: 600;">Inter</div>
+        <div class="body-sample" style="color: rgba(245,239,226,0.7);">
+          Poids : 400–700 · variantes tabular-nums pour les chiffres.
+          Usages : UI body, labels tracés, métriques, millésimes, navigation.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Échelle ─── -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Échelle</h2>
+    <p class="ds-section-sub">Toutes les tailles sont pensées pour le mobile (390px). Bigger is editorial.</p>
+
+    <article class="specimen">
+      <div style="font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 86px; line-height: 0.95; letter-spacing: -0.02em;">2008</div>
+      <div class="spec-meta">
+        <span><b>Millésime géant</b></span><span>Cormorant Italic 600 · 86 / 0.95</span>
+        <span>letter-spacing -0.02em</span><span>tabular-nums</span>
+      </div>
+    </article>
+
+    <article class="specimen">
+      <div style="font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 48px; line-height: 1;">47</div>
+      <div class="spec-meta">
+        <span><b>Big number</b></span><span>Cormorant Italic 600 · 48 / 1</span>
+        <span>Pour les chiffres clés du dashboard</span>
+      </div>
+    </article>
+
+    <article class="specimen">
+      <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 28px; line-height: 1.05; letter-spacing: -0.005em; text-wrap: balance;">3 vins arrivent à leur pic.</div>
+      <div class="spec-meta">
+        <span><b>H1 — écran</b></span><span>Cormorant Italic 500 · 28 / 1.05</span>
+        <span>text-wrap: balance</span>
+      </div>
+    </article>
+
+    <article class="specimen">
+      <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 22px; line-height: 1.1;">Château Margaux</div>
+      <div class="spec-meta">
+        <span><b>Nom de vin — Détail</b></span><span>Cormorant Italic 500 · 22 / 1.1</span>
+      </div>
+    </article>
+
+    <article class="specimen">
+      <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 19px; line-height: 1.15;">La pioche du soir</div>
+      <div class="spec-meta">
+        <span><b>H2 — section</b></span><span>Cormorant Italic 500 · 19 / 1.15</span>
+      </div>
+    </article>
+
+    <article class="specimen">
+      <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 17px; line-height: 1.3; color: var(--ink); text-wrap: pretty;">« Cassis mûr, tannins fondus. Décanté 2h. »</div>
+      <div class="spec-meta">
+        <span><b>Citation / Annotation</b></span><span>Cormorant Italic 500 · 17 / 1.3</span>
+        <span>text-wrap: pretty</span>
+      </div>
+    </article>
+
+    <article class="specimen">
+      <div style="font-family: var(--font-sans); font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums;">1998 · 2008 · 2024</div>
+      <div class="spec-meta">
+        <span><b>Millésime — UI</b></span><span>Inter 700 · 18</span>
+        <span>tabular-nums</span>
+      </div>
+    </article>
+
+    <article class="specimen">
+      <div style="font-family: var(--font-sans); font-size: 13px; line-height: 1.55; color: var(--ink);">Une cave bien tempérée, surveillée par votre sommelier de poche.</div>
+      <div class="spec-meta">
+        <span><b>UI body</b></span><span>Inter 400 · 13 / 1.55</span>
+      </div>
+    </article>
+
+    <article class="specimen">
+      <div style="font-family: var(--font-sans); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft);">VOTRE CAVE · 47 BOUTEILLES</div>
+      <div class="spec-meta">
+        <span><b>Label tracé</b></span><span>Inter 600 · 9 · uppercase</span>
+        <span>letter-spacing 0.18em</span>
+      </div>
+    </article>
+
+    <article class="specimen">
+      <div style="font-family: var(--font-sans); font-size: 11px; color: var(--ink-soft);">Margaux · Bordeaux · pour ce soir</div>
+      <div class="spec-meta">
+        <span><b>Métadonnées</b></span><span>Inter 400 · 11</span>
+        <span>color: --ink-soft</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- ─── Table récap ─── -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Référence rapide</h2>
+    <div class="ds-card">
+      <div class="scale-tab">
+        <div class="scale-tab-key">Rôle</div>
+        <div class="scale-tab-key">Police / poids / style</div>
+        <div class="scale-tab-meta">Taille</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">Millésime géant</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 24px;">2008</div>
+        <div class="scale-tab-meta">86 / 0.95</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">Big number</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 20px;">47</div>
+        <div class="scale-tab-meta">48 / 1</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">H1 écran</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 18px;">3 vins arrivent à leur pic.</div>
+        <div class="scale-tab-meta">28 / 1.05</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">Nom de vin (Détail)</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 16px;">Château Margaux</div>
+        <div class="scale-tab-meta">22 / 1.1</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">Nom de vin (Liste)</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 14px;">Pétrus</div>
+        <div class="scale-tab-meta">19 / 1.1</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">H2 section</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 14px;">La pioche du soir</div>
+        <div class="scale-tab-meta">19 / 1.15</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">Citation</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 12px;">« Cassis mûr, tannins fondus. »</div>
+        <div class="scale-tab-meta">17 / 1.3</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">Filigrane</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 22px; opacity: 0.22;">Rouge</div>
+        <div class="scale-tab-meta">clamp(20, 11cqi, 46)</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">Millésime UI</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-sans); font-weight: 700; font-size: 14px;">2008</div>
+        <div class="scale-tab-meta">18 · Inter 700</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">Label tracé</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-sans); font-weight: 600; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;">VOTRE CAVE</div>
+        <div class="scale-tab-meta">9 · 0.18em</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">UI body</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-sans); font-size: 12px;">Une belle soirée vous attend.</div>
+        <div class="scale-tab-meta">13 · Inter 400</div>
+      </div>
+      <div class="scale-tab">
+        <div class="scale-tab-key">Métadonnées</div>
+        <div class="scale-tab-eg" style="font-family: var(--font-sans); font-size: 11px; color: var(--ink-soft);">×3 · pour ce soir</div>
+        <div class="scale-tab-meta">11 · ink-soft</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ds-rule"></div>
+
+  <section class="ds-section" style="margin-top: 0;">
+    <h2 class="ds-section-title">Règles</h2>
+    <ul style="margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; color: var(--ink); max-width: 60ch;">
+      <li><strong>Display = italic.</strong> Cormorant n'est jamais affiché en romain. L'italique porte la voix.</li>
+      <li><strong>Sans = Inter.</strong> Pour la fonction. <code>tabular-nums</code> sur tout chiffre comptable.</li>
+      <li><strong>Pas de "police manuscrite".</strong> Caveat a été abandonné — les marginalia passent par l'italique du serif.</li>
+      <li><strong>text-wrap: balance</strong> sur titres, <strong>pretty</strong> sur citations & paragraphes.</li>
+      <li><strong>Minimum 9px</strong> en sans + uppercase + tracking pour rester lisible.</li>
+    </ul>
+  </section>
+
+</main>
+</body>
+</html>

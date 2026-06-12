@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Synthèse v1 — Components</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  .comp { margin-top: 32px; }
+  .comp-head { margin-bottom: 14px; }
+  .comp-name { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 26px; line-height: 1; }
+  .comp-sub { font-size: 13px; color: var(--ink-soft); margin-top: 4px; max-width: 56ch; line-height: 1.5; }
+  .comp-frame {
+    background: var(--paper-2); border: var(--border-hard); border-radius: 16px;
+    box-shadow: var(--shadow-hard); padding: 22px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .comp-frame.row { flex-direction: row; flex-wrap: wrap; align-items: flex-start; }
+  .comp-spec {
+    font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; color: var(--ink-soft);
+    margin-top: 8px; line-height: 1.5;
+  }
+
+  /* WineTile */
+  .wine-tile {
+    border: var(--border-hard); border-radius: 16px; box-shadow: var(--shadow-hard);
+    padding: 13px; position: relative; overflow: hidden;
+    width: 320px; max-width: 100%;
+    container-type: inline-size;
+  }
+  .wm {
+    position: absolute; top: 8px; right: 10px;
+    font-family: var(--font-display); font-style: italic; font-weight: 600;
+    font-size: clamp(20px, 11cqi, 46px); line-height: 1;
+    letter-spacing: -0.01em; white-space: nowrap;
+    pointer-events: none; opacity: 0.22;
+    max-width: calc(100% - 16px);
+  }
+  .wt-top { padding-right: 56px; }
+  .wt-kicker { font-family: var(--font-sans); font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; opacity: 0.7; }
+  .wt-name { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 19px; line-height: 1.1; margin-top: 2px; text-wrap: balance; }
+  .wt-meta { display: flex; gap: 8px; align-items: baseline; margin-top: 4px; opacity: 0.85; font-family: var(--font-sans); }
+  .wt-bottom { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+  .wt-status-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .wt-status { font-family: var(--font-sans); font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; }
+  .progress {
+    height: 6px; border: 1px solid currentColor; border-radius: 999px;
+    position: relative;
+  }
+  .progress-inner { position: absolute; inset: 0; border-radius: 999px; overflow: hidden; }
+  .progress-bg { width: 100%; height: 100%; background: currentColor; opacity: 0.22; }
+  .progress-fill { position: absolute; inset: 0; background: currentColor; }
+  .progress-peak { position: absolute; top: -3px; bottom: -3px; width: 1.5px; background: currentColor; opacity: 0.55; transform: translateX(-0.75px); }
+
+  /* BigTile */
+  .bigtile {
+    border: var(--border-hard); border-radius: 16px; box-shadow: var(--shadow-hard);
+    padding: 16px; position: relative; overflow: hidden;
+    container-type: inline-size;
+  }
+  .bt-label { font-family: var(--font-sans); font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; opacity: 0.78; }
+  .bt-big { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 48px; line-height: 1; margin-top: 6px; position: relative; z-index: 1; }
+  .bt-sub { font-size: 11px; opacity: 0.75; margin-top: 4px; font-family: var(--font-sans); }
+
+  /* FAB */
+  .fab {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--ink); color: var(--bg);
+    border: var(--border-hard); box-shadow: 3px 3px 0 0 var(--rouge);
+    display: grid; place-items: center; cursor: pointer;
+  }
+
+  /* Filter pill */
+  .pill {
+    padding: 7px 13px; border-radius: 999px; border: var(--border-hard);
+    background: var(--bg); color: var(--ink);
+    font-family: var(--font-sans); font-weight: 600; font-size: 11px;
+    letter-spacing: 0.02em; cursor: pointer;
+  }
+  .pill.active { background: var(--ink); color: var(--bg); box-shadow: var(--shadow-hard); }
+
+  /* StatPill */
+  .stat-pill { background: var(--bg); border: var(--border-hard); border-radius: 16px; box-shadow: var(--shadow-hard); padding: 10px 12px; flex: 1; min-width: 90px; }
+  .stat-label { font-family: var(--font-sans); font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft); }
+  .stat-big { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 26px; line-height: 1; margin-top: 4px; }
+  .stat-sub { font-size: 10px; color: var(--ink-soft); margin-top: 3px; }
+
+  /* BottomNav */
+  .bnav {
+    height: 70px; background: var(--bg); border-top: 2px solid var(--ink);
+    display: flex; justify-content: space-around; align-items: flex-start;
+    padding-top: 10px; width: 390px; max-width: 100%;
+    border-radius: 0 0 32px 32px;
+  }
+  .bnav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .bnav-lbl { font-family: var(--font-sans); font-size: 9px; letter-spacing: 0.05em; }
+
+  /* CTA */
+  .cta {
+    padding: 13px 18px; background: var(--ink); color: var(--bg);
+    border: var(--border-hard); border-radius: 999px; box-shadow: var(--shadow-accent);
+    font-family: var(--font-sans); font-weight: 700; font-size: 13px;
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .cta.ghost { background: var(--bg); color: var(--ink); box-shadow: var(--shadow-hard); }
+
+  /* CycleChart */
+  .cyclechart {
+    background: var(--bg); border: var(--border-hard); border-radius: 16px;
+    box-shadow: var(--shadow-hard); padding: 16px;
+  }
+  .cc-head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .cc-pct { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 36px; line-height: 1; margin-top: 4px; }
+  .cc-pic { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--ink-soft); margin-top: 4px; }
+  .cc-badge {
+    font-family: var(--font-sans); font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+    padding: 5px 10px; border: 1.5px solid var(--ink); border-radius: 999px;
+    background: var(--apogee); color: var(--rouge-fg);
+  }
+
+  /* Apogee bar */
+  .apogee-bar { height: 10px; border: 1.5px solid var(--ink); border-radius: 999px; display: flex; overflow: hidden; position: relative; }
+  .ab-z { opacity: 0.22; }
+  .ab-z + .ab-z { border-left: 1px solid var(--ink); }
+  .ab-fill { position: absolute; inset: 0; background: var(--ink); opacity: 0.9; mix-blend-mode: multiply; }
+  .ab-tick { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); transform: translateX(-1px); }
+
+  /* Setting row */
+  .set-list { background: var(--paper-2); border: var(--border-hard); border-radius: 16px; box-shadow: var(--shadow-hard); overflow: hidden; }
+  .set-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1.5px solid var(--ink); }
+  .set-row:last-child { border-bottom: none; }
+  .set-icon-box { width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0; border: 1.5px solid var(--ink); display: grid; place-items: center; }
+  .set-name { font-family: var(--font-sans); font-size: 13px; font-weight: 600; }
+  .set-sub { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
+  .toggle { width: 36px; height: 20px; border-radius: 999px; border: 1.5px solid var(--ink); background: var(--ink); position: relative; flex-shrink: 0; }
+  .toggle::after { content: ""; position: absolute; top: 1px; left: 17px; width: 14px; height: 14px; border-radius: 50%; background: var(--bg); }
+</style>
+</head>
+<body>
+<main class="ds-page">
+
+  <div class="ds-eyebrow">Synthèse v1 · Composants</div>
+  <h1 class="ds-title">Composants</h1>
+  <p class="ds-intro">
+    Tous les composants partagent la même grammaire : bordure 2px, offset shadow 3px,
+    rayon 16px. Le filigrane typographique top-right est leur signature commune.
+  </p>
+
+  <!-- ─── WineTile ─── -->
+  <section class="comp">
+    <header class="comp-head">
+      <div class="comp-name">WineTile</div>
+      <p class="comp-sub">Carte utilisée dans la Liste et le Carnet. Fond = couleur du vin. Filigrane = libellé du type. Barre de cycle en pied avec tick au pic.</p>
+    </header>
+    <div class="comp-frame">
+      <div class="wine-tile" style="background: var(--rouge); color: var(--rouge-fg);">
+        <span class="wm" style="color: var(--rouge-fg);">Rouge</span>
+        <div class="wt-top">
+          <div class="wt-kicker">Bordeaux · Margaux</div>
+          <div class="wt-name">Château Margaux</div>
+          <div class="wt-meta"><span style="font-size: 11px; font-weight: 600;">×2</span><span style="opacity: 0.5;">·</span><span style="font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;">2008</span></div>
+        </div>
+        <div class="wt-bottom">
+          <div class="wt-status-row">
+            <span class="wt-status">APOGÉE</span>
+            <span style="font-size: 10px; opacity: 0.85; font-variant-numeric: tabular-nums; font-family: var(--font-sans);">68%</span>
+          </div>
+          <div class="progress" style="color: var(--rouge-fg);">
+            <div class="progress-inner">
+              <div class="progress-bg"></div>
+              <div class="progress-fill" style="width: 68%;"></div>
+            </div>
+            <span class="progress-peak" style="left: 76%;"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wine-tile" style="background: var(--blanc); color: var(--blanc-fg);">
+        <span class="wm" style="color: var(--blanc-fg);">Blanc</span>
+        <div class="wt-top">
+          <div class="wt-kicker">Bourgogne · Meursault</div>
+          <div class="wt-name">Meursault Les Charmes</div>
+          <div class="wt-meta"><span style="font-size: 11px; font-weight: 600;">×2</span><span style="opacity: 0.5;">·</span><span style="font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;">2018</span></div>
+        </div>
+        <div class="wt-bottom">
+          <div class="wt-status-row">
+            <span class="wt-status">OPTIMAL</span>
+            <span style="font-size: 10px; opacity: 0.85; font-variant-numeric: tabular-nums; font-family: var(--font-sans);">47%</span>
+          </div>
+          <div class="progress" style="color: var(--blanc-fg);">
+            <div class="progress-inner">
+              <div class="progress-bg"></div>
+              <div class="progress-fill" style="width: 47%;"></div>
+            </div>
+            <span class="progress-peak" style="left: 59%;"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wine-tile" style="background: var(--bulle); color: var(--bulle-fg);">
+        <span class="wm" style="color: var(--bulle-fg);">Bulle</span>
+        <div class="wt-top">
+          <div class="wt-kicker">Champagne</div>
+          <div class="wt-name">Pol Roger Cuvée Sir Winston</div>
+          <div class="wt-meta"><span style="font-size: 11px; font-weight: 600;">×4</span><span style="opacity: 0.5;">·</span><span style="font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;">2013</span></div>
+        </div>
+        <div class="wt-bottom">
+          <div class="wt-status-row">
+            <span class="wt-status">APOGÉE</span>
+            <span style="font-size: 10px; opacity: 0.85; font-variant-numeric: tabular-nums; font-family: var(--font-sans);">68%</span>
+          </div>
+          <div class="progress" style="color: var(--bulle-fg);">
+            <div class="progress-inner">
+              <div class="progress-bg"></div>
+              <div class="progress-fill" style="width: 68%;"></div>
+            </div>
+            <span class="progress-peak" style="left: 57%;"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      Anatomie · Top-right : Watermark (label du type, italic clamp 20–46) ·
+      Top-left : kicker + nom (Cormorant italic 19/1.1, text-wrap balance) + qty/millésime ·
+      Bottom : barre de cycle, tick à peakPct.
+    </div>
+  </section>
+
+  <!-- ─── BigTile ─── -->
+  <section class="comp">
+    <header class="comp-head">
+      <div class="comp-name">BigTile</div>
+      <p class="comp-sub">Tuile de dashboard. Filigrane optionnel, label + big number + sub.</p>
+    </header>
+    <div class="comp-frame">
+      <div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 10px;">
+        <div class="bigtile" style="background: var(--rouge); color: var(--rouge-fg); box-shadow: var(--shadow-accent);">
+          <span class="wm" style="color: var(--rouge-fg); font-size: clamp(34px, 22cqi, 78px);">cave</span>
+          <div class="bt-label">VOTRE CAVE</div>
+          <div class="bt-big">47</div>
+          <div class="bt-sub">bouteilles · 2 caves</div>
+        </div>
+        <div class="bigtile" style="background: var(--blanc); color: var(--blanc-fg);">
+          <span class="wm" style="color: var(--blanc-fg);">ouvrir</span>
+          <div class="bt-label">À OUVRIR</div>
+          <div class="bt-big">3</div>
+          <div class="bt-sub">à leur pic</div>
+        </div>
+        <div class="bigtile" style="background: var(--optimal); color: var(--rouge-fg);">
+          <span class="wm" style="color: var(--rouge-fg);">notes</span>
+          <div class="bt-label">NOTES</div>
+          <div class="bt-big">6</div>
+          <div class="bt-sub">+3 ce mois</div>
+        </div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      Variantes : rouge (hero, shadow-accent) · blanc / bulle / optimal / paper-2.
+      Big number en Cormorant italic 600, 48/1.
+    </div>
+  </section>
+
+  <!-- ─── Cycle + Apogee ─── -->
+  <section class="comp">
+    <header class="comp-head">
+      <div class="comp-name">CycleChart + ApogeeBar</div>
+      <p class="comp-sub">Courbe de vie en cloche du vin, avec marqueurs "pic" et "aujourd'hui". L'ApogeeBar sous la courbe précise jeunesse / apogée / déclin.</p>
+    </header>
+    <div class="comp-frame">
+      <div class="cyclechart">
+        <div class="cc-head">
+          <div>
+            <div class="bt-label">CYCLE DE VIE</div>
+            <div class="cc-pct">68%</div>
+            <div class="cc-pic">Pic de dégustation : <span style="color: var(--ink); font-weight: 600;">2028</span></div>
+          </div>
+          <span class="cc-badge">APOGÉE</span>
+        </div>
+        <svg viewBox="0 0 320 150" width="100%" style="display: block; margin-top: 14px; overflow: visible;">
+          <line x1="16" y1="118" x2="304" y2="118" stroke="var(--ink)" stroke-width="1" opacity="0.18"/>
+          <path d="M 16 118 C 96 116 144 26 224 22 C 256 26 280 116 304 118 L 304 118 L 16 118 Z" fill="var(--rouge)" opacity="0.18"/>
+          <path d="M 16 118 C 96 116 144 26 224 22 C 256 26 280 116 304 118" fill="none" stroke="var(--rouge)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="210" y1="118" x2="210" y2="48" stroke="var(--ink)" stroke-width="1" stroke-dasharray="3 3" opacity="0.7"/>
+          <circle cx="210" cy="48" r="4" fill="var(--ink)"/>
+          <text x="210" y="140" text-anchor="middle" style="font-family: var(--font-display); font-style: italic; font-size: 13px; fill: var(--ink);">aujourd'hui</text>
+          <circle cx="224" cy="22" r="6" fill="var(--gold)" stroke="var(--ink)" stroke-width="1.8"/>
+          <text x="224" y="12" text-anchor="middle" style="font-family: var(--font-display); font-style: italic; font-size: 14px; font-weight: 500; fill: var(--ink);">★ pic 2028</text>
+          <text x="16" y="146" text-anchor="start" style="font-family: var(--font-sans); font-size: 9px; fill: var(--ink); opacity: 0.6;">2008</text>
+          <text x="304" y="146" text-anchor="end" style="font-family: var(--font-sans); font-size: 9px; fill: var(--ink); opacity: 0.6;">2040</text>
+        </svg>
+        <div style="margin-top: 8px;">
+          <div class="apogee-bar">
+            <div class="ab-z" style="flex: 30; background: var(--garde);"></div>
+            <div class="ab-z" style="flex: 50; background: var(--apogee);"></div>
+            <div class="ab-z" style="flex: 20; background: var(--urgent);"></div>
+            <div class="ab-fill" style="width: 68%;"></div>
+            <span class="ab-tick" style="left: 76%;"></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--ink-soft); font-family: var(--font-sans); margin-top: 6px;">
+            <span>jeunesse</span><span>apogée</span><span>déclin</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      Courbe : aire sous courbe à 18% d'opacité de l'accent. Trait 2.5px.
+      Pic = cercle blanc + bordure ink. Aujourd'hui = dashed + point ink.
+      Annotations en italique du serif (★ pic, aujourd'hui).
+    </div>
+  </section>
+
+  <!-- ─── Filter pills + Stats ─── -->
+  <section class="comp">
+    <header class="comp-head">
+      <div class="comp-name">Filter pills + StatPill</div>
+      <p class="comp-sub">Pills horizontalement scrollables pour les filtres. StatPills pour les chiffres clés du Détail.</p>
+    </header>
+    <div class="comp-frame">
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="pill active">Tous</button>
+        <button class="pill">Rouges</button>
+        <button class="pill">Blancs</button>
+        <button class="pill">Bulles</button>
+        <button class="pill">À boire</button>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 8px;">
+        <div class="stat-pill">
+          <div class="stat-label">EN CAVE</div>
+          <div class="stat-big">2</div>
+          <div class="stat-sub">bouteilles</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-label">NOTÉ</div>
+          <div class="stat-big">4/5</div>
+          <div class="stat-sub">★★★★</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-label">GARDE</div>
+          <div class="stat-big">14a</div>
+          <div class="stat-sub">jusqu'en 2040</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── BottomNav + FAB + CTA ─── -->
+  <section class="comp">
+    <header class="comp-head">
+      <div class="comp-name">BottomNav · FAB · CTA</div>
+      <p class="comp-sub">5 onglets, FAB ink avec shadow rouge, CTA pill ink avec shadow accent.</p>
+    </header>
+    <div class="comp-frame">
+      <div class="bnav">
+        <div class="bnav-btn">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+          <span class="bnav-lbl" style="font-weight: 700;">Cave</span>
+        </div>
+        <div class="bnav-btn" style="opacity: 0.55;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a3 3 0 0 1 3 3v13"/><path d="M20 4h-7a3 3 0 0 0-3 3v13"/><path d="M4 4v16h7"/><path d="M20 4v16h-7"/></svg>
+          <span class="bnav-lbl" style="color: var(--ink-soft);">Carnet</span>
+        </div>
+        <div class="bnav-btn" style="opacity: 0.55;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.2"/><circle cx="4" cy="12" r="1.2"/><circle cx="4" cy="18" r="1.2"/></svg>
+          <span class="bnav-lbl" style="color: var(--ink-soft);">Liste</span>
+        </div>
+        <div class="bnav-btn" style="opacity: 0.55;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18"/><path d="M5 11a7 7 0 0 1 14 0"/><path d="M4 15h16l-2 5H6z"/></svg>
+          <span class="bnav-lbl" style="color: var(--ink-soft);">Accords</span>
+        </div>
+        <div class="bnav-btn" style="opacity: 0.55;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>
+          <span class="bnav-lbl" style="color: var(--ink-soft);">Réglages</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
+        <button class="fab" aria-label="Ajouter">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button class="cta">J'ouvre une bouteille
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        </button>
+        <button class="cta ghost">Annuler</button>
+      </div>
+    </div>
+    <div class="comp-spec">
+      Nav active : stroke 2.2, label Inter 700, opacité 1. Inactif : stroke 1.5, ink-soft.<br>
+      FAB : 56px, ink/bg, shadow accent. CTA primary : pill ink + shadow accent. Ghost : pill bg + shadow hard.
+    </div>
+  </section>
+
+  <!-- ─── Setting row ─── -->
+  <section class="comp">
+    <header class="comp-head">
+      <div class="comp-name">Liste de réglages</div>
+      <p class="comp-sub">Cartes empilées avec dividers internes 1.5px. Icône colorée 32px à gauche, label + sub, action à droite.</p>
+    </header>
+    <div class="comp-frame">
+      <div class="set-list">
+        <div class="set-row">
+          <div class="set-icon-box" style="background: var(--rouge);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg>
+          </div>
+          <div style="flex: 1;">
+            <div class="set-name">Profil</div>
+            <div class="set-sub">Antoine R.</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        </div>
+        <div class="set-row">
+          <div class="set-icon-box" style="background: var(--blanc);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round"><path d="M3 17l2-10 5 4 2-6 2 6 5-4 2 10z"/></svg>
+          </div>
+          <div style="flex: 1;">
+            <div class="set-name">Abonnement</div>
+            <div class="set-sub">Collectionneur · 6,99€/mois</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        </div>
+        <div class="set-row">
+          <div class="set-icon-box" style="background: var(--bulle);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16l-2-3V9a4 4 0 1 0-8 0v4l-2 3z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+          </div>
+          <div style="flex: 1;">
+            <div class="set-name">Notifications</div>
+            <div class="set-sub">Pic de dégustation</div>
+          </div>
+          <span class="toggle"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

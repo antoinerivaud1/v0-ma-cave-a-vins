@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Synthèse v1 — Patterns</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  .pat { margin-top: 36px; }
+  .pat-head { margin-bottom: 14px; }
+  .pat-name { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 26px; line-height: 1; }
+  .pat-sub { font-size: 13px; color: var(--ink-soft); margin-top: 4px; max-width: 56ch; line-height: 1.5; }
+
+  /* Do / Don't */
+  .dod { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .dod { grid-template-columns: 1fr; } }
+  .dod-card {
+    border: var(--border-hard); border-radius: 14px; padding: 18px;
+    background: var(--bg); position: relative;
+  }
+  .dod-tag {
+    font-family: var(--font-sans); font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 999px; border: 1.5px solid currentColor;
+    display: inline-block; margin-bottom: 12px;
+  }
+  .do .dod-tag  { color: var(--success); }
+  .dont .dod-tag { color: var(--urgent); }
+  .dod-vis { min-height: 100px; background: var(--paper-2); border: 1.5px solid var(--ink); border-radius: 10px; padding: 14px; margin-bottom: 12px; position: relative; overflow: hidden; container-type: inline-size; }
+  .dod-body { font-size: 12px; color: var(--ink-soft); line-height: 1.55; }
+  .dod-body strong { color: var(--ink); }
+
+  /* Status pills */
+  .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .st-card {
+    border: var(--border-hard); border-radius: 14px; padding: 14px; box-shadow: var(--shadow-hard);
+    background: var(--bg);
+  }
+  .st-chip {
+    display: inline-block; padding: 4px 10px; border-radius: 999px;
+    font-family: var(--font-sans); font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    border: 1.5px solid var(--ink); color: var(--rouge-fg); margin-bottom: 8px;
+  }
+  .st-meta { font-size: 11px; color: var(--ink-soft); line-height: 1.5; }
+
+  /* Screens preview */
+  .screens-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .screen-mock {
+    border: var(--border-hard); border-radius: 28px; box-shadow: var(--shadow-hard);
+    background: var(--bg); overflow: hidden;
+    aspect-ratio: 9/19;
+    padding: 14px 12px;
+    display: flex; flex-direction: column; gap: 8px;
+    container-type: inline-size;
+    position: relative;
+  }
+  .sm-greet { font-family: var(--font-sans); font-weight: 500; font-size: 13px; color: var(--ink); }
+  .sm-h1 { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 17px; line-height: 1.05; text-wrap: balance; }
+  .sm-stub { background: var(--paper-2); border: 1.5px solid var(--ink); border-radius: 10px; }
+  .sm-stub.hero { background: var(--rouge); height: 56px; position: relative; overflow: hidden; padding: 8px 10px; color: var(--rouge-fg); }
+  .sm-wm { position: absolute; top: 4px; right: 6px; font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: clamp(14px, 22cqi, 28px); opacity: 0.22; pointer-events: none; }
+  .sm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .sm-tile { background: var(--blanc); height: 44px; border: 1.5px solid var(--ink); border-radius: 10px; position: relative; overflow: hidden; }
+  .sm-tile.b2 { background: var(--optimal); }
+  .sm-label { font-family: var(--font-sans); font-size: 7px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.85; padding: 5px 7px 0; display: block; }
+  .sm-num { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 18px; line-height: 1; padding: 0 7px; }
+  .sm-pioche { background: var(--paper-2); border: 1.5px solid var(--ink); border-radius: 10px; padding: 8px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+  .sm-pioche-name { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 14px; line-height: 1.1; }
+  .sm-pioche-meta { font-family: var(--font-sans); font-size: 8px; color: var(--ink-soft); }
+  .sm-nav { display: flex; justify-content: space-around; padding-top: 6px; border-top: 1.5px solid var(--ink); margin: 0 -12px -14px; height: 30px; padding: 6px 0; }
+  .sm-nav span { width: 4px; height: 4px; background: var(--ink-soft); border-radius: 50%; }
+  .sm-nav span.on { background: var(--ink); width: 6px; height: 6px; }
+  .sm-label-strong { color: var(--ink); font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 13px; }
+
+  .copy-table {
+    background: var(--bg); border: var(--border-hard); border-radius: 14px; box-shadow: var(--shadow-hard);
+    overflow: hidden;
+  }
+  .copy-row { display: grid; grid-template-columns: 1.1fr 1.6fr 1.2fr; gap: 16px; padding: 12px 16px; border-bottom: 1.5px solid var(--ink); align-items: baseline; }
+  .copy-row:last-child { border-bottom: none; }
+  .copy-row .ctx { font-family: var(--font-sans); font-weight: 600; font-size: 11px; color: var(--ink); }
+  .copy-row .eg  { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 15px; color: var(--ink); line-height: 1.3; text-wrap: pretty; }
+  .copy-row .why { font-family: var(--font-sans); font-size: 11px; color: var(--ink-soft); line-height: 1.5; }
+  .copy-row.head .ctx, .copy-row.head .eg, .copy-row.head .why { font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); font-style: normal; }
+
+  .icon-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;
+  }
+  .ic-card {
+    border: var(--border-hard); border-radius: 12px; padding: 14px;
+    background: var(--bg); box-shadow: var(--shadow-hard);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .ic-card svg { color: var(--ink); }
+  .ic-name { font-family: var(--font-sans); font-size: 10px; font-weight: 600; color: var(--ink); }
+  .ic-use  { font-family: var(--font-sans); font-size: 10px; color: var(--ink-soft); text-align: center; line-height: 1.4; }
+</style>
+</head>
+<body>
+<main class="ds-page">
+
+  <div class="ds-eyebrow">Synthèse v1 · Patterns</div>
+  <h1 class="ds-title">Patterns & règles d'usage</h1>
+  <p class="ds-intro">
+    Comment les composants s'assemblent. Comment on parle. Quand utiliser le filigrane,
+    quand l'éviter. Les statuts de cycle et leurs micro-copies. À garder sous le coude.
+  </p>
+
+  <!-- ─── Filigrane ─── -->
+  <section class="pat">
+    <header class="pat-head">
+      <div class="pat-name">Le filigrane typographique</div>
+      <p class="pat-sub">Signature visuelle de la v1. Mot italique top-right, taille fluide selon la largeur de la tuile, opacité 0.22 sur fond coloré.</p>
+    </header>
+    <div class="dod">
+      <article class="dod-card do">
+        <span class="dod-tag">À FAIRE</span>
+        <div class="dod-vis" style="background: var(--rouge);">
+          <span style="position: absolute; top: 8px; right: 10px; font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: clamp(20px, 11cqi, 46px); line-height: 1; color: var(--rouge-fg); opacity: 0.22; letter-spacing: -0.01em; white-space: nowrap; max-width: calc(100% - 16px);">Rouge</span>
+          <div style="padding-right: 60px; color: var(--rouge-fg);">
+            <div style="font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.7;">Bordeaux</div>
+            <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 18px; line-height: 1.1; margin-top: 2px;">Château Margaux</div>
+          </div>
+        </div>
+        <div class="dod-body">
+          <strong>Tient entièrement dans la tuile</strong>, sans recouvrir le texte.<br>
+          Le contenu réserve <strong>~56px à droite</strong> pour ne jamais croiser le filigrane.
+        </div>
+      </article>
+      <article class="dod-card dont">
+        <span class="dod-tag">À ÉVITER</span>
+        <div class="dod-vis" style="background: var(--rouge);">
+          <span style="position: absolute; top: -10px; right: -8px; font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 78px; line-height: 0.85; color: var(--rouge-fg); opacity: 0.22; letter-spacing: -0.02em; white-space: nowrap;">Rouge</span>
+          <div style="color: var(--rouge-fg); position: relative; z-index: 1;">
+            <div style="font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.7;">Bordeaux</div>
+            <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 18px; line-height: 1.1; margin-top: 2px;">Château Margaux</div>
+          </div>
+        </div>
+        <div class="dod-body">
+          <strong>Débordement</strong> et <strong>overlay sur le texte</strong>.<br>
+          Taille fixe trop grande pour une petite tuile.
+        </div>
+      </article>
+    </div>
+    <div class="ds-code" style="margin-top: 14px;">/* Adaptive watermark — fluide selon la largeur de la tuile */
+.tile { container-type: inline-size; position: relative; }
+.tile .watermark {
+  position: absolute; top: 8px; right: 10px;
+  font-family: var(--font-display); font-style: italic; font-weight: 600;
+  font-size: clamp(20px, 11cqi, 46px);
+  opacity: 0.22; pointer-events: none; white-space: nowrap;
+  max-width: calc(100% - 16px);
+}
+.tile .content { padding-right: 56px; }</div>
+  </section>
+
+  <!-- ─── Statuts ─── -->
+  <section class="pat">
+    <header class="pat-head">
+      <div class="pat-name">Statuts du cycle de vie</div>
+      <p class="pat-sub">Quatre statuts, calculés à partir du pourcentage de cycle (age / span). La couleur et le ton du message changent.</p>
+    </header>
+    <div class="status-grid">
+      <article class="st-card">
+        <span class="st-chip" style="background: var(--garde);">À GARDER</span>
+        <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 17px; color: var(--ink); line-height: 1.3; text-wrap: pretty;">« Patience encore — le pic arrive dans 7 ans. »</div>
+        <div class="st-meta" style="margin-top: 8px;">Cycle < 30% · couleur <code>--garde</code> (#4A6FA5)</div>
+      </article>
+      <article class="st-card">
+        <span class="st-chip" style="background: var(--optimal);">OPTIMAL</span>
+        <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 17px; color: var(--ink); line-height: 1.3; text-wrap: pretty;">« Bonne fenêtre — à savourer cette année. »</div>
+        <div class="st-meta" style="margin-top: 8px;">30–50% · couleur <code>--optimal</code> (#6B7A3E)</div>
+      </article>
+      <article class="st-card">
+        <span class="st-chip" style="background: var(--apogee);">APOGÉE</span>
+        <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 17px; color: var(--ink); line-height: 1.3; text-wrap: pretty;">« À ouvrir d'ici 18 mois pour un pic de dégustation. »</div>
+        <div class="st-meta" style="margin-top: 8px;">50–85% · couleur <code>--apogee</code> (#B33A2E)</div>
+      </article>
+      <article class="st-card">
+        <span class="st-chip" style="background: var(--urgent);">URGENT</span>
+        <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 17px; color: var(--ink); line-height: 1.3; text-wrap: pretty;">« À ouvrir au plus vite — la fenêtre se referme. »</div>
+        <div class="st-meta" style="margin-top: 8px;">> 85% · couleur <code>--urgent</code> (#C1452A)</div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ─── Écrans ─── -->
+  <section class="pat">
+    <header class="pat-head">
+      <div class="pat-name">Composition des écrans</div>
+      <p class="pat-sub">Mobile-first, max 390px. Chaque écran suit la même grammaire : kicker / H1, blocs de tuiles, FAB en bas à droite, BottomNav fixe.</p>
+    </header>
+    <div class="screens-row">
+      <!-- Cave / Dashboard -->
+      <div class="screen-mock">
+        <div class="sm-greet">Salut Antoine 👋</div>
+        <div class="sm-h1">3 vins arrivent à leur pic.</div>
+        <div class="sm-stub hero">
+          <span class="sm-wm">cave</span>
+          <div style="font-family: var(--font-sans); font-size: 7px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.8;">VOTRE CAVE</div>
+          <div style="font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 22px; line-height: 1; margin-top: 2px;">47</div>
+        </div>
+        <div class="sm-row">
+          <div class="sm-tile">
+            <span class="sm-wm" style="color: var(--blanc-fg);">ouvrir</span>
+            <span class="sm-label" style="color: var(--blanc-fg);">À OUVRIR</span>
+            <div class="sm-num" style="color: var(--blanc-fg);">3</div>
+          </div>
+          <div class="sm-tile b2">
+            <span class="sm-wm" style="color: var(--rouge-fg);">notes</span>
+            <span class="sm-label" style="color: var(--rouge-fg);">NOTES</span>
+            <div class="sm-num" style="color: var(--rouge-fg);">6</div>
+          </div>
+        </div>
+        <div class="sm-pioche">
+          <div>
+            <div style="font-family: var(--font-sans); font-size: 7px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft);">POUR CE SOIR</div>
+            <div class="sm-pioche-name">Pétrus 1998</div>
+          </div>
+          <div class="sm-pioche-meta">★ 92% · fenêtre courte</div>
+        </div>
+        <div class="sm-nav"><span class="on"></span><span></span><span></span><span></span><span></span></div>
+      </div>
+
+      <!-- Liste -->
+      <div class="screen-mock">
+        <div style="font-family: var(--font-sans); font-size: 8px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft);">47 BOUTEILLES</div>
+        <div class="sm-h1">Toute la cave</div>
+        <div style="display: flex; gap: 4px; flex-wrap: nowrap; overflow: hidden;">
+          <span style="background: var(--ink); color: var(--bg); padding: 3px 8px; border-radius: 999px; font-family: var(--font-sans); font-size: 8px; font-weight: 600;">Tous</span>
+          <span style="border: 1.5px solid var(--ink); padding: 3px 8px; border-radius: 999px; font-family: var(--font-sans); font-size: 8px; font-weight: 600;">Rouges</span>
+          <span style="border: 1.5px solid var(--ink); padding: 3px 8px; border-radius: 999px; font-family: var(--font-sans); font-size: 8px; font-weight: 600;">Blancs</span>
+        </div>
+        <div class="sm-stub hero" style="background: var(--rouge); height: 42px;">
+          <span class="sm-wm">Rouge</span>
+          <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 14px; line-height: 1.1; padding-right: 24px;">Pétrus</div>
+          <div style="font-family: var(--font-sans); font-size: 8px; opacity: 0.85; margin-top: 2px;">×1 · 1998</div>
+        </div>
+        <div class="sm-stub hero" style="background: var(--blanc); color: var(--blanc-fg); height: 42px;">
+          <span class="sm-wm" style="color: var(--blanc-fg);">Blanc</span>
+          <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 14px; line-height: 1.1; padding-right: 24px;">Meursault</div>
+          <div style="font-family: var(--font-sans); font-size: 8px; opacity: 0.85; margin-top: 2px;">×2 · 2018</div>
+        </div>
+        <div class="sm-stub hero" style="background: var(--bulle); height: 42px;">
+          <span class="sm-wm">Bulle</span>
+          <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 14px; line-height: 1.1; padding-right: 24px;">Pol Roger</div>
+          <div style="font-family: var(--font-sans); font-size: 8px; opacity: 0.85; margin-top: 2px;">×4 · 2013</div>
+        </div>
+        <div class="sm-nav"><span></span><span></span><span class="on"></span><span></span><span></span></div>
+      </div>
+
+      <!-- Détail -->
+      <div class="screen-mock" style="padding: 0;">
+        <div style="background: var(--rouge); color: var(--rouge-fg); padding: 14px 12px 18px; position: relative; overflow: hidden; flex: 1; display: flex; flex-direction: column;">
+          <span class="sm-wm" style="color: var(--rouge-fg);">Rouge</span>
+          <div style="font-family: var(--font-sans); font-size: 10px; font-weight: 500;">← Retour</div>
+          <div style="font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 48px; line-height: 0.95; margin-top: 14px; letter-spacing: -0.02em;">2008</div>
+          <div style="font-family: var(--font-sans); font-size: 7px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.85; margin-top: 6px;">MARGAUX · BORDEAUX</div>
+          <div style="font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 17px; line-height: 1.05; margin-top: 2px;">Château Margaux</div>
+        </div>
+        <div style="background: var(--bg); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; gap: 4px;">
+            <div style="flex:1; border: 1.5px solid var(--ink); border-radius: 8px; padding: 4px 6px; background: var(--bg);">
+              <div style="font-size: 7px; font-weight: 600; letter-spacing: 0.18em; color: var(--ink-soft); text-transform: uppercase;">EN CAVE</div>
+              <div style="font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 16px; line-height: 1;">2</div>
+            </div>
+            <div style="flex:1; border: 1.5px solid var(--ink); border-radius: 8px; padding: 4px 6px;">
+              <div style="font-size: 7px; font-weight: 600; letter-spacing: 0.18em; color: var(--ink-soft); text-transform: uppercase;">NOTÉ</div>
+              <div style="font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 16px; line-height: 1;">4/5</div>
+            </div>
+            <div style="flex:1; border: 1.5px solid var(--ink); border-radius: 8px; padding: 4px 6px;">
+              <div style="font-size: 7px; font-weight: 600; letter-spacing: 0.18em; color: var(--ink-soft); text-transform: uppercase;">GARDE</div>
+              <div style="font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 16px; line-height: 1;">14a</div>
+            </div>
+          </div>
+          <div style="background: var(--bg); border: 1.5px solid var(--ink); border-radius: 10px; padding: 8px;">
+            <div style="font-size: 7px; font-weight: 600; letter-spacing: 0.18em; color: var(--ink-soft); text-transform: uppercase;">CYCLE</div>
+            <svg viewBox="0 0 100 30" width="100%" style="margin-top: 2px;">
+              <path d="M 4 26 C 24 24 36 6 60 4 C 76 6 88 24 96 26" fill="none" stroke="var(--rouge)" stroke-width="1.5"/>
+              <circle cx="60" cy="4" r="2" fill="var(--gold)" stroke="var(--ink)" stroke-width="0.5"/>
+              <line x1="48" y1="26" x2="48" y2="12" stroke="var(--ink)" stroke-width="0.5" stroke-dasharray="1 1"/>
+            </svg>
+          </div>
+        </div>
+        <div class="sm-nav" style="margin: 0; border-radius: 0 0 26px 26px;"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Copy ─── -->
+  <section class="pat">
+    <header class="pat-head">
+      <div class="pat-name">Ton & copy</div>
+      <p class="pat-sub">Français, vouvoiement. Voix de sommelier complice : sait sans surplomber. Phrases courtes. Pas de jargon.</p>
+    </header>
+    <div class="copy-table">
+      <div class="copy-row head">
+        <div class="ctx">CONTEXTE</div>
+        <div class="eg">EXEMPLE</div>
+        <div class="why">POURQUOI</div>
+      </div>
+      <div class="copy-row">
+        <div class="ctx">Salutation</div>
+        <div class="eg">Salut Antoine 👋</div>
+        <div class="why">Familiarité chaleureuse, prénom toujours. Le 👋 est l'unique emoji autorisé, et seulement ici.</div>
+      </div>
+      <div class="copy-row">
+        <div class="ctx">H1 dashboard (dynamique)</div>
+        <div class="eg">3 vins arrivent à leur pic.</div>
+        <div class="why">Phrase complète, ponctuée, jamais une liste. Le chiffre fait le titre.</div>
+      </div>
+      <div class="copy-row">
+        <div class="ctx">H1 dashboard (vide)</div>
+        <div class="eg">Votre cave dort tranquillement.</div>
+        <div class="why">L'app ne crie pas quand rien ne presse. Quasi méditatif.</div>
+      </div>
+      <div class="copy-row">
+        <div class="ctx">Pioche du soir</div>
+        <div class="eg">Une belle soirée vous attend.</div>
+        <div class="why">Promesse, pas commandement. Le sommelier propose.</div>
+      </div>
+      <div class="copy-row">
+        <div class="ctx">Recommandation</div>
+        <div class="eg">À ouvrir d'ici 18 mois pour un pic de dégustation.</div>
+        <div class="why">"Pic de dégustation" toujours, jamais "pic de plaisir".</div>
+      </div>
+      <div class="copy-row">
+        <div class="ctx">CTA primaire</div>
+        <div class="eg">J'ouvre une bouteille →</div>
+        <div class="why">Première personne. Action engagée par l'utilisateur, pas par l'app.</div>
+      </div>
+      <div class="copy-row">
+        <div class="ctx">Tip ("Le saviez-vous ?")</div>
+        <div class="eg">« Un Bordeaux dort 5 ans avant de parler. »</div>
+        <div class="why">Citation italique, métaphore courte. Toujours en relation avec le contenu de la cave.</div>
+      </div>
+      <div class="copy-row">
+        <div class="ctx">Annotation cycle</div>
+        <div class="eg">★ pic 2028</div>
+        <div class="why">Marginalia. Étoile + année. Pas "votre pic", pas "atteint en".</div>
+      </div>
+      <div class="copy-row">
+        <div class="ctx">Zone vide</div>
+        <div class="eg">Cave vide — scannez votre première bouteille.</div>
+        <div class="why">Tiret cadratin, instruction au présent. Jamais "Aucun résultat".</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Iconographie ─── -->
+  <section class="pat">
+    <header class="pat-head">
+      <div class="pat-name">Iconographie</div>
+      <p class="pat-sub">Lucide React exclusivement. Stroke 1.8–2.2px. Pas d'illustration custom, pas d'emoji (sauf 👋).</p>
+    </header>
+    <div class="icon-grid">
+      <div class="ic-card">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        <div class="ic-name">Home</div>
+        <div class="ic-use">Onglet Cave</div>
+      </div>
+      <div class="ic-card">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a3 3 0 0 1 3 3v13"/><path d="M20 4h-7a3 3 0 0 0-3 3v13"/><path d="M4 4v16h7"/><path d="M20 4v16h-7"/></svg>
+        <div class="ic-name">BookOpen</div>
+        <div class="ic-use">Onglet Carnet</div>
+      </div>
+      <div class="ic-card">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.2"/><circle cx="4" cy="12" r="1.2"/><circle cx="4" cy="18" r="1.2"/></svg>
+        <div class="ic-name">List</div>
+        <div class="ic-use">Onglet Liste</div>
+      </div>
+      <div class="ic-card">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18"/><path d="M5 11a7 7 0 0 1 14 0"/><path d="M4 15h16l-2 5H6z"/></svg>
+        <div class="ic-name">UtensilsCrossed</div>
+        <div class="ic-use">Onglet Accords</div>
+      </div>
+      <div class="ic-card">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>
+        <div class="ic-name">Settings</div>
+        <div class="ic-use">Onglet Réglages</div>
+      </div>
+      <div class="ic-card">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <div class="ic-name">Plus</div>
+        <div class="ic-use">FAB ajouter</div>
+      </div>
+      <div class="ic-card">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.5l2-3h7l2 3H21a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <div class="ic-name">Camera</div>
+        <div class="ic-use">Scan étiquette</div>
+      </div>
+      <div class="ic-card">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9.3 16.5 14 18.3 21 12 17.3 5.7 21 7.5 14 2 9.3 9 9"/></svg>
+        <div class="ic-name">Star</div>
+        <div class="ic-use">Note de dégustation</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ds-rule"></div>
+
+  <!-- ─── À ne jamais faire ─── -->
+  <section class="pat" style="margin-top: 0;">
+    <h2 class="ds-section-title">À ne jamais faire</h2>
+    <ul style="margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; color: var(--ink); max-width: 60ch;">
+      <li><strong>Pas de gradient</strong>, pas de glassmorphism, pas d'ombres douces.</li>
+      <li><strong>Pas d'emoji</strong> sauf le 👋 de la salutation.</li>
+      <li><strong>Pas de polices manuscrites</strong> (Caveat retiré). Les marginalia passent par l'italique du serif.</li>
+      <li><strong>Pas de filigrane sur fond <code>--bg</code></strong> ou <code>--paper-2</code> : il a besoin d'un fond saturé pour vivre.</li>
+      <li><strong>Pas de mélange de plus de 2 couleurs de vin</strong> sur un même écran (hors liste/carnet où chaque tuile est isolée).</li>
+      <li><strong>Pas de "vous"</strong> dans les annotations courtes (★ pic, aujourd'hui). Réservé aux phrases complètes.</li>
+      <li><strong>Pas de chiffre sans <code>tabular-nums</code></strong> dès qu'il est aligné dans une liste.</li>
+    </ul>
+  </section>
+
+</main>
+</body>
+</html>

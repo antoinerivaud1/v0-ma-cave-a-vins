@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Synthèse v1 — Design System</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  .hero {
+    border: var(--border-hard); border-radius: 20px; box-shadow: var(--shadow-accent);
+    background: var(--rouge); color: var(--rouge-fg); padding: 36px 32px;
+    position: relative; overflow: hidden;
+    margin-bottom: 32px; container-type: inline-size;
+  }
+  .hero-wm {
+    position: absolute; top: 14px; right: 18px;
+    font-family: var(--font-display); font-style: italic; font-weight: 600;
+    font-size: clamp(60px, 22cqi, 140px); line-height: 1; letter-spacing: -0.02em;
+    opacity: 0.16; color: var(--rouge-fg); pointer-events: none;
+  }
+  .hero-eyebrow { font-family: var(--font-sans); font-weight: 600; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.9; }
+  .hero-title { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 56px; line-height: 1; margin: 12px 0 8px; letter-spacing: -0.01em; max-width: 14ch; text-wrap: balance; }
+  .hero-sub { font-family: var(--font-display); font-style: italic; font-size: 18px; max-width: 50ch; opacity: 0.95; line-height: 1.4; text-wrap: pretty; }
+
+  .toc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .toc-card {
+    background: var(--bg); border: var(--border-hard); border-radius: 16px;
+    box-shadow: var(--shadow-hard); padding: 20px; cursor: pointer; text-decoration: none; color: var(--ink);
+    display: flex; flex-direction: column; gap: 8px;
+    transition: transform .14s, box-shadow .14s;
+    position: relative; overflow: hidden; container-type: inline-size;
+  }
+  .toc-card:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 0 var(--ink); }
+  .toc-card:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 0 var(--ink); }
+  .toc-num { font-family: var(--font-sans); font-weight: 700; font-size: 11px; letter-spacing: 0.2em; color: var(--ink-soft); }
+  .toc-title { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 26px; line-height: 1; margin-top: 4px; }
+  .toc-desc { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+  .toc-arrow { margin-top: auto; padding-top: 14px; display: flex; align-items: center; gap: 6px; font-family: var(--font-sans); font-size: 11px; font-weight: 700; }
+  .toc-arrow svg { margin-left: auto; }
+
+  .summary {
+    background: var(--paper-2); border: var(--border-hard); border-radius: 16px;
+    padding: 24px; margin-top: 32px;
+  }
+  .summary h2 { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 22px; line-height: 1; }
+  .summary ul { margin: 12px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.8; color: var(--ink); }
+
+  .principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 22px; }
+  .principle {
+    background: var(--bg); border: var(--border-hard); border-radius: 14px; box-shadow: var(--shadow-hard);
+    padding: 18px; position: relative; overflow: hidden; container-type: inline-size;
+  }
+  .p-num { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: clamp(40px, 22cqi, 64px); line-height: 1; color: var(--rouge); opacity: 0.18; position: absolute; top: 4px; right: 12px; }
+  .p-name { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 20px; line-height: 1.1; position: relative; z-index: 1; padding-right: 40px; }
+  .p-body { font-size: 12px; line-height: 1.55; color: var(--ink-soft); margin-top: 8px; }
+</style>
+</head>
+<body>
+<main class="ds-page" style="max-width: 1040px;">
+
+  <div class="hero">
+    <span class="hero-wm">cave</span>
+    <div class="hero-eyebrow">Ma Cave à Vins · Direction visuelle</div>
+    <h1 class="hero-title">Synthèse v1</h1>
+    <p class="hero-sub">
+      Fond crème chaud, gros blocs colorés, type éditorial italique en filigrane,
+      bordures dures et offset shadows. Une cave qui se lit comme un carnet.
+    </p>
+  </div>
+
+  <p class="ds-intro" style="margin-bottom: 32px;">
+    Le design system de l'app <strong>Ma Cave à Vins</strong>. Une seule paire typographique
+    (Cormorant + Inter), quatre couleurs de vins, quatre statuts de cycle, des cartes
+    qui se tiennent par leur bordure plutôt que par leur ombre. Aucun gradient,
+    aucun glassmorphism, aucune fioriture.
+  </p>
+
+  <!-- ─── Principes ─── -->
+  <div class="principles">
+    <div class="principle">
+      <div class="p-num">01</div>
+      <div class="p-name">Le filigrane signe</div>
+      <p class="p-body">Le mot ("Rouge", "Blanc", "cave") en italique du serif, top-right de chaque carte. Adaptatif au container.</p>
+    </div>
+    <div class="principle">
+      <div class="p-num">02</div>
+      <div class="p-name">Bordure + offset</div>
+      <p class="p-body">2px solid ink + 3px 3px shadow. Toujours ensemble. Jamais de blur.</p>
+    </div>
+    <div class="principle">
+      <div class="p-num">03</div>
+      <div class="p-name">Italique = voix</div>
+      <p class="p-body">Cormorant n'apparaît qu'en italique. Inter, en romain. Pas de mélange.</p>
+    </div>
+    <div class="principle">
+      <div class="p-num">04</div>
+      <div class="p-name">Un vin, une couleur</div>
+      <p class="p-body">Rouge, blanc, bulle, rosé. Une teinte unique sert de fond ET de filigrane.</p>
+    </div>
+  </div>
+
+  <div class="ds-rule"></div>
+
+  <!-- ─── TOC ─── -->
+  <div style="margin-bottom: 22px;">
+    <div class="ds-eyebrow">Documents</div>
+    <h2 class="ds-section-title" style="margin-top: 8px;">Cinq cartes pour tout savoir</h2>
+  </div>
+
+  <div class="toc-grid">
+    <a class="toc-card" href="01 Foundations — Colors.html">
+      <span class="toc-num">01 · FONDATIONS</span>
+      <span class="toc-title">Couleurs</span>
+      <span class="toc-desc">Surfaces crème, encre, vins en paires (fond + texte), statuts du cycle de vie.</span>
+      <span class="toc-arrow">Ouvrir
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </span>
+    </a>
+
+    <a class="toc-card" href="02 Foundations — Typography.html">
+      <span class="toc-num">02 · FONDATIONS</span>
+      <span class="toc-title">Typographie</span>
+      <span class="toc-desc">Une paire : Cormorant Garamond italique + Inter. Échelle complète, du millésime géant aux labels tracés.</span>
+      <span class="toc-arrow">Ouvrir
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </span>
+    </a>
+
+    <a class="toc-card" href="03 Foundations — Spacing & Shadows.html">
+      <span class="toc-num">03 · FONDATIONS</span>
+      <span class="toc-title">Espacement & ombres</span>
+      <span class="toc-desc">Bordures, rayons, offset shadows, padding mobile et règles d'élévation.</span>
+      <span class="toc-arrow">Ouvrir
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </span>
+    </a>
+
+    <a class="toc-card" href="04 Components.html">
+      <span class="toc-num">04 · BIBLIOTHÈQUE</span>
+      <span class="toc-title">Composants</span>
+      <span class="toc-desc">WineTile, BigTile, CycleChart, ApogeeBar, StatPill, Pills, FAB, BottomNav, CTA, Setting row.</span>
+      <span class="toc-arrow">Ouvrir
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </span>
+    </a>
+
+    <a class="toc-card" href="05 Patterns.html" style="background: var(--paper-2);">
+      <span class="toc-num">05 · ASSEMBLAGES</span>
+      <span class="toc-title">Patterns d'écran</span>
+      <span class="toc-desc">Dashboard, Liste, Détail, voix éditoriale (à faire / à éviter), règles du filigrane.</span>
+      <span class="toc-arrow">Ouvrir
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </span>
+    </a>
+
+    <a class="toc-card" href="../Ma Cave a Vins - Synthese v1.html" style="background: var(--ink); color: var(--bg); box-shadow: 3px 3px 0 0 var(--rouge);">
+      <span class="toc-num" style="color: var(--ink-faint);">PROTOTYPE</span>
+      <span class="toc-title" style="color: var(--bg);">Voir l'app vivante</span>
+      <span class="toc-desc" style="color: var(--ink-faint);">Les 4 écrans cliquables (Cave, Carnet, Liste, Détail), avec Tweaks pour explorer les variations.</span>
+      <span class="toc-arrow" style="color: var(--bg);">Ouvrir le prototype
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </span>
+    </a>
+  </div>
+
+  <!-- ─── Hérité du codebase ─── -->
+  <div class="summary">
+    <h2>Règles non-négociables (héritées du codebase)</h2>
+    <ul>
+      <li>TypeScript strict, double quotes</li>
+      <li><code>sanitizeWineName()</code> sur tous les affichages de noms de vins</li>
+      <li><code>env(safe-area-inset-top/bottom)</code> sur headers et footers iOS</li>
+      <li><code>max-h-[90dvh] flex flex-col</code> + <code>overflow-y-auto flex-1</code> sur les bottom sheets</li>
+      <li><code>z-[60]</code> minimum sur tout sheet custom</li>
+      <li>Lucide React pour les icônes, stroke 1.5–2.2px</li>
+      <li>Pas d'emoji, sauf 👋 de la salutation (assumé)</li>
+    </ul>
+  </div>
+
+</main>
+</body>
+</html>

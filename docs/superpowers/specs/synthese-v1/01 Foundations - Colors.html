@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Synthèse v1 — Colors</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+  .swatch {
+    border: var(--border-hard); border-radius: 14px; box-shadow: var(--shadow-hard);
+    overflow: hidden; background: var(--bg);
+    display: flex; flex-direction: column;
+  }
+  .swatch-fill { height: 96px; display: flex; align-items: flex-end; padding: 12px; }
+  .swatch-name {
+    font-family: var(--font-display); font-style: italic; font-weight: 600;
+    font-size: 22px; line-height: 1;
+  }
+  .swatch-meta { padding: 10px 12px 12px; border-top: 1.5px solid var(--ink); background: var(--bg); }
+  .swatch-token { font-family: var(--font-sans); font-size: 11px; font-weight: 600; color: var(--ink); }
+  .swatch-hex   { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+
+  .pair {
+    border: var(--border-hard); border-radius: 14px; box-shadow: var(--shadow-hard);
+    overflow: hidden;
+    display: grid; grid-template-columns: 1fr 1fr;
+  }
+  .pair-half { padding: 18px; min-height: 110px; display: flex; flex-direction: column; justify-content: space-between; }
+  .pair-name {
+    font-family: var(--font-display); font-style: italic; font-weight: 600;
+    font-size: 28px; line-height: 1;
+  }
+  .pair-eg { font-size: 11px; opacity: 0.85; font-weight: 500; }
+
+  .scale {
+    display: grid; grid-template-columns: 1fr; gap: 0;
+    border: var(--border-hard); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-hard);
+  }
+  .scale-row {
+    display: grid; grid-template-columns: 140px 1fr 90px; align-items: center;
+    padding: 12px 16px; gap: 14px;
+    border-bottom: 1.5px solid var(--ink);
+    background: var(--bg);
+  }
+  .scale-row:last-child { border-bottom: none; }
+  .scale-chip { width: 36px; height: 36px; border: 1.5px solid var(--ink); border-radius: 8px; }
+  .scale-label { font-family: var(--font-sans); font-size: 12px; font-weight: 600; }
+  .scale-token { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--ink-soft); }
+  .scale-hex { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--ink-soft); text-align: right; }
+
+  .usage {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px;
+  }
+  .usage-card {
+    padding: 14px; border: var(--border-hard); border-radius: 12px;
+  }
+  .usage-card .lbl { font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.8; }
+  .usage-card .val { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 26px; line-height: 1; margin-top: 6px; }
+</style>
+</head>
+<body>
+<main class="ds-page">
+
+  <div class="ds-eyebrow">Synthèse v1 · Fondations</div>
+  <h1 class="ds-title">Couleurs</h1>
+  <p class="ds-intro">
+    Fond crème chaud, encre noire-brune, accent rouge bordeaux. Les couleurs des vins
+    servent à la fois de surface (cartes pleines) et de filigrane typographique.
+    Pas de gradients, pas de transparence subtile : tout est plein et assumé.
+  </p>
+
+  <!-- ─── Surfaces ─── -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Surfaces</h2>
+    <p class="ds-section-sub">Le fond chaud unifie l'app. <code>paper-2</code> calme les zones secondaires.</p>
+    <div class="swatch-grid">
+      <article class="swatch">
+        <div class="swatch-fill" style="background: var(--bg);"><span class="swatch-name" style="color: var(--ink);">Bg</span></div>
+        <div class="swatch-meta"><div class="swatch-token">--bg</div><div class="swatch-hex">#F5EFE2</div></div>
+      </article>
+      <article class="swatch">
+        <div class="swatch-fill" style="background: var(--paper-2);"><span class="swatch-name" style="color: var(--ink);">Paper 2</span></div>
+        <div class="swatch-meta"><div class="swatch-token">--paper-2</div><div class="swatch-hex">#ECE3D0</div></div>
+      </article>
+      <article class="swatch">
+        <div class="swatch-fill" style="background: var(--ink);"><span class="swatch-name" style="color: var(--bg);">Ink</span></div>
+        <div class="swatch-meta"><div class="swatch-token">--ink</div><div class="swatch-hex">#1A1411</div></div>
+      </article>
+      <article class="swatch">
+        <div class="swatch-fill" style="background: var(--ink-soft);"><span class="swatch-name" style="color: var(--bg);">Ink Soft</span></div>
+        <div class="swatch-meta"><div class="swatch-token">--ink-soft</div><div class="swatch-hex">#6B5B4A</div></div>
+      </article>
+      <article class="swatch">
+        <div class="swatch-fill" style="background: var(--ink-faint);"><span class="swatch-name" style="color: var(--ink);">Ink Faint</span></div>
+        <div class="swatch-meta"><div class="swatch-token">--ink-faint</div><div class="swatch-hex">#B8A98F</div></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ─── Vins ─── -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Vins — surfaces & contraste</h2>
+    <p class="ds-section-sub">Couleur de fond + couleur du texte pour chaque type de vin. Toujours utilisées en paire.</p>
+    <div class="ds-grid" style="grid-template-columns: 1fr; gap: 12px;">
+      <article class="pair">
+        <div class="pair-half" style="background: var(--rouge); color: var(--rouge-fg);">
+          <span class="pair-name">Rouge</span>
+          <span class="pair-eg">--rouge · #B33A2E</span>
+        </div>
+        <div class="pair-half" style="background: var(--rouge-fg); color: var(--ink);">
+          <span class="pair-name" style="font-style: italic;">Margaux 2008</span>
+          <span class="pair-eg">--rouge-fg · #F9F1E3</span>
+        </div>
+      </article>
+      <article class="pair">
+        <div class="pair-half" style="background: var(--blanc); color: var(--blanc-fg);">
+          <span class="pair-name">Blanc</span>
+          <span class="pair-eg">--blanc · #4A6FA5</span>
+        </div>
+        <div class="pair-half" style="background: var(--blanc-fg); color: var(--ink);">
+          <span class="pair-name" style="font-style: italic;">Meursault 2018</span>
+          <span class="pair-eg">--blanc-fg · #F9F1E3</span>
+        </div>
+      </article>
+      <article class="pair">
+        <div class="pair-half" style="background: var(--bulle); color: var(--bulle-fg);">
+          <span class="pair-name">Bulle</span>
+          <span class="pair-eg">--bulle · #D9A852</span>
+        </div>
+        <div class="pair-half" style="background: var(--bg); color: var(--ink); border-left: 1.5px solid var(--ink);">
+          <span class="pair-name" style="font-style: italic;">Pol Roger 2013</span>
+          <span class="pair-eg">--bulle-fg · #1A1411</span>
+        </div>
+      </article>
+      <article class="pair">
+        <div class="pair-half" style="background: var(--rose); color: var(--rose-fg);">
+          <span class="pair-name">Rosé</span>
+          <span class="pair-eg">--rose · #C97A8F</span>
+        </div>
+        <div class="pair-half" style="background: var(--bg); color: var(--ink); border-left: 1.5px solid var(--ink);">
+          <span class="pair-name" style="font-style: italic;">Tavel 2022</span>
+          <span class="pair-eg">--rose-fg · #1A1411</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ─── Sémantique ─── -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Statuts du cycle de vie</h2>
+    <p class="ds-section-sub">Liés à la position dans le cycle. <code>urgent</code> et <code>apogee</code> partagent une teinte rouge mais des intensités différentes.</p>
+    <div class="scale">
+      <div class="scale-row">
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <div class="scale-chip" style="background: var(--urgent);"></div>
+          <div><div class="scale-label">Urgent</div><div class="scale-token">--urgent</div></div>
+        </div>
+        <div class="ds-meta">Cycle > 85% — fenêtre courte, ouvrir maintenant.</div>
+        <div class="scale-hex">#C1452A</div>
+      </div>
+      <div class="scale-row">
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <div class="scale-chip" style="background: var(--apogee);"></div>
+          <div><div class="scale-label">Apogée</div><div class="scale-token">--apogee</div></div>
+        </div>
+        <div class="ds-meta">50–85% — à ouvrir dans les mois qui viennent.</div>
+        <div class="scale-hex">#B33A2E</div>
+      </div>
+      <div class="scale-row">
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <div class="scale-chip" style="background: var(--optimal);"></div>
+          <div><div class="scale-label">Optimal</div><div class="scale-token">--optimal</div></div>
+        </div>
+        <div class="ds-meta">30–50% — bonne fenêtre, prêt à boire.</div>
+        <div class="scale-hex">#6B7A3E</div>
+      </div>
+      <div class="scale-row">
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <div class="scale-chip" style="background: var(--garde);"></div>
+          <div><div class="scale-label">À garder</div><div class="scale-token">--garde</div></div>
+        </div>
+        <div class="ds-meta">< 30% — patience, le pic arrive.</div>
+        <div class="scale-hex">#4A6FA5</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ds-rule"></div>
+
+  <!-- ─── Règles d'usage ─── -->
+  <section class="ds-section" style="margin-top: 0;">
+    <h2 class="ds-section-title">Règles d'usage</h2>
+    <ul style="margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; color: var(--ink); max-width: 60ch;">
+      <li><strong>Une seule couleur par carte.</strong> Le filigrane reprend la même teinte, jamais une autre.</li>
+      <li><strong>Pas de gradients, pas de transparence.</strong> Les couleurs sont pleines ou absentes.</li>
+      <li><strong>L'accent rouge</strong> (<code>--rouge</code>) est partagé par la tuile hero et l'offset shadow des CTA primaires.</li>
+      <li><strong>Pas de mode sombre en v1.</strong> Le fond chaud est non-négociable.</li>
+    </ul>
+  </section>
+
+</main>
+</body>
+</html>
