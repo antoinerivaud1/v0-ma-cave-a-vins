@@ -1,16 +1,17 @@
 "use client"
 import { useState } from "react"
-import { ChevronDown, MessageSquare } from "lucide-react"
+import { MessageSquare } from "lucide-react"
 import { CaveBadge } from "./cave-badge"
 import { WineCardActions } from "./wine-card-actions"
 import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
-import { getIcon, getLabel, getColor, formatRegion, sanitizeWineName } from "@/lib/wine-helpers"
+import { getLabel, getColor, formatRegion, sanitizeWineName } from "@/lib/wine-helpers"
 import { getApogee } from "@/data/apogee"
 import { useWineEnrichmentLegacy } from "@/hooks/use-wine-enrichment"
 import { WineEnrichmentPanel } from "./wine-enrichment-panel"
 import { useTastings } from "@/hooks/use-tastings"
 import { TastingPanel } from "./tasting-panel"
+import { Watermark } from "./synthese/watermark"
 import type { Wine } from "@/data/apogee"
 import type { Cave } from "@/hooks/use-caves"
 import {
@@ -32,12 +33,22 @@ interface WineCardProps {
   onMoved?: () => void
 }
 
-const colorDotClasses: Record<string, string> = {
-  red: "bg-red-500",
-  white: "bg-amber-200",
-  sparkling: "bg-sky-300",
-  rose: "bg-pink-300",
-  unknown: "bg-muted-foreground",
+/** CSS token surface per wine color key */
+const wineSurface: Record<string, { bg: string; fg: string }> = {
+  red:      { bg: "var(--rouge)", fg: "var(--rouge-fg)" },
+  white:    { bg: "var(--blanc)", fg: "var(--blanc-fg)" },
+  sparkling: { bg: "var(--bulle)", fg: "var(--bulle-fg)" },
+  rose:     { bg: "var(--rose)",  fg: "var(--rose-fg)"  },
+  unknown:  { bg: "var(--paper-2)", fg: "var(--ink)"    },
+}
+
+/** Watermark label per color key */
+const watermarkLabel: Record<string, string> = {
+  red:      "Rouge",
+  white:    "Blanc",
+  sparkling: "Bulle",
+  rose:     "Rosé",
+  unknown:  "Vin",
 }
 
 const colorBadgeVariant: Record<string, "gold" | "muted"> = {
@@ -95,7 +106,6 @@ export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: W
 
   const apogee = getApogee(wine)
   const color = getColor(wine.wine_type || "")
-  const icon = getIcon(wine.wine_type || "")
   const label = getLabel(wine.wine_type || "")
   const region = formatRegion(wine.wine_region || "")
   const hasNote = !!(wine.bottle_comment || wine.wine_comment || wine.wine_notes)
@@ -107,6 +117,9 @@ export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: W
   const apogeeBadgeVariant = apogee
     ? (apogee.st as "urgent" | "ok" | "wait" | "late")
     : undefined
+
+  const surf = wineSurface[color] ?? wineSurface.unknown
+  const wmLabel = watermarkLabel[color] ?? "Vin"
 
   const handleConsume = () => {
     const newQty = Math.max(0, displayQuantity - 1)
@@ -140,44 +153,72 @@ export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: W
 
   return (
     <>
-    <div className="relative overflow-hidden rounded-xl border border-cave-border bg-card">
-      <div className="flex w-full items-center gap-3 px-3.5 py-3">
+    <div
+      style={{
+        background: surf.bg,
+        color: surf.fg,
+        border: "var(--border-hard)",
+        borderRadius: "var(--radius-card)",
+        boxShadow: "var(--shadow-hard)",
+        position: "relative",
+        overflow: "hidden",
+        containerType: "inline-size",
+      }}
+    >
+      <Watermark color={surf.fg}>{wmLabel}</Watermark>
+
+      <div className="flex w-full items-center gap-3 px-3.5 py-3" style={{ position: "relative", zIndex: 1 }}>
         <button
           onClick={() => onWineSelect ? onWineSelect(wine) : setIsOpen((prev) => !prev)}
           className="flex flex-1 items-center gap-3 text-left min-w-0"
           aria-expanded={isOpen}
         >
-          <span
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg ${colorDotClasses[color]}/15`}
-            aria-hidden="true"
-          >
-            {icon}
-          </span>
-
           <div className="min-w-0 flex-1">
-            <p className="truncate font-cormorant text-base font-normal text-foreground">
+            <p
+              className="truncate"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontStyle: "italic",
+                fontWeight: 500,
+                fontSize: 18,
+                lineHeight: 1.1,
+                color: surf.fg,
+              }}
+            >
               {sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || "Vin inconnu"}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: 6,
+                marginTop: 3,
+                color: surf.fg,
+                opacity: 0.85,
+                fontFamily: "var(--font-sans)",
+              }}
+            >
               {wine.millesime_year ? (
-                <span className="ml-1.5 font-sans font-semibold tabular-nums text-lg text-muted-foreground">
+                <span style={{ fontSize: 13, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
                   {wine.millesime_year}
                 </span>
               ) : null}
-            </p>
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {displayQuantity > 1 ? (
+                <>
+                  <span style={{ opacity: 0.5 }}>·</span>
+                  <span style={{ fontSize: 11, fontWeight: 600 }}>×{displayQuantity}</span>
+                </>
+              ) : null}
+            </div>
+            <p
+              className="mt-0.5 truncate"
+              style={{ fontSize: 11, color: surf.fg, opacity: 0.7, fontFamily: "var(--font-sans)" }}
+            >
               {wine.wine_domain ? sanitizeWineName(wine.wine_domain) : ""}
               {wine.wine_domain && region ? " · " : ""}
               {region}
-              {displayQuantity > 1 ? (
-                <span className="ml-1 text-primary">{` x${displayQuantity}`}</span>
-              ) : null}
             </p>
           </div>
-
-          <ChevronDown
-            className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
-              isOpen ? "rotate-180" : ""
-            }`}
-          />
         </button>
         <WineCardActions
           wineName={sanitizeWineName(wine.wine_name) || "Vin inconnu"}
@@ -197,8 +238,11 @@ export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: W
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-3">
-        <CaveBadge label={`${icon} ${label}`} variant={colorBadgeVariant[color]} />
+      <div
+        className="flex flex-wrap items-center gap-1.5 px-3.5 pb-3"
+        style={{ position: "relative", zIndex: 1 }}
+      >
+        <CaveBadge label={label} variant={colorBadgeVariant[color]} />
         {apogee && apogeeBadgeVariant && (
           <CaveBadge label={apogee.label} variant={apogeeBadgeVariant} />
         )}
@@ -208,9 +252,17 @@ export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: W
         className={`grid transition-[grid-template-rows] duration-200 ${
           isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
         }`}
+        style={{ position: "relative", zIndex: 1 }}
       >
         <div className="overflow-hidden">
-          <div className="border-t border-cave-border px-3.5 py-3">
+          <div
+            style={{
+              borderTop: "var(--border-hard)",
+              padding: "12px 14px",
+              background: "var(--paper-2)",
+              color: "var(--ink)",
+            }}
+          >
             <TastingPanel
               tasting={tasting}
               isSaving={isSavingTasting}
