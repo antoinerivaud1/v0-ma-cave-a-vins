@@ -115,7 +115,7 @@ export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: W
   const displayQuantity = effectiveState.quantity
   const isArchived = effectiveState.archived
   const apogeeBadgeVariant = unifiedApogee
-    ? unifiedToLegacySt(unifiedApogee.status)
+    ? unifiedToLegacySt(unifiedApogee)
     : undefined
 
   const surf = wineSurface[color] ?? wineSurface.unknown

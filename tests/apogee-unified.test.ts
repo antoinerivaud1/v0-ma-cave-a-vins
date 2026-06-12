@@ -150,11 +150,60 @@ describe("getUnifiedApogee", () => {
   })
 })
 
-describe("unifiedToLegacySt", () => {
-  it("garde -> wait", () => expect(unifiedToLegacySt("garde")).toBe("wait"))
-  it("optimal -> ok", () => expect(unifiedToLegacySt("optimal")).toBe("ok"))
-  it("apogee -> ok (valorisé positivement pour le scoring)", () => {
-    expect(unifiedToLegacySt("apogee")).toBe("ok")
+// Helpers pour construire un UnifiedApogee minimal à des fins de test
+function makeLegacyInput(
+  status: import("@/lib/apogee-unified").UnifiedApogeeStatus,
+  progress: number,
+  pastWindow: boolean,
+  beforeWindow: boolean
+): import("@/lib/apogee-unified").UnifiedApogee {
+  return { start: 2020, end: 2030, status, progress, estimated: false, pastWindow, beforeWindow, label: "test" }
+}
+
+describe("unifiedToLegacySt — sémantique legacy exacte (B1/B2, MA-97)", () => {
+  // Vin fenêtre dépassée -> legacy "urgent" (B2 : compte dans isDrinkNow/toDrink)
+  it("fenêtre dépassée (pastWindow=true) -> urgent", () => {
+    const input = makeLegacyInput("urgent", 1.0, true, false)
+    expect(unifiedToLegacySt(input)).toBe("urgent")
   })
-  it("urgent -> urgent", () => expect(unifiedToLegacySt("urgent")).toBe("urgent"))
+
+  // Vin dans la fenêtre, fin proche (progress > 0.85) -> legacy "late" (score neutre 0, B1)
+  it("dans la fenêtre, progress > 0.85 -> late (score 0, neutre)", () => {
+    const input = makeLegacyInput("urgent", 0.9, false, false)
+    expect(unifiedToLegacySt(input)).toBe("late")
+  })
+
+  // Vin en zone optimale -> legacy "ok" (score +2)
+  it("dans la fenêtre optimale (optimal, progress 0.4) -> ok", () => {
+    const input = makeLegacyInput("optimal", 0.4, false, false)
+    expect(unifiedToLegacySt(input)).toBe("ok")
+  })
+
+  // Vin apogée (peak) -> legacy "ok" (score +2)
+  it("dans la fenêtre apogée (apogee, progress 0.65) -> ok", () => {
+    const input = makeLegacyInput("apogee", 0.65, false, false)
+    expect(unifiedToLegacySt(input)).toBe("ok")
+  })
+
+  // Vin en garde (avant fenêtre) -> legacy "wait" (score 0)
+  it("avant la fenêtre (beforeWindow=true) -> wait", () => {
+    const input = makeLegacyInput("garde", 0.1, false, true)
+    expect(unifiedToLegacySt(input)).toBe("wait")
+  })
+
+  // Vérification scoring B1 : "late" doit rester neutre (0), pas -2 comme "urgent"
+  it("B1 : late ne doit PAS être mappé urgent (scoring 0, pas -2)", () => {
+    const input = makeLegacyInput("urgent", 0.88, false, false)
+    const st = unifiedToLegacySt(input)
+    expect(st).toBe("late")
+    expect(st).not.toBe("urgent")
+  })
+
+  // Vérification B2 : isDrinkNow = urgent || late tous les deux présents
+  it("B2 : urgent et late sont tous les deux des candidats isDrinkNow", () => {
+    const urgentWine = makeLegacyInput("urgent", 1.0, true, false)
+    const lateWine = makeLegacyInput("urgent", 0.9, false, false)
+    expect(["urgent", "late"]).toContain(unifiedToLegacySt(urgentWine))
+    expect(["urgent", "late"]).toContain(unifiedToLegacySt(lateWine))
+  })
 })

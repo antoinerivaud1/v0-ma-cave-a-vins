@@ -34,6 +34,10 @@ export interface UnifiedApogee {
   progress: number
   /** true si la fenêtre est estimée par heuristique (pas de données IA) */
   estimated: boolean
+  /** true si la fenêtre d'apogée est entièrement dépassée (now > end) */
+  pastWindow: boolean
+  /** true si on est encore avant le début de la fenêtre (now < start) */
+  beforeWindow: boolean
   /** Label lisible */
   label: string
 }
@@ -41,27 +45,26 @@ export interface UnifiedApogee {
 // ── Mapping legacy -> unified ──────────────────────────────────────────────
 
 /**
- * Convertit un statut unifié en st legacy ("wait"|"ok"|"late"|"urgent")
- * pour ne pas casser le scoring de lib/suggest-helpers.ts.
+ * Convertit un résultat UnifiedApogee en st legacy ("wait"|"ok"|"late"|"urgent")
+ * pour maintenir la compatibilité exacte avec l'ancien getApogee().
  *
- * garde   -> "wait"
- * optimal -> "ok"
- * apogee  -> "ok"   (fenêtre idéale, toujours valorisé positivement)
- * urgent  -> "urgent"
+ * Sémantique legacy restituée :
+ *  pastWindow                -> "urgent"  (fenêtre dépassée)
+ *  dans la fenêtre, progress > 0.85 -> "late"  (fin proche ; ancien critère : until - now <= 2 ans, approximé par progress > 0.85)
+ *  beforeWindow              -> "wait"   (encore en garde)
+ *  optimal / apogee          -> "ok"     (fenêtre idéale)
+ *
+ * Scoring suggest-helpers identique à l'ancien : ok +2, urgent -2, late 0, wait 0.
+ * Note : "late" (progress > 0.85) approxime l'ancien seuil "until - now <= 2 ans".
  */
 export function unifiedToLegacySt(
-  status: UnifiedApogeeStatus
+  unified: UnifiedApogee
 ): "wait" | "ok" | "late" | "urgent" {
-  switch (status) {
-    case "garde":
-      return "wait"
-    case "optimal":
-      return "ok"
-    case "apogee":
-      return "ok"
-    case "urgent":
-      return "urgent"
-  }
+  if (unified.pastWindow) return "urgent"
+  if (unified.beforeWindow) return "wait"
+  // Dans la fenêtre : progress > 0.85 -> fin proche -> legacy "late"
+  if (unified.progress > 0.85) return "late"
+  return "ok"
 }
 
 // ── Calcul progress + status depuis une fenêtre et l'année courante ─────────
@@ -200,6 +203,8 @@ export function getUnifiedApogee(
         status,
         progress: status === "garde" ? 0.1 : status === "urgent" ? 0.95 : 0.6,
         estimated: true,
+        pastWindow: status === "urgent",
+        beforeWindow: status === "garde",
         label: legacy.label,
       }
     }
@@ -233,5 +238,5 @@ export function getUnifiedApogee(
     label = `Apogée ${start}–${end}`
   }
 
-  return { start, end, status, progress, estimated, label }
+  return { start, end, status, progress, estimated, pastWindow: afterWindow, beforeWindow, label }
 }

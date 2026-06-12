@@ -94,12 +94,13 @@ function scoreWine(wine: Wine, accord: Accord): number {
   }
 
   // Apogee bonus / malus — via unifiedToLegacySt pour cohérence inter-composants
-  // Le scoring remain identique : +2 si "ok", -2 si "urgent"
+  // Scoring identique à l'ancien getApogee() : ok +2, urgent -2, late 0, wait 0
   const unified = getUnifiedApogee(wine)
   if (unified) {
-    const legacySt = unifiedToLegacySt(unified.status)
+    const legacySt = unifiedToLegacySt(unified)
     if (legacySt === "ok") score += 2
     else if (legacySt === "urgent") score -= 2
+    // late -> 0, wait -> 0 : pas de modification de score (identique à l'ancien)
   }
 
   return score

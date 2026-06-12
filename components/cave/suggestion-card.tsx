@@ -35,7 +35,7 @@ export function SuggestionCard({
   const label = getLabel(wine.wine_type || "")
   const region = formatRegion(wine.wine_region || "")
 
-  const apogeeBadgeVariant = unified ? unifiedToLegacySt(unified.status) : undefined
+  const apogeeBadgeVariant = unified ? unifiedToLegacySt(unified) : undefined
 
   return (
     <div className="overflow-hidden rounded-xl border border-cave-border bg-card">

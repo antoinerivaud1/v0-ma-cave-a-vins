@@ -9,7 +9,7 @@ import { AddWineSheet } from "./add-wine-sheet"
 import { ScanLabelSheet } from "./scan-label-sheet"
 import { PaywallSheet } from "./paywall-sheet"
 import { ComingSoonOverlay } from "./coming-soon-badge"
-import { getUnifiedApogee } from "@/lib/apogee-unified"
+import { getUnifiedApogee, unifiedToLegacySt } from "@/lib/apogee-unified"
 import { getDailyTip } from "@/data/wine-tips"
 import { useAuth } from "@/hooks/use-auth"
 import { useUserProfile } from "@/hooks/use-user-profile"
@@ -60,7 +60,9 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
     ).reduce((s, w) => s + getEffectiveWineState(w, getOverrideForWine(w)).quantity, 0)
     const toDrink = active.filter((w) => {
       const unified = getUnifiedApogee(w)
-      return unified && unified.status === "urgent"
+      if (!unified) return false
+      const legacySt = unifiedToLegacySt(unified)
+      return legacySt === "urgent" || legacySt === "late"
     })
     const recent = active.filter((w) => (w as any)._manual).slice(0, 3)
     return { total, reds, whites, sparkling, toDrink, recent }
@@ -267,7 +269,7 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {stats.toDrink.slice(0, 3).map((wine, i) => {
               const unified = getUnifiedApogee(wine)
-              const isUrgent = unified?.status === "urgent"
+              const isUrgent = !!unified && unifiedToLegacySt(unified) === "urgent"
               return (
                 <div
                   key={`drink-${wine.wine_name}-${i}`}
