@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Wine, Sparkles, Plus, Camera, PenLine, X, ChevronDown } from "lucide-react"
+import { Wine, Plus, Camera, PenLine, X, ChevronDown } from "lucide-react"
 import { BigTile } from "./synthese/big-tile"
 import { StatPill } from "./synthese/stat-pill"
 import { Watermark } from "./synthese/watermark"
