@@ -14,14 +14,18 @@ const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: "carnet", label: "Carnet", icon: BookOpen },
   { id: "liste", label: "Liste", icon: Wine },
   { id: "accords", label: "Accords", icon: UtensilsCrossed },
-  { id: "reglages", label: "Reglages", icon: Settings },
+  { id: "reglages", label: "Réglages", icon: Settings },
 ]
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-cave-border bg-cave-bg/95 backdrop-blur-md pointer-events-none"
-      style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)" }}
+      className="fixed inset-x-0 bottom-0 z-50 pointer-events-none"
+      style={{
+        background: "var(--bg)",
+        borderTop: "var(--border-hard)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+      }}
     >
       <div className="mx-auto flex max-w-[480px] items-center justify-around pointer-events-auto">
         {tabs.map(({ id, label, icon: Icon }) => {
@@ -30,14 +34,24 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             <button
               key={id}
               onClick={() => onTabChange(id)}
-              className={`flex flex-1 flex-col items-center gap-0.5 py-2 transition-colors ${
-                isActive ? "text-primary" : "text-muted-foreground"
-              }`}
+              className="flex flex-1 flex-col items-center gap-0.5 py-2.5 transition-colors"
+              style={{
+                color: isActive ? "var(--ink)" : "var(--ink-soft)",
+                fontWeight: isActive ? 700 : 500,
+              }}
               aria-label={label}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon className="h-5 w-5" strokeWidth={isActive ? 2.2 : 1.5} />
-              <span className="text-[10px] font-medium">{label}</span>
+              <Icon
+                className="h-[22px] w-[22px]"
+                strokeWidth={isActive ? 2.2 : 1.6}
+              />
+              <span
+                className="text-[10px] tracking-wide"
+                style={{ fontWeight: isActive ? 700 : 500 }}
+              >
+                {label}
+              </span>
             </button>
           )
         })}
