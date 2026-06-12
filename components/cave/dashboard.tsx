@@ -1,8 +1,10 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Wine, GlassWater, Sparkles, Clock, Plus, Lightbulb, Sparkle, ChevronRight, ChevronDown, Minus, Camera, PenLine, X } from "lucide-react"
-import { CaveBadge } from "./cave-badge"
+import { Wine, Sparkles, Plus, Camera, PenLine, X, ChevronDown } from "lucide-react"
+import { BigTile } from "./synthese/big-tile"
+import { StatPill } from "./synthese/stat-pill"
+import { Watermark } from "./synthese/watermark"
 import { AddWineSheet } from "./add-wine-sheet"
 import { ScanLabelSheet } from "./scan-label-sheet"
 import { PaywallSheet } from "./paywall-sheet"
@@ -31,7 +33,7 @@ interface DashboardProps {
 function getGreeting(firstName?: string): string {
   const hour = new Date().getHours()
   const salut = hour < 18 ? "Bonjour" : "Bonsoir"
-  return firstName ? `${salut}, ${firstName} !` : `${salut} !`
+  return firstName ? `${salut}, ${firstName} !` : `${salut} !`
 }
 
 export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, onCaveSwitch }: DashboardProps) {
@@ -77,132 +79,261 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
   }
 
   return (
-    <div className="min-h-dvh flex flex-col">
+    <div className="min-h-dvh flex flex-col" style={{ background: "var(--bg)" }}>
       <div style={{ paddingTop: "env(safe-area-inset-top, 0px)" }} />
 
       {/* Header salutation */}
       <div className="flex items-center justify-between px-4 pt-5 pb-1">
-        <h1 className="font-cormorant text-4xl font-normal leading-tight text-foreground">
-          {getGreeting(profile?.firstName)}
-        </h1>
+        <div>
+          {/* Kicker date */}
+          <p
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--ink-soft)",
+              marginBottom: 2,
+            }}
+          >
+            {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
+          </p>
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontStyle: "italic",
+              fontWeight: 500,
+              fontSize: 32,
+              lineHeight: 1.05,
+              color: "var(--ink)",
+            }}
+          >
+            {getGreeting(profile?.firstName)}
+          </h1>
+        </div>
         {profile?.firstName && (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/20">
-            <span className="text-xs font-semibold text-primary">
-              {profile.firstName.slice(0, 2).toUpperCase()}
-            </span>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              background: "var(--ink)",
+              color: "var(--bg)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: "var(--font-sans)",
+              fontWeight: 700,
+              fontSize: 12,
+              border: "var(--border-hard)",
+              flexShrink: 0,
+            }}
+          >
+            {profile.firstName.slice(0, 2).toUpperCase()}
           </div>
         )}
       </div>
 
       {/* Nom de la cave active */}
       {activeCave && (caveCount ?? 0) > 0 && (
-        <div className="px-4 pb-1">
+        <div className="px-4 pb-2">
           {(caveCount ?? 0) >= 2 && onCaveSwitch ? (
             <button
               onClick={onCaveSwitch}
-              className="flex items-center gap-1 text-sm text-muted-foreground"
+              className="flex items-center gap-1"
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: 12,
+                color: "var(--ink-soft)",
+              }}
             >
               {sanitizeWineName(activeCave.name)}
               <ChevronDown className="h-3 w-3" />
             </button>
           ) : (
-            <span className="text-sm text-muted-foreground">
+            <span
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: 12,
+                color: "var(--ink-soft)",
+              }}
+            >
               {sanitizeWineName(activeCave.name)}
             </span>
           )}
         </div>
       )}
 
-      {/* Tip du jour */}
-      <div className="mx-4 mt-4 rounded-xl border border-cave-border bg-card overflow-hidden">
-        <div className={`flex items-center gap-2 px-3.5 pt-3 pb-1.5 ${tip.type === "personal" ? "text-primary" : "text-muted-foreground"}`}>
-          {tip.type === "personal" ? (
-            <Sparkle className="h-3.5 w-3.5 shrink-0 text-primary" />
-          ) : (
-            <Lightbulb className="h-3.5 w-3.5 shrink-0" />
+      {/* Hero — EN CAVE */}
+      <div className="px-4 mt-3">
+        <BigTile
+          bg="var(--rouge)"
+          fg="var(--rouge-fg)"
+          watermark="cave"
+          label="EN CAVE"
+          big={stats.total}
+          sub="bouteilles"
+          accent
+          onClick={() => onNavigate("liste")}
+        >
+          {/* Wine type chips */}
+          {(stats.reds > 0 || stats.whites > 0 || stats.sparkling > 0) && (
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                marginTop: 12,
+                flexWrap: "wrap",
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
+              {stats.reds > 0 && (
+                <MiniChip label={`${stats.reds} rouges`} fg="var(--rouge-fg)" />
+              )}
+              {stats.whites > 0 && (
+                <MiniChip label={`${stats.whites} blancs`} fg="var(--rouge-fg)" />
+              )}
+              {stats.sparkling > 0 && (
+                <MiniChip label={`${stats.sparkling} bulles`} fg="var(--rouge-fg)" />
+              )}
+            </div>
           )}
-          <span className="text-[10px] font-semibold uppercase tracking-widest">
-            {tip.type === "personal" ? "Votre cave" : "Le saviez-vous ?"}
-          </span>
-        </div>
-        <p className="px-3.5 pb-3.5 font-cormorant italic text-sm leading-relaxed text-foreground">{tip.text}</p>
+        </BigTile>
       </div>
 
-      {/* Snapshot cave */}
-      <button
-        onClick={() => onNavigate("liste")}
-        className="mx-4 mt-3 flex w-[calc(100%-2rem)] items-center justify-between rounded-xl border border-cave-border bg-card px-3.5 py-3 transition-colors hover:border-primary/30"
+      {/* Grid — À BOIRE + type répartition */}
+      <div
+        className="px-4 mt-2.5"
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
       >
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <Wine className="h-4 w-4 text-primary" />
-            <span className="font-sans font-semibold tabular-nums text-2xl text-foreground">{stats.total}</span>
-            <span className="text-xs text-muted-foreground">bouteilles</span>
-          </div>
-          {stats.reds > 0 && (
-            <div className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-red-500" />
-              <span className="font-sans font-semibold tabular-nums text-xs text-muted-foreground">{stats.reds}</span>
-            </div>
-          )}
-          {stats.whites > 0 && (
-            <div className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-amber-200" />
-              <span className="font-sans font-semibold tabular-nums text-xs text-muted-foreground">{stats.whites}</span>
-            </div>
-          )}
-          {stats.sparkling > 0 && (
-            <div className="flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-sky-300" />
-              <span className="font-sans font-semibold tabular-nums text-xs text-muted-foreground">{stats.sparkling}</span>
-            </div>
-          )}
+        {/* À boire */}
+        <BigTile
+          bg="var(--paper-2)"
+          fg="var(--ink)"
+          watermark="ouvrir"
+          label="À BOIRE"
+          big={stats.toDrink.length}
+          sub="à leur apogée"
+          onClick={stats.toDrink.length > 0 ? () => onNavigate("liste", { level: "drink" }) : undefined}
+        />
+        {/* StatPills rouges / blancs */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <StatPill
+            label="Rouges"
+            big={stats.reds}
+            sub={stats.total > 0 ? `${Math.round((stats.reds / stats.total) * 100)}%` : undefined}
+          />
+          <StatPill
+            label="Blancs"
+            big={stats.whites}
+            sub={stats.total > 0 ? `${Math.round((stats.whites / stats.total) * 100)}%` : undefined}
+          />
         </div>
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-      </button>
+      </div>
 
-      {/* Action rapide Consommee */}
-      <button
-        onClick={() => onNavigate("liste")}
-        className="mx-4 mt-3 flex w-[calc(100%-2rem)] items-center gap-2.5 rounded-xl border border-cave-border bg-card px-3.5 py-3 transition-colors hover:border-primary/30"
-      >
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted">
-          <Minus className="h-3.5 w-3.5 text-muted-foreground" />
-        </div>
-        <span className="text-sm font-medium text-foreground">Marquer une bouteille comme consommee</span>
-      </button>
-
-      {/* A boire maintenant */}
+      {/* À boire maintenant — liste détaillée */}
       {stats.toDrink.length > 0 && (
-        <section className="mt-5 px-4 flex-1">
-          <div className="mb-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-amber-400" />
-              <h2 className="font-cormorant text-2xl font-normal text-foreground">A boire maintenant</h2>
-            </div>
+        <section className="mt-4 px-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h2
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--ink-soft)",
+              }}
+            >
+              À BOIRE MAINTENANT
+            </h2>
             {stats.toDrink.length > 3 && (
-              <button onClick={() => onNavigate("liste", { level: "drink" })} className="text-xs text-primary">
+              <button
+                onClick={() => onNavigate("liste", { level: "drink" })}
+                style={{
+                  fontFamily: "var(--font-sans)",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  color: "var(--rouge)",
+                }}
+              >
                 Voir tout ({stats.toDrink.length})
               </button>
             )}
           </div>
-          <div className="flex flex-col gap-2">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {stats.toDrink.slice(0, 3).map((wine, i) => {
               const apogee = getApogee(wine)
+              const isUrgent = apogee?.st === "urgent"
               return (
-                <div key={`drink-${wine.wine_name}-${i}`} className="flex items-center justify-between rounded-lg border border-cave-border bg-card px-3 py-2.5">
-                  <div className="flex-1 pr-3 min-w-0">
-                    <p className="truncate font-cormorant text-sm font-normal text-foreground">
+                <div
+                  key={`drink-${wine.wine_name}-${i}`}
+                  style={{
+                    background: isUrgent ? "var(--rouge)" : "var(--paper-2)",
+                    color: isUrgent ? "var(--rouge-fg)" : "var(--ink)",
+                    border: "var(--border-hard)",
+                    borderRadius: "var(--radius-card)",
+                    boxShadow: isUrgent ? "var(--shadow-accent)" : "var(--shadow-hard)",
+                    padding: "10px 12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Watermark color={isUrgent ? "var(--rouge-fg)" : "var(--ink)"} size={28}>
+                    {isUrgent ? "urgent" : "bientôt"}
+                  </Watermark>
+                  <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
+                    <p
+                      className="truncate"
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontStyle: "italic",
+                        fontWeight: 500,
+                        fontSize: 15,
+                        lineHeight: 1.1,
+                        color: isUrgent ? "var(--rouge-fg)" : "var(--ink)",
+                      }}
+                    >
                       {sanitizeWineName(wine.wine_name) || sanitizeWineName(wine.wine_appellation) || "Vin inconnu"}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      <span className="font-sans font-semibold tabular-nums">{wine.millesime_year}</span>
+                    <p
+                      style={{
+                        fontSize: 10,
+                        color: isUrgent ? "var(--rouge-fg)" : "var(--ink-soft)",
+                        opacity: 0.85,
+                        marginTop: 2,
+                        fontFamily: "var(--font-sans)",
+                      }}
+                    >
+                      <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
+                        {wine.millesime_year}
+                      </span>
                       {wine.wine_region ? ` · ${sanitizeWineName(wine.wine_region)}` : ""}
                     </p>
                   </div>
-                  {apogee && (
-                    <CaveBadge label={apogee.st === "urgent" ? "Urgent" : "Bientôt"} variant={apogee.st === "urgent" ? "urgent" : "late"} />
-                  )}
+                  <span
+                    style={{
+                      fontFamily: "var(--font-sans)",
+                      fontSize: 9,
+                      fontWeight: 700,
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      padding: "4px 8px",
+                      border: `1.5px solid ${isUrgent ? "var(--rouge-fg)" : "var(--ink)"}`,
+                      borderRadius: 999,
+                      color: isUrgent ? "var(--rouge-fg)" : "var(--ink)",
+                      whiteSpace: "nowrap",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isUrgent ? "URGENT" : "APOGÉE"}
+                  </span>
                 </div>
               )
             })}
@@ -210,22 +341,63 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
         </section>
       )}
 
-      {/* Ajouts recents */}
+      {/* Ajouts récents */}
       {stats.recent.length > 0 && (
-        <section className="mt-5 px-4">
-          <div className="mb-2.5 flex items-center gap-2">
-            <GlassWater className="h-4 w-4 text-primary" />
-            <h2 className="font-cormorant text-2xl font-normal text-foreground">Ajouts recents</h2>
-          </div>
-          <div className="flex flex-col gap-2">
+        <section className="mt-4 px-4">
+          <h2
+            className="mb-2"
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--ink-soft)",
+            }}
+          >
+            AJOUTS RÉCENTS
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {stats.recent.map((wine, i) => (
-              <div key={`recent-${wine.wine_name}-${i}`} className="flex items-center justify-between rounded-lg border border-cave-border bg-card px-3 py-2.5">
-                <div className="min-w-0">
-                  <p className="truncate font-cormorant text-sm font-normal text-foreground">
+              <div
+                key={`recent-${wine.wine_name}-${i}`}
+                style={{
+                  background: "var(--paper-2)",
+                  color: "var(--ink)",
+                  border: "var(--border-hard)",
+                  borderRadius: "var(--radius-card)",
+                  boxShadow: "var(--shadow-hard)",
+                  padding: "10px 12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <p
+                    className="truncate"
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontStyle: "italic",
+                      fontWeight: 500,
+                      fontSize: 15,
+                      lineHeight: 1.1,
+                      color: "var(--ink)",
+                    }}
+                  >
                     {sanitizeWineName(wine.wine_name) || "Vin inconnu"}
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-sans font-semibold tabular-nums">{wine.millesime_year}</span>
+                  <p
+                    style={{
+                      fontSize: 10,
+                      color: "var(--ink-soft)",
+                      marginTop: 2,
+                      fontFamily: "var(--font-sans)",
+                    }}
+                  >
+                    <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
+                      {wine.millesime_year}
+                    </span>
                     {wine.wine_region ? ` · ${sanitizeWineName(wine.wine_region)}` : ""}
                   </p>
                 </div>
@@ -235,13 +407,87 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
         </section>
       )}
 
+      {/* Le saviez-vous */}
+      <div className="px-4 mt-4">
+        <BigTile
+          bg="var(--paper-2)"
+          fg="var(--ink)"
+          label={tip.type === "personal" ? "VOTRE CAVE" : "LE SAVIEZ-VOUS ?"}
+          shadow={false}
+          style={{
+            border: "1.5px dashed var(--ink)",
+            boxShadow: "none",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "var(--font-display)",
+              fontStyle: "italic",
+              fontWeight: 500,
+              fontSize: 17,
+              lineHeight: 1.35,
+              marginTop: 6,
+              color: "var(--ink)",
+            }}
+          >
+            {tip.text}
+          </p>
+          <div style={{ marginTop: 8 }}>
+            <span
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: 10,
+                fontStyle: "italic",
+                color: "var(--ink-soft)",
+              }}
+            >
+              — votre sommelier
+            </span>
+          </div>
+        </BigTile>
+      </div>
+
       {/* Empty state */}
       {stats.total === 0 && (
-        <div className="mx-4 mt-6 rounded-xl border border-cave-border bg-card p-6 text-center">
-          <p className="font-serif text-base text-foreground">Cave vide</p>
-          <p className="mt-1 text-sm text-muted-foreground">Scannez ou ajoutez votre premiere bouteille.</p>
+        <div className="mx-4 mt-4">
+          <BigTile bg="var(--paper-2)" fg="var(--ink)" shadow={false} style={{ border: "1.5px dashed var(--ink)", textAlign: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 0",
+              }}
+            >
+              <Wine style={{ width: 32, height: 32, color: "var(--ink-soft)", opacity: 0.5 }} />
+              <p
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  fontSize: 18,
+                  color: "var(--ink)",
+                }}
+              >
+                Cave vide
+              </p>
+              <p
+                style={{
+                  fontFamily: "var(--font-sans)",
+                  fontSize: 12,
+                  color: "var(--ink-soft)",
+                }}
+              >
+                Scannez ou ajoutez votre première bouteille.
+              </p>
+            </div>
+          </BigTile>
         </div>
       )}
+
+      {/* Spacer for FAB + bottom nav */}
+      <div style={{ height: "calc(120px + env(safe-area-inset-bottom, 0px))" }} />
 
       {/* FAB overlay */}
       {fabOpen && (
@@ -250,22 +496,55 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
 
       {/* FAB menu */}
       {fabOpen && (
-        <div className="fixed bottom-[calc(160px+env(safe-area-inset-bottom,0px))] right-4 z-30 flex flex-col items-end gap-2">
+        <div
+          className="fixed right-4 z-30 flex flex-col items-end gap-2"
+          style={{
+            bottom: "calc(160px + env(safe-area-inset-bottom, 0px))",
+          }}
+        >
           <ComingSoonOverlay featureKey="SCAN_LABEL">
             <button
               onClick={() => handleFabAction("scan")}
-              className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                background: "var(--bg)",
+                color: "var(--ink)",
+                border: "var(--border-hard)",
+                borderRadius: 999,
+                padding: "10px 16px",
+                boxShadow: "var(--shadow-hard)",
+                fontFamily: "var(--font-sans)",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
             >
-              <span className="text-sm font-medium text-foreground">Scanner une etiquette</span>
-              <Camera className="h-4 w-4 text-primary" />
+              <span>Scanner une étiquette</span>
+              <Camera className="h-4 w-4" style={{ color: "var(--rouge)" }} />
             </button>
           </ComingSoonOverlay>
           <button
             onClick={() => handleFabAction("manual")}
-            className="flex items-center gap-2.5 rounded-full bg-card border border-cave-border px-4 py-2.5 shadow-lg"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              background: "var(--bg)",
+              color: "var(--ink)",
+              border: "var(--border-hard)",
+              borderRadius: 999,
+              padding: "10px 16px",
+              boxShadow: "var(--shadow-hard)",
+              fontFamily: "var(--font-sans)",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
           >
-            <span className="text-sm font-medium text-foreground">Ajouter manuellement</span>
-            <PenLine className="h-4 w-4 text-muted-foreground" />
+            <span>Ajouter manuellement</span>
+            <PenLine className="h-4 w-4" style={{ color: "var(--ink-soft)" }} />
           </button>
         </div>
       )}
@@ -273,7 +552,15 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
       {/* FAB bouton principal */}
       <button
         onClick={() => setFabOpen(!fabOpen)}
-        className="fixed bottom-[calc(80px+env(safe-area-inset-bottom,0px))] right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95"
+        className="fixed right-4 z-30 flex h-14 w-14 items-center justify-center transition-transform active:scale-95"
+        style={{
+          bottom: "calc(80px + env(safe-area-inset-bottom, 0px))",
+          background: "var(--rouge)",
+          color: "var(--rouge-fg)",
+          border: "var(--border-hard)",
+          borderRadius: "var(--radius-fab)",
+          boxShadow: "var(--shadow-accent)",
+        }}
         aria-label="Ajouter un vin"
       >
         {fabOpen ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
@@ -291,5 +578,25 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
         onManualAdd={() => setShowAddSheet(true)}
       />
     </div>
+  )
+}
+
+/* ─── MiniChip ─── */
+function MiniChip({ label, fg }: { label: string; fg: string }) {
+  return (
+    <span
+      style={{
+        fontFamily: "var(--font-sans)",
+        fontSize: 10,
+        fontWeight: 600,
+        color: fg,
+        padding: "3px 8px",
+        border: `1.5px solid ${fg}`,
+        borderRadius: 999,
+        opacity: 0.9,
+      }}
+    >
+      {label}
+    </span>
   )
 }
