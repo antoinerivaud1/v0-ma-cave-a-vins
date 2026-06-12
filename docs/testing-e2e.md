@@ -33,3 +33,13 @@ Voir `playwright.config.ts` à la racine :
 - `testDir`: `./tests/e2e`
 - Projet unique : Chromium en viewport iPhone 13 (390×844)
 - `retries: 1`, `trace: "on-first-retry"`
+
+## Sandbox/CI sans sudo (dépendances chromium manquantes)
+
+Si `playwright test` échoue avec "Host system is missing dependencies" (ex: libxdamage1) et que sudo est indisponible :
+
+```bash
+apt-get download libxdamage1 && mkdir -p /tmp/locallibs && dpkg -x libxdamage1_*.deb /tmp/locallibs
+export LD_LIBRARY_PATH="/tmp/locallibs/usr/lib/$(uname -m)-linux-gnu:$LD_LIBRARY_PATH"
+pnpm test:e2e
+```
