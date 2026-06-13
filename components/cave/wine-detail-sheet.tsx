@@ -1,6 +1,7 @@
 "use client"
 
-import { X, Star, Sparkles, Lock } from "lucide-react"
+import { useState } from "react"
+import { X, Star, Sparkles, Lock, RefreshCw } from "lucide-react"
 import { sanitizeWineName, getLabel, getColor } from "@/lib/wine-helpers"
 import { WineBottleThumb } from "@/components/cave/wine-bottle-thumb"
 import type { Wine } from "@/data/apogee"
@@ -110,6 +111,13 @@ export function WineDetailSheet({
     role === "beta"
 
   const canEnrich = !!wineId && enrichment === null && !isLoading
+  const canReEnrich = !!wineId && enrichment !== null && !isLoading
+  const canUseEnrich =
+    rawPlan === "amateur" ||
+    rawPlan === "collector" ||
+    role === "admin" ||
+    role === "beta"
+  const [confirmReEnrich, setConfirmReEnrich] = useState(false)
 
   // Apogée unifiée — passe enrichment si disponible, fallback heuristique sinon
   const unified = getUnifiedApogee(wine, enrichment)
@@ -567,6 +575,50 @@ export function WineDetailSheet({
                 </div>
               </div>
             ) : null}
+          </div>
+        )}
+
+        {/* ── Relancer l'analyse IA (vin déjà enrichi) ─────────────────── */}
+        {canReEnrich && canUseEnrich && (
+          <div className="mx-5 mt-2 mb-1">
+            {confirmReEnrich ? (
+              <div
+                className="rounded-2xl p-3 flex flex-col gap-2"
+                style={{ background: "var(--paper-2)", border: "var(--border-hard)" }}
+              >
+                <p className="text-xs" style={{ color: "var(--ink-soft)" }}>
+                  Relancer l&rsquo;analyse ? Cela remplace les données actuelles.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setConfirmReEnrich(false)}
+                    className="flex-1 rounded-xl py-2 text-xs font-semibold"
+                    style={{ background: "var(--bg)", border: "var(--border-hard)", color: "var(--ink-soft)" }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={() => {
+                      setConfirmReEnrich(false)
+                      void enrich()
+                    }}
+                    className="flex-1 rounded-xl py-2 text-xs font-bold"
+                    style={{ background: "var(--rouge)", color: "var(--rouge-fg)" }}
+                  >
+                    Relancer
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmReEnrich(true)}
+                className="w-full flex items-center justify-center gap-2 rounded-2xl py-2.5 text-xs font-semibold"
+                style={{ background: "var(--paper-2)", border: "var(--border-hard)", color: "var(--ink-soft)" }}
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Relancer l&rsquo;analyse
+              </button>
+            )}
           </div>
         )}
 
