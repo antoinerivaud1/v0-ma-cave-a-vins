@@ -12,7 +12,7 @@ import { useStockOverrides } from "@/hooks/use-stock-overrides"
 import { useCaves } from "@/hooks/use-caves"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { formatRegion } from "@/lib/wine-helpers"
-import { getApogee } from "@/data/apogee"
+import { getUnifiedApogee, unifiedToLegacySt } from "@/lib/apogee-unified"
 import type { Wine } from "@/data/apogee"
 
 const COLOR_FILTERS = [
@@ -37,14 +37,16 @@ function normalize(value: string): string {
 }
 
 function isExceptional(wine: Wine): boolean {
-  const apogee = getApogee(wine)
+  const unified = getUnifiedApogee(wine)
   const year = parseInt(String(wine.millesime_year))
-  return !!(apogee && apogee.st === "ok" && !Number.isNaN(year) && year <= 2015)
+  return !!(unified && unifiedToLegacySt(unified) === "ok" && !Number.isNaN(year) && year <= 2015)
 }
 
 function isDrinkNow(wine: Wine): boolean {
-  const apogee = getApogee(wine)
-  return !!(apogee && (apogee.st === "urgent" || apogee.st === "late"))
+  const unified = getUnifiedApogee(wine)
+  if (!unified) return false
+  const legacySt = unifiedToLegacySt(unified)
+  return legacySt === "urgent" || legacySt === "late"
 }
 
 function normalizeForSort(value: string): string {
@@ -56,8 +58,10 @@ function normalizeForSort(value: string): string {
 
 function compareApogee(a: Wine, b: Wine, dir: "asc" | "desc"): number {
   const statusOrder = { urgent: 0, late: 1, ok: 2, wait: 3 }
-  const aStatus = getApogee(a)?.st || "wait"
-  const bStatus = getApogee(b)?.st || "wait"
+  const aUnified = getUnifiedApogee(a)
+  const bUnified = getUnifiedApogee(b)
+  const aStatus = aUnified ? unifiedToLegacySt(aUnified) : "wait"
+  const bStatus = bUnified ? unifiedToLegacySt(bUnified) : "wait"
   const comparison = statusOrder[aStatus as keyof typeof statusOrder] - statusOrder[bStatus as keyof typeof statusOrder]
   return dir === "asc" ? comparison : -comparison
 }

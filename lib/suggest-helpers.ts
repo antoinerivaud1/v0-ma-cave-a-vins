@@ -1,5 +1,5 @@
 import type { Wine } from "@/data/apogee"
-import { getApogee } from "@/data/apogee"
+import { getUnifiedApogee, unifiedToLegacySt } from "@/lib/apogee-unified"
 import { ACCORDS, FALLBACK_ACCORDS, type Accord } from "@/data/accords"
 
 export interface ScoredWine {
@@ -93,11 +93,14 @@ function scoreWine(wine: Wine, accord: Accord): number {
     if (now - year < 5) score += 3
   }
 
-  // Apogee bonus / malus
-  const apogee = getApogee(wine)
-  if (apogee) {
-    if (apogee.st === "ok") score += 2
-    else if (apogee.st === "urgent") score -= 2
+  // Apogee bonus / malus — via unifiedToLegacySt pour cohérence inter-composants
+  // Scoring identique à l'ancien getApogee() : ok +2, urgent -2, late 0, wait 0
+  const unified = getUnifiedApogee(wine)
+  if (unified) {
+    const legacySt = unifiedToLegacySt(unified)
+    if (legacySt === "ok") score += 2
+    else if (legacySt === "urgent") score -= 2
+    // late -> 0, wait -> 0 : pas de modification de score (identique à l'ancien)
   }
 
   return score
