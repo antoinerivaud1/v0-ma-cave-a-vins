@@ -75,7 +75,7 @@ function TasteBar({
           className="h-full rounded-full"
           style={{
             width: `${value}%`,
-            background: "linear-gradient(to right, var(--rouge), var(--cave-rouge-vif))",
+            background: "linear-gradient(to right, var(--rouge), var(--rouge))",
           }}
         />
       </div>

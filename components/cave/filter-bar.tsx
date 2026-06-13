@@ -26,7 +26,7 @@ export function FilterBar({ options, activeKey, onSelect }: FilterBarProps) {
             className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors ${
               isActive
                 ? "border-primary bg-primary/15 text-primary"
-                : "border-cave-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                : "border-ink bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
             }`}
           >
             {opt.label}

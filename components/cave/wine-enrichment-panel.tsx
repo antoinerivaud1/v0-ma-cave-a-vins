@@ -11,7 +11,7 @@ interface WineEnrichmentPanelProps {
 export function WineEnrichmentPanel({ enrichment, isLoading }: WineEnrichmentPanelProps) {
   if (isLoading) {
     return (
-      <div className="mt-3 flex items-center gap-2 rounded-lg border border-cave-border bg-muted/30 px-3 py-2.5">
+      <div className="mt-3 flex items-center gap-2 rounded-lg border border-ink bg-muted/30 px-3 py-2.5">
         <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
         <p className="text-xs text-muted-foreground">Enrichissement en cours…</p>
       </div>
@@ -21,7 +21,7 @@ export function WineEnrichmentPanel({ enrichment, isLoading }: WineEnrichmentPan
   if (!enrichment) return null
 
   return (
-    <div className="mt-3 flex flex-col gap-2.5 rounded-lg border border-cave-border bg-muted/20 px-3 py-3">
+    <div className="mt-3 flex flex-col gap-2.5 rounded-lg border border-ink bg-muted/20 px-3 py-3">
       {/* Header */}
       <div className="flex items-center gap-1.5">
         <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
@@ -41,7 +41,7 @@ export function WineEnrichmentPanel({ enrichment, isLoading }: WineEnrichmentPan
           {enrichment.cepages.map((c) => (
             <span
               key={c}
-              className="rounded-md border border-cave-border bg-card px-2 py-0.5 text-[11px] text-muted-foreground"
+              className="rounded-md border border-ink bg-card px-2 py-0.5 text-[11px] text-muted-foreground"
             >
               {c}
             </span>

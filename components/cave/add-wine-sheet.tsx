@@ -95,7 +95,7 @@ export function AddWineSheet({ isOpen, onOpenChange, onAdd }: AddWineSheetProps)
               value={name}
               onChange={(e) => { setName(e.target.value); setError(null) }}
               placeholder="ex. Château Margaux, Meursault..."
-              className="w-full rounded-lg border border-cave-border bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-ink bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -112,7 +112,7 @@ export function AddWineSheet({ isOpen, onOpenChange, onAdd }: AddWineSheetProps)
                   className={`flex flex-col items-center gap-1 rounded-lg border py-3 text-sm font-medium transition-colors ${
                     type === t.key
                       ? "border-primary bg-primary/10 text-primary"
-                      : "border-cave-border bg-card text-muted-foreground"
+                      : "border-ink bg-card text-muted-foreground"
                   }`}
                 >
                   <span className="text-xl">{t.emoji}</span>
@@ -134,7 +134,7 @@ export function AddWineSheet({ isOpen, onOpenChange, onAdd }: AddWineSheetProps)
                 onChange={(e) => { setMillesime(e.target.value); setError(null) }}
                 min={1900}
                 max={CURRENT_YEAR}
-                className="w-full rounded-lg border border-cave-border bg-card px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg border border-ink bg-card px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -147,7 +147,7 @@ export function AddWineSheet({ isOpen, onOpenChange, onAdd }: AddWineSheetProps)
                 onChange={(e) => setQuantity(e.target.value)}
                 min={1}
                 max={999}
-                className="w-full rounded-lg border border-cave-border bg-card px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg border border-ink bg-card px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
@@ -160,7 +160,7 @@ export function AddWineSheet({ isOpen, onOpenChange, onAdd }: AddWineSheetProps)
             <select
               value={region}
               onChange={(e) => setRegion(e.target.value)}
-              className="w-full rounded-lg border border-cave-border bg-card px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-ink bg-card px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {Object.entries(REGIONS).map(([key, r]) => (
                 <option key={key} value={key}>{r.label}</option>
@@ -178,7 +178,7 @@ export function AddWineSheet({ isOpen, onOpenChange, onAdd }: AddWineSheetProps)
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
               placeholder="ex. Domaine de la Romanée-Conti"
-              className="w-full rounded-lg border border-cave-border bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-ink bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 

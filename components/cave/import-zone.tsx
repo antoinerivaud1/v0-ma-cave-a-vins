@@ -46,7 +46,7 @@ export function ImportZone({ onFileSelected, isParsing = false, compact = false 
       <button
         onClick={() => inputRef.current?.click()}
         disabled={isParsing}
-        className="flex items-center gap-2 rounded-lg border border-cave-border bg-secondary px-4 py-3 text-sm text-foreground transition-colors hover:border-primary"
+        className="flex items-center gap-2 rounded-lg border border-ink bg-secondary px-4 py-3 text-sm text-foreground transition-colors hover:border-primary"
       >
         {isParsing ? (
           <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -82,7 +82,7 @@ export function ImportZone({ onFileSelected, isParsing = false, compact = false 
       className={`flex cursor-pointer flex-col items-center gap-4 rounded-xl border-2 border-dashed p-8 transition-colors ${
         isDragging
           ? "border-primary bg-primary/10"
-          : "border-cave-border hover:border-primary/50"
+          : "border-ink hover:border-primary/50"
       }`}
     >
       {isParsing ? (

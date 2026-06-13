@@ -81,7 +81,7 @@ export function WineMoveSheet({ wine, open, onOpenChange, onMoved }: WineMoveShe
     }
 
     return (
-      <ul className="divide-y divide-cave-border">
+      <ul className="divide-y divide-ink">
         {availableCaves.map((cave) => {
           const isActive = cave.id === activeCaveId
           const isMoving = movingTo === cave.id
@@ -96,7 +96,7 @@ export function WineMoveSheet({ wine, open, onOpenChange, onMoved }: WineMoveShe
                 <span
                   className={`h-2.5 w-2.5 shrink-0 rounded-full ${
                     isActive
-                      ? "bg-cave-bordeaux"
+                      ? "bg-rouge"
                       : "border border-muted-foreground/30 bg-transparent"
                   }`}
                 />
@@ -104,7 +104,7 @@ export function WineMoveSheet({ wine, open, onOpenChange, onMoved }: WineMoveShe
                   {sanitizeWineName(cave.name)}
                 </span>
                 {isActive && (
-                  <span className="text-xs text-cave-bordeaux">Active</span>
+                  <span className="text-xs text-rouge">Active</span>
                 )}
                 {isMoving && (
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

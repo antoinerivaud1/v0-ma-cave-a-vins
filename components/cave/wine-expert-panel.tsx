@@ -25,7 +25,7 @@ export function WineExpertPanel({ region, cepage, millesime, wineName }: WineExp
   const expert = getWineExpert(region, cepage, millesime)
 
   return (
-    <div className="rounded-lg border border-cave-border bg-secondary/50">
+    <div className="rounded-lg border border-ink bg-secondary/50">
       {/* Tasting Notes */}
       <div className="px-3.5 pt-3 pb-2.5">
         <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -48,7 +48,7 @@ export function WineExpertPanel({ region, cepage, millesime, wineName }: WineExp
       </div>
 
       {/* Service + Garde Grid */}
-      <div className="grid grid-cols-2 gap-px border-t border-cave-border bg-cave-border">
+      <div className="grid grid-cols-2 gap-px border-t border-ink bg-ink">
         {/* Service */}
         <div className="flex flex-col gap-2 bg-secondary/50 px-3.5 py-3">
           <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -87,7 +87,7 @@ export function WineExpertPanel({ region, cepage, millesime, wineName }: WineExp
       {/* Find online button */}
       <button
         onClick={() => setSearchSheetOpen(true)}
-        className="w-full border-t border-cave-border bg-secondary/50 px-3.5 py-3 flex items-center justify-between rounded-b-lg text-sm font-medium text-primary hover:bg-secondary transition-colors"
+        className="w-full border-t border-ink bg-secondary/50 px-3.5 py-3 flex items-center justify-between rounded-b-lg text-sm font-medium text-primary hover:bg-secondary transition-colors"
       >
         <span>Trouver ce vin en ligne</span>
         <ExternalLink className="h-4 w-4" />

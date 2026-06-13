@@ -22,28 +22,28 @@ function ScanViewfinder() {
       <div className="absolute inset-0">
         {/* Top-left corner */}
         <div className="absolute left-0 top-0 h-8 w-8">
-          <div className="absolute left-0 top-0 h-full w-0.5 animate-pulse bg-gradient-to-b from-cave-gold to-transparent" />
-          <div className="absolute left-0 top-0 h-0.5 w-full animate-pulse bg-gradient-to-r from-cave-gold to-transparent" />
+          <div className="absolute left-0 top-0 h-full w-0.5 animate-pulse bg-gradient-to-b from-gold to-transparent" />
+          <div className="absolute left-0 top-0 h-0.5 w-full animate-pulse bg-gradient-to-r from-gold to-transparent" />
         </div>
         {/* Top-right corner */}
         <div className="absolute right-0 top-0 h-8 w-8">
-          <div className="absolute right-0 top-0 h-full w-0.5 animate-pulse bg-gradient-to-b from-cave-gold to-transparent" />
-          <div className="absolute right-0 top-0 h-0.5 w-full animate-pulse bg-gradient-to-l from-cave-gold to-transparent" />
+          <div className="absolute right-0 top-0 h-full w-0.5 animate-pulse bg-gradient-to-b from-gold to-transparent" />
+          <div className="absolute right-0 top-0 h-0.5 w-full animate-pulse bg-gradient-to-l from-gold to-transparent" />
         </div>
         {/* Bottom-left corner */}
         <div className="absolute bottom-0 left-0 h-8 w-8">
-          <div className="absolute bottom-0 left-0 h-full w-0.5 animate-pulse bg-gradient-to-t from-cave-gold to-transparent" />
-          <div className="absolute bottom-0 left-0 h-0.5 w-full animate-pulse bg-gradient-to-r from-cave-gold to-transparent" />
+          <div className="absolute bottom-0 left-0 h-full w-0.5 animate-pulse bg-gradient-to-t from-gold to-transparent" />
+          <div className="absolute bottom-0 left-0 h-0.5 w-full animate-pulse bg-gradient-to-r from-gold to-transparent" />
         </div>
         {/* Bottom-right corner */}
         <div className="absolute bottom-0 right-0 h-8 w-8">
-          <div className="absolute bottom-0 right-0 h-full w-0.5 animate-pulse bg-gradient-to-t from-cave-gold to-transparent" />
-          <div className="absolute bottom-0 right-0 h-0.5 w-full animate-pulse bg-gradient-to-l from-cave-gold to-transparent" />
+          <div className="absolute bottom-0 right-0 h-full w-0.5 animate-pulse bg-gradient-to-t from-gold to-transparent" />
+          <div className="absolute bottom-0 right-0 h-0.5 w-full animate-pulse bg-gradient-to-l from-gold to-transparent" />
         </div>
       </div>
 
       {/* Inner frame with subtle border */}
-      <div className="absolute inset-4 rounded-lg border border-cave-bordeaux/30 bg-cave-bordeaux/5" />
+      <div className="absolute inset-4 rounded-lg border border-rouge/30 bg-rouge/5" />
 
       {/* Wine bottle silhouette */}
       <div className="relative flex flex-col items-center gap-3">
@@ -73,7 +73,7 @@ function ScanViewfinder() {
         </svg>
 
         {/* Scan line animation */}
-        <div className="absolute inset-x-4 top-8 h-0.5 animate-[scan_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-cave-gold/60 to-transparent" />
+        <div className="absolute inset-x-4 top-8 h-0.5 animate-[scan_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
       </div>
     </div>
   )
@@ -189,7 +189,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired 
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 flex min-h-[65dvh] flex-col rounded-t-2xl border-t border-cave-bordeaux/30 bg-background">
+      <div className="absolute bottom-0 left-0 right-0 flex min-h-[65dvh] flex-col rounded-t-2xl border-t border-rouge/30 bg-background">
         {/* Drag Handle */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="h-1 w-10 rounded-full bg-neutral-600" />
@@ -201,7 +201,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired 
             <h2 className="font-serif text-xl font-semibold text-white">
               Scanner une etiquette
             </h2>
-            <span className="inline-flex items-center rounded-full bg-cave-bordeaux px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cave-gold">
+            <span className="inline-flex items-center rounded-full bg-rouge px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-gold">
               Bientôt
             </span>
           </div>
@@ -232,7 +232,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired 
                 {/* Primary Button */}
                 <button
                   onClick={() => cameraInputRef.current?.click()}
-                  className="flex items-center justify-center gap-3 rounded-xl bg-cave-bordeaux py-4 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+                  className="flex items-center justify-center gap-3 rounded-xl bg-rouge py-4 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
                 >
                   <Camera className="h-5 w-5" />
                   Prendre une photo
@@ -241,7 +241,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired 
                 {/* Secondary Button */}
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center justify-center gap-3 rounded-xl border border-cave-bordeaux py-4 text-sm font-medium text-neutral-300 transition-all hover:bg-white/5 active:scale-[0.98]"
+                  className="flex items-center justify-center gap-3 rounded-xl border border-rouge py-4 text-sm font-medium text-neutral-300 transition-all hover:bg-white/5 active:scale-[0.98]"
                 >
                   <ImagePlus className="h-5 w-5" />
                   Choisir depuis la galerie
@@ -260,11 +260,11 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired 
                 <img
                   src={preview}
                   alt="Etiquette"
-                  className="h-48 w-auto rounded-xl object-contain border border-cave-bordeaux"
+                  className="h-48 w-auto rounded-xl object-contain border border-rouge"
                 />
               )}
               <div className="flex items-center gap-3 text-sm text-neutral-400">
-                <Loader2 className="h-5 w-5 animate-spin text-cave-gold" />
+                <Loader2 className="h-5 w-5 animate-spin text-gold" />
                 Analyse en cours...
               </div>
             </div>
@@ -279,7 +279,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired 
               <p className="max-w-xs text-center text-sm text-neutral-400">{errorMsg}</p>
               <button
                 onClick={reset}
-                className="rounded-xl border border-cave-bordeaux px-8 py-3 text-sm font-medium text-white transition-all hover:bg-white/5"
+                className="rounded-xl border border-rouge px-8 py-3 text-sm font-medium text-white transition-all hover:bg-white/5"
               >
                 Reessayer
               </button>
@@ -293,14 +293,14 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired 
                 <img
                   src={preview}
                   alt="Etiquette"
-                  className="mx-auto h-36 w-auto rounded-xl object-contain border border-cave-bordeaux"
+                  className="mx-auto h-36 w-auto rounded-xl object-contain border border-rouge"
                 />
               )}
 
               {result?.confidence === "low" && (
-                <div className="flex items-center gap-2 rounded-lg border border-cave-gold/30 bg-cave-gold/10 px-4 py-3">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-cave-gold" />
-                  <p className="text-xs text-cave-gold">
+                <div className="flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 px-4 py-3">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-gold" />
+                  <p className="text-xs text-gold">
                     Lecture partielle — verifiez les informations.
                   </p>
                 </div>
@@ -322,7 +322,7 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired 
                       type={type || "text"}
                       value={value}
                       onChange={(e) => setter(e.target.value)}
-                      className="w-full rounded-lg border border-cave-border bg-card px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-1"
+                      className="w-full rounded-lg border border-ink bg-card px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-1"
                     />
                   </div>
                 ))}
@@ -331,13 +331,13 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired 
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={reset}
-                  className="flex-1 rounded-xl border border-cave-bordeaux py-3.5 text-sm font-medium text-white transition-all hover:bg-white/5"
+                  className="flex-1 rounded-xl border border-rouge py-3.5 text-sm font-medium text-white transition-all hover:bg-white/5"
                 >
                   Rescanner
                 </button>
                 <button
                   onClick={handleConfirm}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-cave-bordeaux py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-rouge py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
                 >
                   <Check className="h-4 w-4" />
                   Ajouter

@@ -7,7 +7,7 @@ interface CaveBadgeProps {
 
 const variantClasses: Record<string, string> = {
   gold: "bg-primary/15 text-primary border-primary/30",
-  muted: "bg-secondary text-muted-foreground border-cave-border",
+  muted: "bg-secondary text-muted-foreground border-ink",
   urgent: "bg-destructive/15 text-destructive border-destructive/30",
   ok: "bg-emerald-950/40 text-emerald-400 border-emerald-800/40",
   wait: "bg-sky-950/40 text-sky-400 border-sky-800/40",

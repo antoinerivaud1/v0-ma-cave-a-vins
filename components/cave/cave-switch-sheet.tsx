@@ -39,7 +39,7 @@ export function CaveSwitchSheet({
         </SheetHeader>
         <Separator />
         <ul
-          className="overflow-y-auto flex-1 divide-y divide-cave-border"
+          className="overflow-y-auto flex-1 divide-y divide-ink"
           style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
         >
           {caves.map((cave) => {
