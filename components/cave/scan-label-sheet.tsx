@@ -79,6 +79,54 @@ function ScanViewfinder() {
   )
 }
 
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(new Error("Lecture du fichier impossible"))
+    reader.readAsDataURL(file)
+  })
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = () => reject(new Error("Chargement de l image impossible"))
+    img.src = src
+  })
+}
+
+// Redimensionne l image cote client (canvas) pour rester sous la limite de corps Vercel
+// et eviter les payloads enormes des photos Android. Renvoie un JPEG base64.
+async function downscaleImage(
+  file: File,
+  maxDim = 1600,
+  quality = 0.8
+): Promise<{ base64: string; mediaType: string; previewUrl: string }> {
+  const dataUrl = await readFileAsDataUrl(file)
+  const img = await loadImage(dataUrl)
+  let width = img.naturalWidth || img.width
+  let height = img.naturalHeight || img.height
+  if (width > maxDim || height > maxDim) {
+    const scale = maxDim / Math.max(width, height)
+    width = Math.round(width * scale)
+    height = Math.round(height * scale)
+  }
+  const canvas = document.createElement("canvas")
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext("2d")
+  if (!ctx) {
+    const fallback = dataUrl.split(",")[1] ?? ""
+    return { base64: fallback, mediaType: file.type || "image/jpeg", previewUrl: dataUrl }
+  }
+  ctx.drawImage(img, 0, 0, width, height)
+  const outUrl = canvas.toDataURL("image/jpeg", quality)
+  const base64 = outUrl.split(",")[1] ?? ""
+  return { base64, mediaType: "image/jpeg", previewUrl: outUrl }
+}
+
 export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired }: ScanLabelSheetProps) {
   const [step, setStep] = useState<ScanStep>("capture")
   const [preview, setPreview] = useState<string | null>(null)
@@ -112,53 +160,56 @@ export function ScanLabelSheet({ isOpen, onOpenChange, onAdd, onPaywallRequired 
   }
 
   const processImage = useCallback(async (file: File) => {
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      const dataUrl = e.target?.result as string
-      setPreview(dataUrl)
-      setStep("scanning")
+    setStep("scanning")
+    setPreview(null)
 
-      try {
-        const base64 = dataUrl.split(",")[1]
-        const mediaType = file.type || "image/jpeg"
+    try {
+      const { base64, mediaType, previewUrl } = await downscaleImage(file)
+      setPreview(previewUrl)
 
-        const res = await fetch("/api/scan-label", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageBase64: base64, mediaType }),
-        })
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000)
+      const res = await fetch("/api/scan-label", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64, mediaType }),
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId))
 
-        if (!res.ok) {
-          if (res.status === 403) {
-            onOpenChange(false)
-            onPaywallRequired?.()
-            return
-          }
-          const err = await res.json()
-          if (res.status === 503) {
-            setErrorMsg("La cle API n'est pas encore configuree. Contactez l'administrateur.")
-          } else {
-            setErrorMsg(err.error || "Erreur lors de l'analyse")
-          }
-          setStep("error")
+      if (!res.ok) {
+        if (res.status === 403) {
+          onOpenChange(false)
+          onPaywallRequired?.()
           return
         }
-
-        const data: ScanLabelResult = await res.json()
-        setResult(data)
-        setWineName(data.wineName || data.domaine || "")
-        setDomaine(data.domaine || "")
-        setMillesime(data.millesime ? String(data.millesime) : "")
-        setRegion(data.region || "")
-        setAppellation(data.appellation || "")
-        setStep("result")
-      } catch (err: unknown) {
-        setErrorMsg("Impossible d'analyser l'image. Reessayez.")
+        if (res.status === 503) {
+          setErrorMsg("La cle API n'est pas encore configuree. Contactez l'administrateur.")
+        } else {
+          const err = await res.json().catch(() => null)
+          setErrorMsg((err && err.error) || "Erreur lors de l'analyse")
+        }
         setStep("error")
+        return
       }
+
+      const data: ScanLabelResult = await res.json()
+      setResult(data)
+      setWineName(data.wineName || data.domaine || "")
+      setDomaine(data.domaine || "")
+      setMillesime(data.millesime ? String(data.millesime) : "")
+      setRegion(data.region || "")
+      setAppellation(data.appellation || "")
+      setStep("result")
+    } catch (err: unknown) {
+      const aborted = err instanceof DOMException && err.name === "AbortError"
+      setErrorMsg(
+        aborted
+          ? "Analyse trop longue. Verifiez votre connexion et reessayez."
+          : "Impossible d'analyser l'image. Reessayez."
+      )
+      setStep("error")
     }
-    reader.readAsDataURL(file)
-  }, [])
+  }, [onOpenChange, onPaywallRequired])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
