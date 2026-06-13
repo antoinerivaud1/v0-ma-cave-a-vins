@@ -84,7 +84,7 @@ export function WineCardActions({
     <>
       {/* Quantity edit UI */}
       {isEditingQuantity && (
-        <div className="flex items-center gap-1.5 px-3.5 py-2 border-t border-cave-border bg-card/50">
+        <div className="flex items-center gap-1.5 px-3.5 py-2 border-t border-ink bg-card/50">
           <input
             type="number"
             min="0"

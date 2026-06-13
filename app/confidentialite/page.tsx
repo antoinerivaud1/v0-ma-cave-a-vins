@@ -14,12 +14,12 @@ export default function ConfidentialitePage() {
     >
       {/* Header */}
       <header
-        className="sticky top-0 z-10 flex items-center gap-3 border-b border-cave-border bg-background/90 px-4 pb-3 backdrop-blur"
+        className="sticky top-0 z-10 flex items-center gap-3 border-b border-ink bg-background/90 px-4 pb-3 backdrop-blur"
         style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top, 0px))" }}
       >
         <Link
           href="/"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card border border-cave-border"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card border border-ink"
           aria-label="Retour"
         >
           <ChevronLeft className="h-4 w-4 text-muted-foreground" />
@@ -155,7 +155,7 @@ export default function ConfidentialitePage() {
             l&apos;application à tout moment
             directement depuis l'application :
           </p>
-          <div className="rounded-xl border border-cave-border bg-card px-4 py-3 text-muted-foreground">
+          <div className="rounded-xl border border-ink bg-card px-4 py-3 text-muted-foreground">
             <strong className="text-foreground">Réglages</strong>
             {" → "}
             <span className="text-destructive font-medium">Réinitialiser la cave</span>
@@ -204,7 +204,7 @@ export default function ConfidentialitePage() {
           </p>
           <a
             href="mailto:antoine.rivaud1@gmail.com"
-            className="inline-block rounded-lg border border-cave-border bg-card px-4 py-2.5 text-sm font-medium text-primary"
+            className="inline-block rounded-lg border border-ink bg-card px-4 py-2.5 text-sm font-medium text-primary"
           >
             antoine.rivaud1@gmail.com
           </a>
@@ -225,7 +225,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function SubSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-cave-border bg-card px-4 py-3 space-y-1.5">
+    <div className="rounded-xl border border-ink bg-card px-4 py-3 space-y-1.5">
       <p className="text-xs font-semibold uppercase tracking-widest text-primary">{title}</p>
       <div className="text-muted-foreground">{children}</div>
     </div>
@@ -233,5 +233,5 @@ function SubSection({ title, children }: { title: string; children: React.ReactN
 }
 
 function Divider() {
-  return <hr className="border-cave-border" />
+  return <hr className="border-ink" />
 }

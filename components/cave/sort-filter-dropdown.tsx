@@ -63,7 +63,7 @@ export function SortFilterDropdown({ cave, state, onStateChange }: SortFilterDro
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="mx-4 my-2 flex items-center justify-between gap-2 border-cave-border bg-card text-foreground hover:border-primary/30 hover:text-foreground"
+          className="mx-4 my-2 flex items-center justify-between gap-2 border-ink bg-card text-foreground hover:border-primary/30 hover:text-foreground"
         >
           <span>
             Trier par...

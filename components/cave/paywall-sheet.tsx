@@ -46,8 +46,8 @@ export function PaywallSheet({
           style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
         >
           {/* Icône feature */}
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-cave-bordeaux/10">
-            <Camera className="h-9 w-9 text-cave-bordeaux" />
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-rouge/10">
+            <Camera className="h-9 w-9 text-rouge" />
           </div>
 
           {/* Texte */}
@@ -61,8 +61,8 @@ export function PaywallSheet({
           </div>
 
           {/* Badge plan */}
-          <div className="flex items-center gap-2 rounded-xl border border-cave-bordeaux/20 bg-cave-bordeaux/5 px-4 py-3">
-            <Lock className="h-4 w-4 shrink-0 text-cave-bordeaux" />
+          <div className="flex items-center gap-2 rounded-xl border border-rouge/20 bg-rouge/5 px-4 py-3">
+            <Lock className="h-4 w-4 shrink-0 text-rouge" />
             <div>
               <p className="text-sm font-medium text-foreground">
                 Plan {planLabel}
@@ -77,14 +77,14 @@ export function PaywallSheet({
           <div className="flex w-full flex-col gap-3">
             <button
               onClick={handleUpgrade}
-              className="w-full rounded-xl bg-cave-bordeaux py-3.5 text-sm font-medium text-white"
+              className="w-full rounded-xl bg-rouge py-3.5 text-sm font-medium text-white"
             >
               Passer à {planLabel}
             </button>
             {onManualAdd && (
               <button
                 onClick={handleManualAdd}
-                className="w-full rounded-xl border border-cave-border py-3.5 text-sm font-medium text-foreground"
+                className="w-full rounded-xl border border-ink py-3.5 text-sm font-medium text-foreground"
               >
                 Ajouter manuellement
               </button>

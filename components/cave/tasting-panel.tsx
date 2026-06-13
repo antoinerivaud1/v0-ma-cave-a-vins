@@ -46,7 +46,7 @@ export function TastingPanel({ tasting, isSaving, onSave, onDelete }: TastingPan
 
   if (!editing && tasting) {
     return (
-      <div className="mb-3 flex flex-col gap-2 rounded-lg border border-cave-border bg-amber-950/10 px-3 py-2.5">
+      <div className="mb-3 flex flex-col gap-2 rounded-lg border border-ink bg-amber-950/10 px-3 py-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" />
@@ -83,7 +83,7 @@ export function TastingPanel({ tasting, isSaving, onSave, onDelete }: TastingPan
   }
 
   return (
-    <div className="mb-3 flex flex-col gap-3 rounded-lg border border-cave-border bg-amber-950/10 px-3 py-3">
+    <div className="mb-3 flex flex-col gap-3 rounded-lg border border-ink bg-amber-950/10 px-3 py-3">
       <div className="flex items-center gap-1.5">
         <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" />
         <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-500">
@@ -119,7 +119,7 @@ export function TastingPanel({ tasting, isSaving, onSave, onDelete }: TastingPan
         onChange={(e) => setComment(e.target.value)}
         placeholder="Notes de dégustation, impressions..."
         rows={3}
-        className="w-full resize-none rounded-md border border-cave-border bg-background px-2.5 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+        className="w-full resize-none rounded-md border border-ink bg-background px-2.5 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
       />
 
       <div className="flex gap-2">
@@ -144,7 +144,7 @@ export function TastingPanel({ tasting, isSaving, onSave, onDelete }: TastingPan
               setComment(tasting.comment)
               setEditing(false)
             }}
-            className="rounded-md border border-cave-border px-3 py-1.5 text-xs text-muted-foreground"
+            className="rounded-md border border-ink px-3 py-1.5 text-xs text-muted-foreground"
           >
             Annuler
           </button>

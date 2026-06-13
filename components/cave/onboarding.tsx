@@ -69,7 +69,7 @@ export function Onboarding({ onImport, onAddManual }: OnboardingProps) {
               onKeyDown={(e) => e.key === "Enter" && handleNameSubmit()}
               placeholder="Votre prenom"
               autoFocus
-              className="w-full rounded-xl border border-cave-border bg-card px-4 py-3.5 text-center font-serif text-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-xl border border-ink bg-card px-4 py-3.5 text-center font-serif text-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
 
             <button
@@ -103,14 +103,14 @@ export function Onboarding({ onImport, onAddManual }: OnboardingProps) {
             )}
 
             <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-cave-border" />
+              <div className="h-px flex-1 bg-ink" />
               <span className="text-xs text-muted-foreground">ou</span>
-              <div className="h-px flex-1 bg-cave-border" />
+              <div className="h-px flex-1 bg-ink" />
             </div>
 
             <button
               onClick={handleSkip}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-cave-border bg-card py-3.5 text-sm font-medium text-foreground transition-colors hover:border-primary/30"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-ink bg-card py-3.5 text-sm font-medium text-foreground transition-colors hover:border-primary/30"
             >
               Commencer avec une cave vide
             </button>

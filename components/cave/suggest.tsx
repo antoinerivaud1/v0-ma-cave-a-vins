@@ -19,13 +19,12 @@ export function Suggest({ cave }: SuggestProps) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [recording, setRecording] = useState(false)
-   
+
   const recognitionRef = useRef<any>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const { getOverrideForWine } = useStockOverrides()
   const availableWines = cave.filter((wine) => getEffectiveWineState(wine, getOverrideForWine(wine)).isVisible)
 
-  /** Cleanup recognition on unmount */
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
@@ -37,20 +36,17 @@ export function Suggest({ cave }: SuggestProps) {
   const runSearch = useCallback(
     async (text: string) => {
       setError(null)
-
       const trimmed = text.trim()
       if (!trimmed) {
         setError("Decrivez un repas ou un plat pour obtenir un accord.")
         setResult(null)
         return
       }
-
       if (availableWines.length === 0) {
         setError("Votre cave est vide. Importez des vins pour commencer.")
         setResult(null)
         return
       }
-
       setLoading(true)
       try {
         const response = await suggestService.getSuggestions(trimmed, availableWines)
@@ -65,16 +61,11 @@ export function Suggest({ cave }: SuggestProps) {
     [availableWines]
   )
 
-  const handleSearch = useCallback(() => {
-    runSearch(query)
-  }, [query, runSearch])
+  const handleSearch = useCallback(() => { runSearch(query) }, [query, runSearch])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Enter") {
-        e.preventDefault()
-        handleSearch()
-      }
+      if (e.key === "Enter") { e.preventDefault(); handleSearch() }
     },
     [handleSearch]
   )
@@ -84,44 +75,30 @@ export function Suggest({ cave }: SuggestProps) {
       typeof window !== "undefined"
         ? window.SpeechRecognition || window.webkitSpeechRecognition
         : null
-
     if (!SpeechRecognitionAPI) {
       alert("La reconnaissance vocale necessite Chrome ou un navigateur compatible.")
       return
     }
-
     if (recording && recognitionRef.current) {
       recognitionRef.current.stop()
       setRecording(false)
       return
     }
-
     const recognition = new SpeechRecognitionAPI()
     recognition.lang = "fr-FR"
     recognition.interimResults = false
     recognition.maxAlternatives = 1
-
     recognition.onresult = (event: any) => {
       const transcript = event.results[0]?.[0]?.transcript || ""
       setQuery(transcript)
       setRecording(false)
-      // Auto-search after voice input
       setTimeout(() => {
         const trimmed = transcript.trim()
-        if (trimmed && availableWines.length > 0) {
-          runSearch(trimmed)
-        }
+        if (trimmed && availableWines.length > 0) runSearch(trimmed)
       }, 100)
     }
-
-    recognition.onerror = () => {
-      setRecording(false)
-    }
-
-    recognition.onend = () => {
-      setRecording(false)
-    }
-
+    recognition.onerror = () => { setRecording(false) }
+    recognition.onend = () => { setRecording(false) }
     recognitionRef.current = recognition
     recognition.start()
     setRecording(true)
@@ -135,13 +112,14 @@ export function Suggest({ cave }: SuggestProps) {
       <div className="mt-4 flex flex-col gap-3 px-4">
         <div className="flex items-center gap-2">
           <div
-            className={`flex flex-1 items-center gap-2 rounded-xl border bg-card px-3 py-2.5 transition-colors ${
+            className={`flex flex-1 items-center gap-2 rounded-xl px-3 py-2.5 transition-colors ${
               recording
-                ? "animate-pulse border-destructive"
-                : "border-cave-border focus-within:border-primary/50"
+                ? "animate-pulse border-2 border-destructive bg-[var(--bg)]"
+                : "border-2 border-ink bg-[var(--bg)] focus-within:border-rouge"
             }`}
+            style={{ boxShadow: "2px 2px 0 var(--border-hard)" }}
           >
-            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <Search className="h-4 w-4 shrink-0 text-ink-soft" />
             <input
               ref={inputRef}
               type="text"
@@ -149,16 +127,14 @@ export function Suggest({ cave }: SuggestProps) {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ex : poulet roti, saumon..."
-              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+              className="w-full bg-transparent text-sm text-ink placeholder:text-ink-soft focus:outline-none"
               aria-label="Decrivez un repas"
               disabled={loading}
             />
             <button
               onClick={startVoice}
               className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                recording
-                  ? "bg-destructive/20 text-destructive"
-                  : "text-muted-foreground hover:text-foreground"
+                recording ? "bg-destructive/20 text-destructive" : "text-ink-soft hover:text-ink"
               }`}
               aria-label={recording ? "Arreter la dictee" : "Dicter un plat"}
               disabled={loading}
@@ -171,40 +147,44 @@ export function Suggest({ cave }: SuggestProps) {
         <button
           onClick={handleSearch}
           disabled={loading}
-          className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-60"
+          className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-60"
+          style={{
+            background: "var(--rouge)",
+            color: "var(--rouge-fg)",
+            border: "2px solid var(--border-hard)",
+            boxShadow: "2px 2px 0 var(--shadow-hard)",
+          }}
         >
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <UtensilsCrossed className="h-4 w-4" />
-          )}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UtensilsCrossed className="h-4 w-4" />}
           {loading ? "Recherche..." : "Accorder"}
         </button>
       </div>
 
       {/* Error state */}
       {error && !loading && (
-        <div className="mx-4 mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3">
-          <p className="text-sm text-destructive">{error}</p>
+        <div
+          className="mx-4 mt-4 rounded-xl border-2 border-ink bg-paper-2 px-4 py-3"
+          style={{ boxShadow: "2px 2px 0 var(--shadow-hard)" }}
+        >
+          <p className="text-sm text-ink">{error}</p>
         </div>
       )}
 
       {/* Loading state */}
       {loading && (
         <div className="mx-4 mt-8 flex flex-col items-center gap-3 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Recherche des meilleurs accords...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-rouge" />
+          <p className="text-sm text-ink-soft">Recherche des meilleurs accords...</p>
         </div>
       )}
 
       {/* Results */}
       {result && !loading && (
         <div className="mt-6 flex flex-col gap-4 px-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-soft">
             {"Accord pour : "}
-            <span className="font-medium text-foreground">{`\u00AB ${query.trim()} \u00BB`}</span>
+            <span className="font-medium text-ink">{"« " + query.trim() + " »"}</span>
           </p>
-
           {result.results.length > 0 ? (
             result.results.map((sr, i) => (
               <SuggestionCard
@@ -217,9 +197,12 @@ export function Suggest({ cave }: SuggestProps) {
               />
             ))
           ) : (
-            <div className="rounded-xl border border-cave-border bg-card p-5 text-center">
-              <p className="font-serif text-base text-foreground">Aucune correspondance</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+            <div
+              className="rounded-xl border-2 border-ink bg-paper-2 p-5 text-center"
+              style={{ boxShadow: "2px 2px 0 var(--shadow-hard)" }}
+            >
+              <p className="font-serif italic text-base text-ink">Aucune correspondance</p>
+              <p className="mt-1 text-sm text-ink-soft">
                 Aucun vin de votre cave ne correspond a ce type d{"'"}accord.
               </p>
             </div>
@@ -229,17 +212,24 @@ export function Suggest({ cave }: SuggestProps) {
 
       {/* Empty state */}
       {!result && !error && !loading && (
-        <div className="mx-4 mt-10 flex flex-col items-center gap-3 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-            <UtensilsCrossed className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <p className="font-serif text-lg font-semibold text-foreground">
-              Quel est le menu ?
-            </p>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              Decrivez un plat ou une occasion et nous vous suggererons les meilleurs vins de votre cave.
-            </p>
+        <div
+          className="mx-4 mt-10 rounded-xl border-2 border-ink bg-paper-2 p-6"
+          style={{ boxShadow: "2px 2px 0 var(--shadow-hard)" }}
+        >
+          <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-ink-soft">
+            Accord mets & vins
+          </p>
+          <p className="font-serif italic text-2xl text-ink leading-tight">
+            Quel est le menu ?
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            Decrivez un plat ou une occasion et nous vous suggererons les meilleurs vins de votre cave.
+          </p>
+          <div
+            className="mt-4 flex h-10 w-10 items-center justify-center rounded-full"
+            style={{ background: "var(--rouge)", color: "var(--rouge-fg)" }}
+          >
+            <UtensilsCrossed className="h-5 w-5" />
           </div>
         </div>
       )}
