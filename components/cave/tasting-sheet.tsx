@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Star, Loader2, Camera } from "lucide-react"
+import { Loader2, Camera } from "lucide-react"
 import {
   Sheet,
   SheetContent,
@@ -12,6 +12,7 @@ import { ScanLabelSheet } from "./scan-label-sheet"
 import { PaywallSheet } from "./paywall-sheet"
 import { useAuth } from "@/hooks/use-auth"
 import { sanitizeWineName } from "@/lib/wine-helpers"
+import { Stars } from "@/components/cave/synthese/stars"
 import type { TastingInput } from "@/hooks/use-tastings"
 
 interface TastingSheetProps {
@@ -28,6 +29,86 @@ interface WineData {
   region: string | null
   appellation: string | null
   wine_type: string | null
+}
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  border: "var(--border-hard)",
+  borderRadius: "var(--radius-card)",
+  background: "var(--bg)",
+  color: "var(--ink)",
+  padding: "10px 12px",
+  fontSize: 14,
+  fontFamily: "var(--font-sans)",
+  outline: "none",
+  boxSizing: "border-box",
+}
+
+const btnPrimary: React.CSSProperties = {
+  width: "100%",
+  background: "var(--rouge)",
+  color: "var(--rouge-fg)",
+  border: "var(--border-hard)",
+  borderRadius: "var(--radius-card)",
+  boxShadow: "var(--shadow-hard)",
+  padding: "12px 18px",
+  fontSize: 14,
+  fontWeight: 700,
+  fontFamily: "var(--font-sans)",
+  cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 8,
+}
+
+function WineRecap({ wine, stars }: { wine: WineData; stars?: number }) {
+  return (
+    <div
+      style={{
+        border: "var(--border-hard)",
+        borderRadius: "var(--radius-card)",
+        background: "var(--paper-2)",
+        color: "var(--ink)",
+        padding: "10px 12px",
+      }}
+    >
+      <p
+        style={{
+          fontFamily: "var(--font-display)",
+          fontStyle: "italic",
+          fontWeight: 500,
+          fontSize: 17,
+          lineHeight: 1.2,
+          color: "var(--ink)",
+        }}
+      >
+        {wine.wine_name}
+        {wine.millesime && (
+          <span
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontStyle: "normal",
+              fontSize: 13,
+              fontWeight: 700,
+              marginLeft: 8,
+              color: "var(--ink-soft)",
+            }}
+          >
+            {wine.millesime}
+          </span>
+        )}
+      </p>
+      {wine.region && (
+        <p style={{ fontSize: 11, color: "var(--ink-soft)", marginTop: 2 }}>{wine.region}</p>
+      )}
+      {stars !== undefined && stars > 0 && (
+        <div style={{ marginTop: 6 }}>
+          <Stars n={stars} size={13} color="var(--apogee)" />
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function TastingSheet({ open, onOpenChange, onSave }: TastingSheetProps) {
@@ -59,7 +140,13 @@ export function TastingSheet({ open, onOpenChange, onSave }: TastingSheetProps) 
     onOpenChange(open)
   }
 
-  const handleScanResult = (wine: { wine_name?: string; millesime_year?: string | number; wine_region?: string; wine_appellation?: string; wine_type?: string }) => {
+  const handleScanResult = (wine: {
+    wine_name?: string
+    millesime_year?: string | number
+    wine_region?: string
+    wine_appellation?: string
+    wine_type?: string
+  }) => {
     setWineData({
       wine_name: sanitizeWineName(wine.wine_name) || "Vin inconnu",
       millesime: wine.millesime_year ? String(wine.millesime_year) : null,
@@ -113,173 +200,194 @@ export function TastingSheet({ open, onOpenChange, onSave }: TastingSheetProps) 
       <SheetContent
         side="bottom"
         className="max-h-[90dvh] flex flex-col rounded-t-2xl z-[60]"
+        style={{ background: "var(--bg)", color: "var(--ink)" }}
       >
         <SheetHeader className="flex-shrink-0">
-          <SheetTitle className="text-left">Nouvelle dégustation</SheetTitle>
+          <SheetTitle
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: "var(--ink-soft)",
+              textAlign: "left",
+            }}
+          >
+            Nouvelle dégustation
+          </SheetTitle>
         </SheetHeader>
 
         <div className="overflow-y-auto flex-1 px-1 pb-4">
 
-            {/* STEP 1 — Identifier le vin */}
-            {step === "identify" && (
-              <div className="flex flex-col gap-4 pt-2">
-                <p className="text-sm text-muted-foreground">
-                  Ce vin ne sera pas ajouté à ta cave automatiquement.
-                </p>
+          {step === "identify" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 8 }}>
+              <p style={{ fontSize: 13, color: "var(--ink-soft)" }}>
+                Ce vin ne sera pas ajouté à ta cave automatiquement.
+              </p>
 
-                {/* Scanner */}
-                <button
-                  onClick={() => {
-                    if (isPremium) {
-                      setScanOpen(true)
-                    } else {
-                      setShowScanPaywall(true)
-                    }
-                  }}
-                  className="flex items-center gap-3 rounded-xl border border-cave-border bg-card px-4 py-3 text-left"
-                >
-                  <Camera className="h-5 w-5 text-primary shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">Scanner l&apos;étiquette</p>
-                    <p className="text-xs text-muted-foreground">Identification automatique par IA</p>
-                  </div>
-                </button>
-
-                <div className="flex items-center gap-2">
-                  <div className="h-px flex-1 bg-cave-border" />
-                  <span className="text-xs text-muted-foreground">ou</span>
-                  <div className="h-px flex-1 bg-cave-border" />
-                </div>
-
-                {/* Saisie manuelle */}
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="text"
-                    value={manualName}
-                    onChange={(e) => setManualName(e.target.value)}
-                    placeholder="Nom du vin"
-                    className="rounded-md border border-cave-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                  <input
-                    type="text"
-                    value={manualMillesime}
-                    onChange={(e) => setManualMillesime(e.target.value)}
-                    placeholder="Millésime (optionnel)"
-                    className="rounded-md border border-cave-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                  <button
-                    onClick={handleManualNext}
-                    disabled={!manualName.trim()}
-                    className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40"
-                  >
-                    Continuer
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 2 — Évaluer */}
-            {step === "rate" && wineData && (
-              <div className="flex flex-col gap-4 pt-2">
-                <div className="rounded-lg border border-cave-border bg-muted/20 px-3 py-2.5">
-                  <p className="font-cormorant text-base text-foreground">
-                    {wineData.wine_name}
-                    {wineData.millesime && (
-                      <span className="ml-1.5 font-sans text-sm font-semibold text-muted-foreground">
-                        {wineData.millesime}
-                      </span>
-                    )}
-                  </p>
-                  {wineData.region && (
-                    <p className="text-xs text-muted-foreground">{wineData.region}</p>
-                  )}
-                </div>
-
+              <button
+                onClick={() => {
+                  if (isPremium) {
+                    setScanOpen(true)
+                  } else {
+                    setShowScanPaywall(true)
+                  }
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  border: "var(--border-hard)",
+                  borderRadius: "var(--radius-card)",
+                  background: "var(--paper-2)",
+                  padding: "12px 14px",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  color: "var(--ink)",
+                }}
+              >
+                <Camera style={{ width: 20, height: 20, color: "var(--rouge)", flexShrink: 0 }} />
                 <div>
-                  <p className="text-sm font-medium mb-3">Votre note</p>
-                  <div className="flex gap-2 justify-center">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <button
-                        key={i}
-                        onMouseEnter={() => setHovered(i)}
-                        onMouseLeave={() => setHovered(0)}
-                        onClick={() => setStars(i)}
-                        className="p-1 touch-manipulation"
-                        aria-label={`${i} étoile${i > 1 ? "s" : ""}`}
-                      >
-                        <Star
-                          className={`h-8 w-8 transition-colors ${
-                            i <= (hovered || stars)
-                              ? "fill-amber-400 text-amber-400"
-                              : "text-muted-foreground"
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>
+                    Scanner l&apos;étiquette
+                  </p>
+                  <p style={{ fontSize: 12, color: "var(--ink-soft)" }}>
+                    Identification automatique par IA
+                  </p>
                 </div>
+              </button>
 
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ height: 1, flex: 1, background: "var(--ink-faint)" }} />
+                <span style={{ fontSize: 11, color: "var(--ink-soft)" }}>ou</span>
+                <div style={{ height: 1, flex: 1, background: "var(--ink-faint)" }} />
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <input
+                  type="text"
+                  value={manualName}
+                  onChange={(e) => setManualName(e.target.value)}
+                  placeholder="Nom du vin"
+                  style={inputStyle}
+                />
+                <input
+                  type="text"
+                  value={manualMillesime}
+                  onChange={(e) => setManualMillesime(e.target.value)}
+                  placeholder="Millésime (optionnel)"
+                  style={inputStyle}
+                />
                 <button
-                  onClick={() => setStep("comment")}
-                  disabled={stars === 0}
-                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40"
+                  onClick={handleManualNext}
+                  disabled={!manualName.trim()}
+                  style={{ ...btnPrimary, opacity: !manualName.trim() ? 0.4 : 1 }}
                 >
                   Continuer
                 </button>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* STEP 3 — Commentaire + save */}
-            {step === "comment" && wineData && (
-              <div className="flex flex-col gap-4 pt-2">
-                <div className="rounded-lg border border-cave-border bg-muted/20 px-3 py-2.5">
-                  <p className="font-cormorant text-base text-foreground">
-                    {wineData.wine_name}
-                    {wineData.millesime && (
-                      <span className="ml-1.5 font-sans text-sm font-semibold text-muted-foreground">
-                        {wineData.millesime}
-                      </span>
-                    )}
-                  </p>
-                  <div className="flex gap-0.5 mt-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star
-                        key={i}
-                        className={`h-3.5 w-3.5 ${
-                          i <= stars ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
+          {step === "rate" && wineData && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 8 }}>
+              <WineRecap wine={wineData} />
 
-                <textarea
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Notes de dégustation, impressions... (optionnel)"
-                  rows={4}
-                  className="w-full resize-none rounded-md border border-cave-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40"
+              <div>
+                <p
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "var(--ink-soft)",
+                    marginBottom: 12,
+                  }}
                 >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Sauvegarde...
-                    </>
-                  ) : (
-                    "Sauvegarder la dégustation"
-                  )}
-                </button>
+                  Votre note
+                </p>
+                <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <button
+                      key={i}
+                      onMouseEnter={() => setHovered(i)}
+                      onMouseLeave={() => setHovered(0)}
+                      onClick={() => setStars(i)}
+                      style={{
+                        padding: 4,
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        color: i <= (hovered || stars) ? "var(--apogee)" : "var(--ink-faint)",
+                      }}
+                      aria-label={`${i} étoile${i > 1 ? "s" : ""}`}
+                    >
+                      <svg
+                        width={32}
+                        height={32}
+                        viewBox="0 0 24 24"
+                        fill={i <= (hovered || stars) ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinejoin="round"
+                      >
+                        <polygon points="12 2 15 9 22 9.3 16.5 14 18.3 21 12 17.3 5.7 21 7.5 14 2 9.3 9 9" />
+                      </svg>
+                    </button>
+                  ))}
+                </div>
               </div>
-            )}
+
+              <button
+                onClick={() => setStep("comment")}
+                disabled={stars === 0}
+                style={{ ...btnPrimary, opacity: stars === 0 ? 0.4 : 1 }}
+              >
+                Continuer
+              </button>
+            </div>
+          )}
+
+          {step === "comment" && wineData && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 8 }}>
+              <WineRecap wine={wineData} stars={stars} />
+
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Notes de dégustation, impressions... (optionnel)"
+                rows={4}
+                style={{
+                  ...inputStyle,
+                  resize: "none",
+                  fontFamily: "var(--font-display)",
+                  fontStyle: comment ? "italic" : "normal",
+                  fontSize: 15,
+                  lineHeight: 1.4,
+                }}
+              />
+
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                style={{ ...btnPrimary, opacity: isSaving ? 0.6 : 1 }}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} />
+                    Sauvegarde...
+                  </>
+                ) : (
+                  "Sauvegarder la dégustation"
+                )}
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Scanner réutilisé — déplacé INSIDE SheetContent */}
+        {/* ScanLabelSheet INSIDE SheetContent — fix PR #96 */}
         <ScanLabelSheet
           isOpen={scanOpen}
           onOpenChange={setScanOpen}

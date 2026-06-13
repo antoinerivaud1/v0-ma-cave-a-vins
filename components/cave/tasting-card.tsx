@@ -1,78 +1,156 @@
 "use client"
 
-import { Star } from "lucide-react"
 import { sanitizeWineName } from "@/lib/wine-helpers"
+import { Stars } from "@/components/cave/synthese/stars"
+import { Watermark } from "@/components/cave/synthese/watermark"
 import type { Tasting } from "@/hooks/use-tastings"
 
 interface TastingCardProps {
   tasting: Tasting
 }
 
+const wineSurface: Record<string, { bg: string; fg: string; label: string }> = {
+  wine_red:       { bg: "var(--rouge)", fg: "var(--rouge-fg)", label: "rouge" },
+  wine_white:     { bg: "var(--blanc)", fg: "var(--blanc-fg)", label: "blanc" },
+  wine_sparkling: { bg: "var(--bulle)", fg: "var(--bulle-fg)", label: "bulle" },
+  wine_rose:      { bg: "var(--rose)",  fg: "var(--rose-fg)",  label: "rosé"  },
+}
+
+const fallbackSurface = { bg: "var(--paper-2)", fg: "var(--ink)", label: "vin" }
+
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
+  return new Date(iso)
+    .toLocaleDateString("fr-FR", { day: "numeric", month: "short" })
+    .replace(".", "")
+    .toUpperCase()
 }
 
 export function TastingCard({ tasting }: TastingCardProps) {
+  const surf = (tasting.wine_type ? wineSurface[tasting.wine_type] : undefined) ?? fallbackSurface
+  const wineName = sanitizeWineName(tasting.wine_name) || "Vin inconnu"
+
+  const sub = [tasting.appellation, tasting.millesime ? String(tasting.millesime) : null]
+    .filter(Boolean)
+    .join(" · ")
+
   return (
-    <div className="rounded-xl border border-cave-border bg-card px-3.5 py-3">
-      {/* En-tête : nom + étoiles */}
-      <div className="flex items-start justify-between gap-2 mb-1">
-        <div className="min-w-0">
-          <p className="truncate font-cormorant text-base font-normal text-foreground">
-            {sanitizeWineName(tasting.wine_name) || "Vin inconnu"}
-            {tasting.millesime && (
-              <span className="ml-1.5 font-sans text-base font-semibold tabular-nums text-muted-foreground">
-                {tasting.millesime}
-              </span>
-            )}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {[tasting.appellation, tasting.region].filter(Boolean).join(" · ")}
-          </p>
+    <div
+      style={{
+        background: surf.bg,
+        color: surf.fg,
+        border: "var(--border-hard)",
+        borderRadius: "var(--radius-card)",
+        boxShadow: "var(--shadow-hard)",
+        padding: 14,
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+      }}
+    >
+      <Watermark color={surf.fg} opacity={0.16}>{surf.label}</Watermark>
+
+      {/* Header: date kicker + stars */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              color: surf.fg,
+              opacity: 0.7,
+              textTransform: "uppercase",
+            }}
+          >
+            {formatDate(tasting.tasted_at)}
+          </div>
+          <div
+            style={{
+              fontFamily: "var(--font-display)",
+              fontStyle: "italic",
+              fontWeight: 500,
+              fontSize: 19,
+              lineHeight: 1.1,
+              marginTop: 3,
+              color: surf.fg,
+            }}
+          >
+            {wineName}
+          </div>
+          {sub && (
+            <div
+              style={{
+                fontSize: 10,
+                opacity: 0.75,
+                marginTop: 3,
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              {sub}
+            </div>
+          )}
         </div>
-        <div className="flex shrink-0 gap-0.5 mt-0.5">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Star
-              key={i}
-              className={`h-3.5 w-3.5 ${
-                i <= tasting.stars
-                  ? "fill-amber-400 text-amber-400"
-                  : "text-muted-foreground/30"
-              }`}
-            />
-          ))}
+        <div style={{ flexShrink: 0, paddingTop: 2 }}>
+          <Stars n={tasting.stars} size={13} color={surf.fg} />
         </div>
       </div>
 
-      {/* Commentaire perso */}
+      {/* Comment / quote */}
       {tasting.comment && (
-        <p className="text-xs text-muted-foreground italic mb-2">{tasting.comment}</p>
+        <p
+          style={{
+            position: "relative",
+            zIndex: 1,
+            fontFamily: "var(--font-display)",
+            fontStyle: "italic",
+            fontSize: 14,
+            lineHeight: 1.3,
+            color: surf.fg,
+            opacity: 0.95,
+            borderTop: `1px solid ${surf.fg}`,
+            paddingTop: 8,
+            marginTop: 4,
+          }}
+        >
+          &laquo; {tasting.comment} &raquo;
+        </p>
       )}
 
-      {/* Badge note web */}
+      {/* Web score */}
       {tasting.web_score && (
-        <div className="flex items-start gap-1.5 rounded-md bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 px-2 py-1.5 mb-2">
-          <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400 mt-0.5" />
-          <div>
-            <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
-              {tasting.web_score}
-              {tasting.web_source && ` · ${tasting.web_source}`}
-            </span>
-            {tasting.web_summary && (
-              <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed mt-0.5">
-                {tasting.web_summary}
-              </p>
-            )}
-          </div>
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 11,
+            fontFamily: "var(--font-sans)",
+            opacity: 0.85,
+            borderTop: `1px solid ${surf.fg}`,
+            paddingTop: 8,
+            marginTop: tasting.comment ? 0 : 4,
+          }}
+        >
+          <Stars n={1} size={11} color={surf.fg} />
+          <span style={{ fontWeight: 700 }}>
+            {tasting.web_score}
+            {tasting.web_source && ` · ${tasting.web_source}`}
+          </span>
         </div>
       )}
-
-      {/* Date */}
-      <p className="text-[10px] text-muted-foreground/60">{formatDate(tasting.tasted_at)}</p>
     </div>
   )
 }
