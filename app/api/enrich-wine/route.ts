@@ -79,7 +79,11 @@ Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks, avec exactement 
 }
 Estime les valeurs de taste_profile d'après le style du vin, son appellation et son millésime.
 food_pairings doit contenir 3 à 5 accords mets-vins concis (ex: "Agneau rôti", "Fromages affinés").
-Si une information est introuvable, utilise null pour les champs string et [] pour les tableaux. apogee doit être null si inconnu. bottle_image_url et taste_profile doivent être null si introuvables.`
+Si une information est introuvable, utilise null pour les champs string et [] pour les tableaux. apogee doit être null si inconnu. bottle_image_url et taste_profile doivent être null si introuvables.
+Utilise SYSTEMATIQUEMENT l'outil de recherche web pour vérifier le domaine, le producteur, les cépages et les notes critiques AVANT de répondre. Ne réponds jamais de mémoire pour un domaine peu connu.
+Le nom du vin peut contenir des fautes d'orthographe ou de reconnaissance (ex : "Gwentremener" pour "Gewurztraminer") : corrige-les et cherche la graphie correcte.
+Si, après recherche, le domaine reste introuvable, mets les champs concernés à null. N'invente JAMAIS de description vague du type "domaine confidentiel" ou "producteur peu connu" : c'est interdit.
+Ton dernier message doit être UNIQUEMENT le JSON valide, sans aucun texte avant ou après, sans markdown, sans backticks.`
 
 function sanitizeImageUrl(url: string | null | undefined): string | null {
   if (!url) return null
@@ -90,6 +94,13 @@ function sanitizeImageUrl(url: string | null | undefined): string | null {
   } catch {
     return null
   }
+}
+
+function extractJsonObject(text: string): string {
+  const start = text.indexOf("{")
+  const end = text.lastIndexOf("}")
+  if (start === -1 || end === -1 || end < start) return text
+  return text.slice(start, end + 1)
 }
 
 async function checkUserPlan(
@@ -206,17 +217,36 @@ export async function POST(req: NextRequest) {
       .filter(Boolean)
       .join(", ")
 
-    const response = await client.messages.create({
+    const enrichMessages: Anthropic.MessageParam[] = [
+      {
+        role: "user",
+        content: `Recherche sur le web puis donne-moi des informations vérifiées sur ce vin : ${query}. Retourne uniquement le JSON demandé.`,
+      },
+    ]
+
+    const enrichParams: Anthropic.MessageCreateParamsNonStreaming = {
       model: "claude-sonnet-4-6",
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: SYSTEM_PROMPT,
-      messages: [
+      tools: [
         {
-          role: "user",
-          content: `Donne-moi des informations sur ce vin : ${query}. Retourne le JSON demandé.`,
+          type: "web_search_20250305",
+          name: "web_search",
+          max_uses: 5,
         },
       ],
-    })
+      messages: enrichMessages,
+    }
+
+    let response = await client.messages.create(enrichParams)
+
+    // La recherche web peut suspendre le tour (pause_turn) : on relance jusqu'à finalisation
+    let pauseGuard = 0
+    while (response.stop_reason === "pause_turn" && pauseGuard < 2) {
+      enrichMessages.push({ role: "assistant", content: response.content })
+      response = await client.messages.create(enrichParams)
+      pauseGuard++
+    }
 
     const finalText = (response.content as Array<{ type: string; text?: string }>)
       .filter((block) => block.type === "text")
@@ -230,7 +260,7 @@ export async function POST(req: NextRequest) {
 
     let parsedModelResponse: unknown
     try {
-      parsedModelResponse = JSON.parse(finalText)
+      parsedModelResponse = JSON.parse(extractJsonObject(finalText))
     } catch {
       return NextResponse.json({ error: "Réponse invalide du modèle" }, { status: 502 })
     }
