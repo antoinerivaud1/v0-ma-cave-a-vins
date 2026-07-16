@@ -13,6 +13,7 @@ import { useTastings } from "@/hooks/use-tastings"
 import { TastingPanel } from "./tasting-panel"
 import { Watermark } from "./synthese/watermark"
 import type { Wine } from "@/data/apogee"
+import type { WineEnrichment } from "@/lib/types"
 import type { Cave } from "@/hooks/use-caves"
 import {
   AlertDialog,
@@ -28,6 +29,7 @@ import {
 interface WineCardProps {
   wine: Wine
   caves: Cave[]
+  dbEnrichment?: WineEnrichment | null
   onWineSelect?: (wine: Wine) => void
   onWineUpdate?: (updates: Partial<Wine>) => void
   onMoved?: () => void
@@ -59,7 +61,7 @@ const colorBadgeVariant: Record<string, "gold" | "muted"> = {
   unknown: "muted",
 }
 
-export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: WineCardProps) {
+export function WineCard({ wine, caves, dbEnrichment, onWineSelect, onWineUpdate, onMoved }: WineCardProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showLastBottleDialog, setShowLastBottleDialog] = useState(false)
   const { getOverrideForWine, setOverrideForWine } = useStockOverrides()
@@ -104,7 +106,7 @@ export function WineCard({ wine, caves, onWineSelect, onWineUpdate, onMoved }: W
     setIsSavingTasting(false)
   }
 
-  const unifiedApogee = getUnifiedApogee(wine)
+  const unifiedApogee = getUnifiedApogee(wine, dbEnrichment ?? null)
   const color = getColor(wine.wine_type || "")
   const label = getLabel(wine.wine_type || "")
   const region = formatRegion(wine.wine_region || "")

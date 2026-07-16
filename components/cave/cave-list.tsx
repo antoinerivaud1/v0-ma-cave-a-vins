@@ -13,7 +13,9 @@ import { useCaves } from "@/hooks/use-caves"
 import { getEffectiveWineState } from "@/lib/stock-overrides"
 import { formatRegion } from "@/lib/wine-helpers"
 import { getUnifiedApogee, unifiedToLegacySt } from "@/lib/apogee-unified"
+import { useWineEnrichmentsBatch } from "@/hooks/use-wine-enrichment"
 import type { Wine } from "@/data/apogee"
+import type { WineEnrichment } from "@/lib/types"
 
 const COLOR_FILTERS = [
   { key: "all", label: "Tous" },
@@ -36,14 +38,14 @@ function normalize(value: string): string {
     .toLowerCase()
 }
 
-function isExceptional(wine: Wine): boolean {
-  const unified = getUnifiedApogee(wine)
+function isExceptional(wine: Wine, enrichment?: WineEnrichment | null): boolean {
+  const unified = getUnifiedApogee(wine, enrichment ?? null)
   const year = parseInt(String(wine.millesime_year))
   return !!(unified && unifiedToLegacySt(unified) === "ok" && !Number.isNaN(year) && year <= 2015)
 }
 
-function isDrinkNow(wine: Wine): boolean {
-  const unified = getUnifiedApogee(wine)
+function isDrinkNow(wine: Wine, enrichment?: WineEnrichment | null): boolean {
+  const unified = getUnifiedApogee(wine, enrichment ?? null)
   if (!unified) return false
   const legacySt = unifiedToLegacySt(unified)
   return legacySt === "urgent" || legacySt === "late"
@@ -56,10 +58,15 @@ function normalizeForSort(value: string): string {
     .toLowerCase()
 }
 
-function compareApogee(a: Wine, b: Wine, dir: "asc" | "desc"): number {
+function compareApogee(
+  a: Wine,
+  b: Wine,
+  dir: "asc" | "desc",
+  enrichMap: Map<string, WineEnrichment>
+): number {
   const statusOrder = { urgent: 0, late: 1, ok: 2, wait: 3 }
-  const aUnified = getUnifiedApogee(a)
-  const bUnified = getUnifiedApogee(b)
+  const aUnified = getUnifiedApogee(a, a.id ? enrichMap.get(a.id) ?? null : null)
+  const bUnified = getUnifiedApogee(b, b.id ? enrichMap.get(b.id) ?? null : null)
   const aStatus = aUnified ? unifiedToLegacySt(aUnified) : "wait"
   const bStatus = bUnified ? unifiedToLegacySt(bUnified) : "wait"
   const comparison = statusOrder[aStatus as keyof typeof statusOrder] - statusOrder[bStatus as keyof typeof statusOrder]
@@ -87,6 +94,7 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
   const [showAddSheet, setShowAddSheet] = useState(false)
   const { getOverrideForWine, isLoaded } = useStockOverrides()
   const { caves } = useCaves()
+  const { map: enrichMap } = useWineEnrichmentsBatch(cave.map((w) => w.id))
 
   const filtered = useMemo(() => {
     if (!isLoaded) return []
@@ -116,9 +124,9 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
     }
 
     if (levelFilter === "exceptional") {
-      result = result.filter(isExceptional)
+      result = result.filter((wine) => isExceptional(wine, wine.id ? enrichMap.get(wine.id) : null))
     } else if (levelFilter === "drink") {
-      result = result.filter(isDrinkNow)
+      result = result.filter((wine) => isDrinkNow(wine, wine.id ? enrichMap.get(wine.id) : null))
     }
 
     if (sortFilterState.selectedRegions.length > 0) {
@@ -139,11 +147,11 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
 
     if (sortFilterState.apogeeSort) {
       const apogeeDirection = sortFilterState.apogeeSort
-      result = [...result].sort((a, b) => compareApogee(a, b, apogeeDirection))
+      result = [...result].sort((a, b) => compareApogee(a, b, apogeeDirection, enrichMap))
     }
 
     return result
-  }, [cave, colorFilter, levelFilter, searchQuery, sortFilterState, isLoaded, getOverrideForWine])
+  }, [cave, colorFilter, levelFilter, searchQuery, sortFilterState, isLoaded, getOverrideForWine, enrichMap])
 
   const archivedWines = useMemo(() => {
     if (!isLoaded) return []
@@ -329,6 +337,7 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
             key={`${wine.wine_name}-${wine.millesime_year}-${index}`}
             wine={wine}
             caves={caves}
+            dbEnrichment={wine.id ? enrichMap.get(wine.id) : null}
             onWineSelect={onWineSelect}
             onMoved={onWineMove}
           />
@@ -373,7 +382,7 @@ export function CaveList({ cave, initialFilter, onAddWine, onWineSelect, onWineM
             <div className="mt-2 flex flex-col gap-2.5 px-4 pb-4">
               {archivedWines.map((wine, index) => (
                 <div key={`archived-${wine.wine_name}-${wine.millesime_year}-${index}`} className="relative">
-                  <WineCard wine={wine} caves={caves} />
+                  <WineCard wine={wine} caves={caves} dbEnrichment={wine.id ? enrichMap.get(wine.id) : null} />
                   <div className="absolute top-3 right-3 z-10">
                     <span
                       style={{
