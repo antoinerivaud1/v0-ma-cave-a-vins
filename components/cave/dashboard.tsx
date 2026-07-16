@@ -10,6 +10,7 @@ import { ScanLabelSheet } from "./scan-label-sheet"
 import { PaywallSheet } from "./paywall-sheet"
 import { ComingSoonOverlay } from "./coming-soon-badge"
 import { getUnifiedApogee, unifiedToLegacySt } from "@/lib/apogee-unified"
+import { useWineEnrichmentsBatch } from "@/hooks/use-wine-enrichment"
 import { getDailyTip } from "@/data/wine-tips"
 import { useAuth } from "@/hooks/use-auth"
 import { useUserProfile } from "@/hooks/use-user-profile"
@@ -45,6 +46,7 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
   const { getOverrideForWine } = useStockOverrides()
   const { profile } = useUserProfile()
   const tip = getDailyTip()
+  const { map: enrichMap } = useWineEnrichmentsBatch(cave.map((w) => w.id))
 
   const stats = useMemo(() => {
     const active = cave.filter((w) => {
@@ -59,14 +61,14 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
       w.wine_type === "wine_white_sparkling" || w.wine_color === "Petillant" || w.wine_color === "Effervescent"
     ).reduce((s, w) => s + getEffectiveWineState(w, getOverrideForWine(w)).quantity, 0)
     const toDrink = active.filter((w) => {
-      const unified = getUnifiedApogee(w)
+      const unified = getUnifiedApogee(w, w.id ? enrichMap.get(w.id) ?? null : null)
       if (!unified) return false
       const legacySt = unifiedToLegacySt(unified)
       return legacySt === "urgent" || legacySt === "late"
     })
     const recent = active.filter((w) => (w as any)._manual).slice(0, 3)
     return { total, reds, whites, sparkling, toDrink, recent }
-  }, [cave, getOverrideForWine])
+  }, [cave, getOverrideForWine, enrichMap])
 
   const handleFabAction = (action: "scan" | "manual") => {
     setFabOpen(false)
@@ -268,7 +270,7 @@ export function Dashboard({ cave, onNavigate, onAddWine, activeCave, caveCount, 
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {stats.toDrink.slice(0, 3).map((wine, i) => {
-              const unified = getUnifiedApogee(wine)
+              const unified = getUnifiedApogee(wine, wine.id ? enrichMap.get(wine.id) ?? null : null)
               const isUrgent = !!unified && unifiedToLegacySt(unified) === "urgent"
               return (
                 <div

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import type { WineEnrichment } from "@/lib/types"
 import type { WineEnrichment as LegacyWineEnrichment } from "@/app/api/enrich-wine/route"
 import type { Wine } from "@/data/apogee"
@@ -257,4 +257,93 @@ export function useWineEnrichment(
   }, [wineId, user])
 
   return { enrichment, isLoading, error, refresh, enrich }
+}
+
+
+// ── Hook batch Supabase (MA-74) ──────────────────────────────────────────────
+// Charge en UNE requête les enrichissements de plusieurs vins (dashboard, liste),
+// pour aligner l'apogée de la carte sur celle de la fiche détail. Réutilise le
+// cache mémoire session `enrichmentCache` — la fiche détail en bénéficie ensuite.
+
+export function useWineEnrichmentsBatch(
+  wineIds: (string | null | undefined)[]
+): { map: Map<string, WineEnrichment>; isLoading: boolean } {
+  const { user } = useAuth()
+
+  const ids = useMemo(() => {
+    const seen = new Set<string>()
+    for (const id of wineIds) {
+      if (typeof id === "string" && id.length > 0) seen.add(id)
+    }
+    return Array.from(seen).sort()
+  }, [wineIds])
+  const idsKey = ids.join(",")
+
+  const [map, setMap] = useState<Map<string, WineEnrichment>>(() => {
+    const m = new Map<string, WineEnrichment>()
+    for (const id of ids) {
+      const cached = enrichmentCache.get(id)
+      if (cached) m.set(id, cached)
+    }
+    return m
+  })
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function load() {
+      if (!user || ids.length === 0) {
+        setMap(new Map())
+        setIsLoading(false)
+        return
+      }
+
+      // Amorçage depuis le cache session — 0 requête pour les ids déjà connus
+      const next = new Map<string, WineEnrichment>()
+      const missing: string[] = []
+      for (const id of ids) {
+        const cached = enrichmentCache.get(id)
+        if (cached) next.set(id, cached)
+        else missing.push(id)
+      }
+      setMap(new Map(next))
+
+      if (missing.length === 0) {
+        setIsLoading(false)
+        return
+      }
+
+      setIsLoading(true)
+      try {
+        const supabase = createClient()
+        const { data } = await supabase
+          .from("wine_enrichments")
+          .select("*")
+          .in("wine_id", missing)
+          .eq("user_id", user.id)
+
+        if (cancelled) return
+        if (data) {
+          for (const row of data as WineEnrichment[]) {
+            enrichmentCache.set(row.wine_id, row)
+            next.set(row.wine_id, row)
+          }
+          setMap(new Map(next))
+        }
+      } catch {
+        // silencieux — l'apogée retombe sur l'heuristique
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey, user?.id])
+
+  return { map, isLoading }
 }
