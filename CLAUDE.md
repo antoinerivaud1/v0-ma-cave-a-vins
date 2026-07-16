@@ -35,6 +35,7 @@ Ces règles s'appliquent à chaque ligne de code produite. Aucune exception.
 - **TypeScript strict** — pas de `any`, pas de `@ts-ignore`
 - **Branches GitHub** — uniquement `claude/nom-feature` — jamais push direct sur `develop` ou `main`
 - **isPremium** — toujours lire depuis `use-auth.ts`, ne jamais dupliquer la logique
+- **Apogée : source unique** — `getUnifiedApogee(wine, enrichment)` de `lib/apogee-unified.ts`, en passant l'enrichissement Supabase (`useWineEnrichment` / `useWineEnrichmentsBatch`). Jamais `getApogee()` en direct dans un composant, jamais d'appel sans enrichissement quand le vin a un `id` (MA-74)
 
 ---
 
@@ -105,6 +106,9 @@ tests/
 - **app/page.tsx** : SEUL point de fusion Excel + vins manuels — ne pas dupliquer
 - **develop-sprint-3-work** : contient du code UX non intégré — cherry-pick uniquement après inspection
 - **useCaves()** : NE PAS instancier dans chaque WineCardActions (N+1) — remonter au niveau shell
+- **Pause Supabase** : plan gratuit, projet INACTIVE après ~1 semaine d'inactivité → app KO (erreur 521). Restaurer via MCP Supabase (`restore_project`, ~2-3 min) avant toute session de test
+- **Tests unitaires** : dans `tests/` UNIQUEMENT (vitest `include: tests/**/*.test.ts`) — un test colocalisé dans `lib/` n'est jamais exécuté
+- **Preview Vercel protégée** : l'URL brute renvoie un mur d'auth Vercel — générer un lien `_vercel_share` pour toute validation manuelle
 
 ---
 
