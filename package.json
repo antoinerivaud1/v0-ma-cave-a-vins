@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build"
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
+    "check:conventions": "bash scripts/checks-a.sh . origin/develop"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",
