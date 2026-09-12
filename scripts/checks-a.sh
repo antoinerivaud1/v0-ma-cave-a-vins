@@ -108,10 +108,14 @@ fi
 
 # --- A7. package.json => pnpm-lock.yaml ---
 if echo "$CHANGED" | grep -qx "package.json"; then
-  if echo "$CHANGED" | grep -qx "pnpm-lock.yaml"; then
+  # Seules les lignes de dependances (cle: version) exigent le lockfile ; les scripts non.
+  DEP_LINES=$(git diff -U0 "$BASE"...HEAD -- package.json | grep -E '^[+-]\s*"[^"]+":\s*"[\^~>=<]?[0-9]' || true)
+  if [ -z "$DEP_LINES" ]; then
+    report "PASS" "A7" "package.json modifie (scripts/meta uniquement, pas de dependance)"
+  elif echo "$CHANGED" | grep -qx "pnpm-lock.yaml"; then
     report "PASS" "A7" "package.json + lockfile presents"
   else
-    report "FAIL" "A7" "package.json modifie sans pnpm-lock.yaml"
+    report "FAIL" "A7" "dependances modifiees dans package.json sans pnpm-lock.yaml"
   fi
 else
   report "PASS" "A7" "package.json non modifie"

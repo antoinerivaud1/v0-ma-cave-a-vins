@@ -22,7 +22,7 @@ Le produit web est fonctionnellement complet pour la Phase 3 (cave, multi-cave, 
 | MA-103 | B1 Prérequis : restaurer Supabase + build vert | In Progress (Supabase restauré, checks verts sur develop) |
 | MA-110 | Bump Next.js 16.3.5 (CVE critical) | In Progress (branche prête) |
 | MA-111 | Versionner `tastings`, dédoublonner migrations | Todo (branche prête) |
-| MA-113 | Bug stock_overrides : sync cloud jamais fonctionnelle | Todo (décision produit) |
+| MA-113 | Stock cloud : migration + use-stock-overrides sur Supabase | Todo, Urgent (décidé, bloque B3) |
 | MA-104 | B2 Device : ajout de vin (manuel + scan) | Backlog |
 | MA-105 | B3 Device : cycle de vie du stock | Backlog (dépend de MA-113) |
 | MA-106 | B4 Device : enrichissement IA | Backlog |
@@ -69,13 +69,12 @@ Restaurée après pause. Données intactes : 33 vins, 4 dégustations, 15 enrich
 
 ---
 
-## Décisions ouvertes (à trancher avec Antoine)
+## Décisions prises le 12 septembre 2026 (Antoine)
 
-1. MA-113 : le stock devient cloud (Supabase) ou reste local par design ?
-2. MA-7 : `taste-profile-bars.tsx` a-t-il encore un sens après Synthèse v1 ?
-3. MA-12 / MA-41 : la politique de confidentialité est-elle à jour ? Fermer MA-12 si oui.
-4. MA-67 : PR #64 (conflit PROJECT_STATE.md) : fermer.
-5. Après Phase B : Phase 4 RevenueCat ou MA-93 (enrichissement en masse) en premier ?
+1. MA-113 : le stock devient **cloud, Supabase source de vérité** avec cache local. Priorité Urgent, bloque B3 (MA-105). `[OVERRIDE]` accordé sur `use-stock-overrides.ts` pour ce ticket.
+2. MA-7 (taste-profile-bars) : annulé, obsolète depuis Synthèse v1.
+3. MA-12 : fermé, la politique de confidentialité couvre auth, sync, Anthropic, dégustations (réserve : nommer Apple/Google Sign In avant Phase 6). MA-67 : annulé.
+4. Après Phase B : **dette technique d'abord** (MA-51 dépendances, MA-87 branches orphelines, MA-46 suggest-service factice), avant RevenueCat ou MA-93.
 
 ---
 
