@@ -1,7 +1,14 @@
-# CLAUDE.md — Ma Cave à Vins
+# CLAUDE.md : Ma Cave à Vins
 
-> Fichier de contexte pour Claude Code et Codex. Toujours synchronisé avec `.cursorrules`.
-> Dernière mise à jour : 18 avril 2026
+> Source unique de vérité pour tout agent (Claude Code, Cowork, Cursor).
+> `.cursorrules` est une copie : `cp CLAUDE.md .cursorrules` dans le même commit.
+> Dernière mise à jour : 12 septembre 2026 (audit de reprise, MA-85)
+
+---
+
+## Produit en une ligne
+
+App web mobile-first de gestion de cave à vin, freemium (Gratuit / Amateur / Collectionneur), avec scan d'étiquette et enrichissement IA. Solo dev : Antoine. Cible finale : App Store + Google Play via Expo (Phase 5).
 
 ---
 
@@ -9,171 +16,174 @@
 
 | Élément | Valeur |
 |---|---|
-| Framework | Next.js App Router |
-| UI | shadcn/ui + Tailwind CSS |
-| Langage | TypeScript strict |
-| Package manager | pnpm — toujours sync pnpm-lock.yaml |
-| Déploiement | Vercel — auto sur push main |
-| Base de données | Supabase (chriywwlnihmclbrjmta.supabase.co) |
-| Auth | Supabase Auth — email + Apple + Google |
-| Tracking produit | Linear (linear.app/ma-cave-a-vin) |
-| Future | Expo / React Native (Phase 5) |
+| Framework | Next.js 16 App Router (Turbopack), React 19 |
+| UI | shadcn/ui + Radix + Tailwind CSS 4, design system **Synthèse v1** (juin 2026) |
+| Langage | TypeScript strict (`tsconfig.json`), pas de `any`, pas de `@ts-ignore` |
+| Package manager | pnpm 10 (`pnpm-workspace.yaml` syntaxe v10), lockfile toujours commité |
+| Base de données | Supabase `chriywwlnihmclbrjmta` (eu-central-1), Postgres 17, RLS partout |
+| Auth | Supabase Auth : email + Apple + Google (`components/cave/auth-provider.tsx`, `hooks/use-auth.ts`) |
+| IA | Anthropic SDK : Claude Vision (`/api/scan-label`), enrichissement avec `web_search` natif (`/api/enrich-wine`) |
+| Déploiement | Vercel : `main` → prod, `develop` → preview staging, chaque branche → preview |
+| Tests | Vitest 4 (`tests/*.test.ts`, 35 tests) + Playwright (`tests/e2e/`, 2 specs) |
+| Tracking | Linear (linear.app/ma-cave-a-vin), 100 % des tickets. Notion : roadmap/business uniquement |
 
 ---
 
 ## Règles NON-NÉGOCIABLES
 
-Ces règles s'appliquent à chaque ligne de code produite. Aucune exception.
+Chaque ligne de code produite. Aucune exception.
 
-- **Double quotes uniquement** — `'text'` provoque un bug Safari iOS → toujours `"text"`
-- **sanitizeWineName() obligatoire** — sur tous les noms de vins affichés (`lib/wine-helpers.ts`)
-- **Safe Area iOS** — `env(safe-area-inset-top/bottom)` sur tous les headers/footers
-- **Bottom sheets** — `max-h-[90dvh] flex flex-col` + `overflow-y-auto flex-1` + `z-[60]` minimum
-- **WineExpertPanel** — doit toujours recevoir `wineName` en prop
-- **Pas de swipe iOS** — abandonné définitivement — menu 3 points uniquement
-- **Couleurs** — jamais de hex hardcodé (#722F37) — utiliser `bg-cave-bordeaux` etc.
-- **TypeScript strict** — pas de `any`, pas de `@ts-ignore`
-- **Branches GitHub** — uniquement `claude/nom-feature` — jamais push direct sur `develop` ou `main`
-- **isPremium** — toujours lire depuis `use-auth.ts`, ne jamais dupliquer la logique
-- **Apogée : source unique** — `getUnifiedApogee(wine, enrichment)` de `lib/apogee-unified.ts`, en passant l'enrichissement Supabase (`useWineEnrichment` / `useWineEnrichmentsBatch`). Jamais `getApogee()` en direct dans un composant, jamais d'appel sans enrichissement quand le vin a un `id` (MA-74)
-
----
-
-## Flux de travail obligatoire
-
-```
-Analyse → Proposition → Validation Antoine ✋ → Code → Push claude/* → PR develop → test iPhone → PR develop→main
-```
-
-Chaque PR cible `develop`. Jamais `main` directement.
+- **Double quotes uniquement** : `'text'` provoque un bug Safari iOS. Règle ESLint `quotes: double` active.
+- **`sanitizeWineName()`** (`lib/wine-helpers.ts`) sur tout nom de vin affiché.
+- **Safe area iOS** : `env(safe-area-inset-top/bottom)` sur tout header / footer / bottom nav.
+- **Bottom sheets** : `max-h-[90dvh] flex flex-col` + contenu `overflow-y-auto flex-1` + `z-[60]` minimum. Un composant overlay ouvert depuis un sheet se rend **à l'intérieur** de `<SheetContent>` (sinon Radix le traite comme un tap « outside » et ferme le sheet).
+- **Pas de swipe iOS** : menu 3 points uniquement.
+- **Couleurs** : jamais de hex hardcodé. Tokens Synthèse v1 uniquement (`ink`, `rouge`, `gold`, `cream`, surfaces par type de vin). Les alias `cave-*` ont été supprimés (MA-99).
+- **Thème** : light uniquement. Le dark mode a été retiré (MA-94), ne pas le réintroduire.
+- **`isPremium`** : toujours depuis `useAuth()` (`rawPlan === "amateur" | "collector"` ou `role === "admin" | "beta"`). Jamais `plan === "premium"` : cette valeur n'existe pas.
+- **Apogée : source unique** `getUnifiedApogee(wine, enrichment)` de `lib/apogee-unified.ts`, en passant l'enrichissement Supabase (`useWineEnrichment` / `useWineEnrichmentsBatch`). Jamais `getApogee()` direct dans un composant (MA-74).
+- **Appels IA séquentiels** : jamais de `Promise.all` sur `/api/enrich-wine` (rate limit Anthropic + `api_rate_limits`).
+- **Fichiers interdits sans `[OVERRIDE]` explicite dans le titre de PR** : `components/cave/auth-provider.tsx`, `hooks/use-auth.ts`, `hooks/use-stock-overrides.ts`, `app/page.tsx`.
+- **Branches** : `claude/<type>-<slug>` ou `<type>/<ticket>-<slug>`. PR vers `develop` uniquement. Jamais de push direct sur `develop` ou `main`. `main` reçoit uniquement des PR `develop → main` après tests iPhone.
+- **Tests unitaires dans `tests/` uniquement** (vitest `include: tests/**/*.test.ts`). Un test colocalisé n'est jamais exécuté.
+- **Pas de `console.log`** en prod (`console.error` toléré dans les catch).
 
 ---
 
-## Architecture codebase
+## Flux de travail
 
 ```
-app/page.tsx                  → Fusion cave Excel + vins manuels (SEUL point)
-app/layout.tsx                → Root layout + AuthProvider (initialUser server-side)
-app/auth/callback/            → Callback OAuth Supabase
-app/api/scan-label/           → Endpoint Claude Vision
-app/api/enrich-wine/          → Endpoint enrichissement IA (schéma complet Sprint 3.5)
+Ticket Linear cadré → branche → code → pnpm check (typecheck + lint + test + build)
+→ push → PR develop → preview Vercel (lien _vercel_share) → test iPhone par Antoine
+→ merge develop → (batch) PR develop → main
+```
+
+Un seul checkpoint humain : la validation avant merge. Aucun merge sans décision explicite d'Antoine.
+
+Commandes :
+
+```bash
+pnpm dev
+pnpm typecheck                  # tsc --noEmit
+pnpm lint                       # eslint .
+pnpm test                       # vitest run (35 tests)
+pnpm build
+pnpm check                      # les 4 d'affilée, à lancer avant tout push
+pnpm test:e2e                   # Playwright, cf. docs/testing-e2e.md
+pnpm install --no-frozen-lockfile   # après tout pnpm add, puis commit du lockfile
+```
+
+---
+
+## Architecture
+
+```
+app/
+  layout.tsx                → Root layout + AuthProvider (initialUser server-side)
+  page.tsx                  → SEUL point de fusion cave Excel + vins manuels
+  auth/callback/            → Callback OAuth Supabase
+  confidentialite/          → Politique de confidentialité
+  api/scan-label/           → Claude Vision, gate plan Amateur+, rate limit
+  api/enrich-wine/          → Enrichissement IA + web_search, gate plan Amateur+, rate limit, cache wine_enrichments
+  api/reset-user/           → Reset complet (stock_overrides → tastings → wines → caves)
+  api/auth/signout/
+proxy.ts                    → Middleware Supabase SSR (refresh session)
 
 components/cave/
-  app-shell.tsx               → Shell principal, safe-area fallback
-  auth-sheet.tsx              → Apple + Google Sign In
-  scan-label-sheet.tsx        → z-[60], scroll OK
-  wine-card.tsx               → Menu 3 points, JAMAIS swipe
-  wine-expert-panel.tsx       → wineName prop OBLIGATOIRE
-  wine-detail-sheet.tsx       → Fiche détail — sections enrichies Sprint 3.5
-  dashboard.tsx               → Attention imports Camera après refacto
-  taste-profile-bars.tsx      → Profil dégustation (Sprint 3.5 — gratuit)
+  app-shell.tsx             → Shell, bottom nav 5 onglets, safe-area, cave active dans le header
+  dashboard.tsx, cave-list.tsx, wine-card.tsx, wine-card-actions.tsx (menu 3 points)
+  wine-detail-sheet.tsx     → Fiche détail, sections enrichies, bouton « Relancer l'analyse » (MA-102)
+  wine-enrichment-panel.tsx → Panneau enrichissement IA
+  add-wine-sheet.tsx, scan-label-sheet.tsx, wine-search-sheet.tsx, wine-move-sheet.tsx
+  cave-manager-sheet.tsx, cave-switch-sheet.tsx (multi-cave)
+  tasting-screen.tsx, tasting-card.tsx, tasting-sheet.tsx, tasting-panel.tsx (Carnet de dégustation)
+  suggest.tsx, suggestion-card.tsx (Accords)
+  settings.tsx, auth-sheet.tsx, paywall-sheet.tsx (FOMO, MA-89), onboarding.tsx
+  synthese/                 → Primitives design system : big-tile, stat-pill, filter-pill, stars, watermark, cycle-chart, apogee-bar
 
 hooks/
-  use-auth.ts                 → useAuth + isPremium + rawPlan + role
-  use-cave-sync.ts            → Migration localStorage → Supabase
-  use-caves.ts                → Multi-cave — NE PAS instancier dans chaque WineCardActions
-  use-stock-overrides.ts      → Stock — clé getWineIdentityKey() uniquement
+  use-auth.ts               → useAuth(), isPremium, rawPlan, role
+  use-cloud-cave.ts         → Lecture/écriture vins Supabase
+  use-cave-sync.ts          → Migration one-shot localStorage → Supabase au SIGNED_IN
+  use-caves.ts              → Multi-cave. Instancier UNE fois au niveau shell (N+1 sinon)
+  use-stock-overrides.ts    → Stock (consommation/archivage). localStorage, clé getWineIdentityKey(). Voir MA-113
+  use-wine-enrichment.ts    → useWineEnrichment + useWineEnrichmentsBatch (1 requête .in())
+  use-tastings.ts, use-user-profile.ts, use-manual-wines.ts, use-file-parser.ts
 
 lib/
-  feature-flags.ts            → SCAN_LABEL=enabled, ENRICH_WINE=enabled
-  wine-helpers.ts             → sanitizeWineName() OBLIGATOIRE
-  supabase/                   → client.ts, server.ts, middleware.ts
+  apogee-unified.ts         → getUnifiedApogee (IA prioritaire, fallback heuristique « estimé »)
+  wine-helpers.ts           → sanitizeWineName()
+  stock-overrides.ts        → getWineIdentityKey()
+  rate-limit.ts             → checkRateLimit (table api_rate_limits, fonction increment_rate_limit)
+  feature-flags.ts          → SCAN_LABEL, ENRICH_WINE (enabled)
+  supabase/client.ts, server.ts
+  suggest-service.ts        → factice, à retirer ou implémenter (MA-46)
 
-tests/
-  stock-overrides.test.ts     → 3 tests (identité stock)
-  wine-sync.test.ts           → 4 tests (merge sync)
-  api-scan-label.test.ts      → 2 tests
-  api-enrich-wine.test.ts     → 2 tests
+data/                       → accords, apogee (heuristique), regions (worldwide), experts, wine-tips
+supabase/migrations/        → référence versionnée du schéma prod (voir README.md du dossier)
+tests/                      → stock-overrides, wine-sync, apogee-unified, api-scan-label, api-enrich-wine + e2e/
+docs/superpowers/           → specs Synthèse v1, plans par ticket, pipeline-lessons.md
 ```
 
 ---
 
-## Branches permanentes
+## Schéma Supabase (prod, 12/09/2026)
 
-| Branche | Rôle | Vercel |
+| Table | Rôle | Notes |
 |---|---|---|
-| `main` | Production stable | v0-ma-cave-a-vins.vercel.app |
-| `develop` | Staging — tests iPhone | URL Preview (bookmarker sur iPhone) |
-| `develop-sprint-3-work` | Sauvegarde travail UX — NE PAS merger sans inspection | — |
+| `profiles` | plan (`free`/`amateur`/`collector`), role (`user`/`beta`/`admin`), scan_count_month, last_active_cave_id | enums `user_plan`, `user_role` |
+| `caves` | multi-cave | |
+| `wines` | vins de l'utilisateur | `wine_type`, `classification`, apogée, `enriched_at` |
+| `wine_enrichments` | cache enrichissement IA | unique `(wine_id, user_id)`, `apogee_status` |
+| `tastings` | Carnet de dégustation | `stars` 1-5, `cave_wine_ref` |
+| `stock_overrides` | surcharges de stock | colonnes `wine_identity_key`, `stock`. **Non alimentée** (MA-113) |
+| `api_rate_limits` | rate limiting par user/route/fenêtre | écriture via `increment_rate_limit` SECURITY DEFINER |
+
+RLS sur toutes les tables : `user_id = auth.uid()`. Les FK vers `auth.users` sont vérifiées même dans les fonctions SECURITY DEFINER : les UUID de test doivent être de vrais users.
+
+Admin : Antoine, role `admin`, bypass de tous les gates.
 
 ---
 
-## Pièges critiques
+## Plan freemium
 
-- **pnpm-lock.yaml** : `pnpm install --no-frozen-lockfile` après tout `pnpm add` — cause #1 de build failures
-- **Env Vercel** : case-sensitive, modifier uniquement via le dashboard
-- **Imports lucide-react** : vérifier Camera après tout refactoring de dashboard.tsx
-- **app/page.tsx** : SEUL point de fusion Excel + vins manuels — ne pas dupliquer
-- **develop-sprint-3-work** : contient du code UX non intégré — cherry-pick uniquement après inspection
-- **useCaves()** : NE PAS instancier dans chaque WineCardActions (N+1) — remonter au niveau shell
-- **Pause Supabase** : plan gratuit, projet INACTIVE après ~1 semaine d'inactivité → app KO (erreur 521). Restaurer via MCP Supabase (`restore_project`, ~2-3 min) avant toute session de test
-- **Tests unitaires** : dans `tests/` UNIQUEMENT (vitest `include: tests/**/*.test.ts`) — un test colocalisé dans `lib/` n'est jamais exécuté
-- **Preview Vercel protégée** : l'URL brute renvoie un mur d'auth Vercel — générer un lien `_vercel_share` pour toute validation manuelle
+| Feature | Gratuit | Amateur 3,49 €/mois ou 29,99 €/an | Collectionneur 6,99 €/mois ou 59,99 €/an |
+|---|---|---|---|
+| Bouteilles | 50 max | Illimité | Illimité |
+| Caves | 1 | 1 | Multi-cave |
+| Scan IA | ❌ (PaywallSheet) | ✅ | ✅ |
+| Enrichissement IA | ❌ | ✅ | ✅ |
+| Fiche vin enrichie complète | ❌ | ❌ | ✅ |
+| Export CSV | ❌ | ✅ | ✅ |
+| Export PDF, stats avancées, valorisation | ❌ | ❌ | ✅ |
 
----
-
-## Schéma Supabase — tables principales
-
-```
-wines               → vins de l'utilisateur
-caves               → caves (multi-cave)
-profiles            → profil + plan (free/amateur/collector)
-stock_overrides     → surcharges de stock
-wine_enrichments    → cache enrichissement IA (Sprint 3.5)
-```
-
-RLS obligatoire sur toutes les tables : `user_id = auth.uid()`
+Principe FOMO : les features gatées restent visibles et ouvrent `PaywallSheet`, on ne les cache pas. Paiement (RevenueCat) : Phase 4, pas encore branché ; le plan est modifié à la main dans `profiles`.
 
 ---
 
-## Pattern auth Supabase — obligatoire
+## Pattern auth (race condition)
 
-Ne jamais court-circuiter avec `if (!userId) return []` sans vérifier que `loading` est false.
-
-Pattern correct :
 ```typescript
 const { user, loading } = useAuth()
 if (loading) return <Skeleton />
 if (!user) return null
-// suite du composant
 ```
 
-Pattern incorrect (provoque des bugs de race condition) :
-```typescript
-const { user } = useAuth()
-if (!user) return [] // FAUX — loading non vérifié
-```
+Jamais `if (!user) return []` sans vérifier `loading`.
 
 ---
 
-## Plan freemium — 3 tiers
+## Pièges connus
 
-```
-isPremium = plan === 'premium' || role === 'beta' || role === 'admin'
-```
-
-| Feature | Gratuit | Amateur 3,49€/mois | Collectionneur 6,99€/mois |
-|---|---|---|---|
-| Bouteilles | 50 max | Illimité | Illimité |
-| Caves | 1 | 1 | Multi-cave |
-| Scan IA | ❌ | ✅ | ✅ |
-| Enrichissement IA | ❌ | ✅ | ✅ |
-| Profil dégustation | ✅ (statique) | ✅ (IA) | ✅ (IA précis) |
-| Fiche vin enrichie complète | ❌ | ❌ | ✅ |
-| Export CSV | ❌ | ✅ | ✅ |
-| Export PDF + stats avancées | ❌ | ❌ | ✅ |
-
----
-
-## Commandes utiles
-
-```bash
-pnpm dev
-pnpm build
-pnpm install --no-frozen-lockfile   # après pnpm add
-pnpm exec tsc --noEmit              # typecheck
-pnpm exec vitest run                # tests (11 passent)
-```
+- **Supabase en pause** : plan gratuit, projet `INACTIVE` après ~1 semaine sans trafic → app KO (erreur 521, « serveur introuvable »). Réflexe : `get_project` puis `restore_project` (2-3 min) **avant** toute session de test.
+- **Preview Vercel protégée** : l'URL brute affiche un mur d'auth Vercel. Générer un lien `_vercel_share` (`get_access_to_vercel_url`, valable ~23 h).
+- **`list_deployments` Vercel** : `projectId` et `teamId` obligatoires ensemble ; le suffixe des URL de branche est imprévisible, toujours relire après push.
+- **Migrations Supabase** : appliquées via SQL Editor/MCP, l'historique prod ne porte pas les noms des fichiers du repo. Tout changement de schéma = fichier idempotent dans `supabase/migrations/` dans la même PR.
+- **Tickets anciens** : re-valider le diagnostic contre le code actuel avant de planifier (la refonte Synthèse v1 a changé le fond de plusieurs bugs).
+- **Rebase** : jamais pour résoudre un conflit de PR. Nouvelle branche propre depuis `develop`.
+- **Store partagé (`useSyncExternalStore`)** : initialisation au niveau module, jamais dans un `useEffect` (race au mount de N composants).
+- **Deux tentatives de fix échouées** = arrêt et reprise du diagnostic à la racine, pas de troisième essai dans la même direction.
+- **Sandbox Cowork** : `npm i -g pnpm@10`, installs en foreground, pas de `nohup`. Playwright : `docs/testing-e2e.md`.
 
 ---
 
@@ -181,76 +191,21 @@ pnpm exec vitest run                # tests (11 passent)
 
 | Ressource | Valeur |
 |---|---|
-| GitHub | antoinerivaud1/v0-ma-cave-a-vins |
-| Vercel project | prj_rnbCuyK7DTuLbC8bfur8ChwyFgtd |
-| Vercel team | team_FgcRiCPgsJtFfNccJM50aWnT |
-| Supabase | chriywwlnihmclbrjmta.supabase.co |
-| Linear | linear.app/ma-cave-a-vin |
+| GitHub | `antoinerivaud1/v0-ma-cave-a-vins` (public) |
+| Vercel project / team | `prj_rnbCuyK7DTuLbC8bfur8ChwyFgtd` / `team_FgcRiCPgsJtFfNccJM50aWnT` |
+| Preview develop | `v0-ma-cave-a-vins-git-develop-antoinerivaud1-1029s-projects.vercel.app` |
+| Supabase | `chriywwlnihmclbrjmta` (ne jamais toucher `drmmgwchoowggpsppilo`, autre projet) |
+| Linear | team « Ma cave à vin », projet « Ma Cave à Vins », tickets `MA-n` |
 
 ---
 
-## Checklist avant chaque push
+## Checklist avant push
 
-- [ ] `pnpm build` passe sans erreur
-- [ ] `pnpm exec tsc --noEmit` propre
-- [ ] Double quotes partout
-- [ ] `sanitizeWineName()` sur tous les noms de vins
-- [ ] `safe-area-inset` sur les nouveaux headers/footers
-- [ ] Pas de `console.log` oublié
-- [ ] PR cible `develop` (vérifier visuellement sur GitHub)
-- [ ] Si CLAUDE.md modifié → `cp CLAUDE.md .cursorrules` dans le même commit
-
----
-
-## Évolution des skills et capitalisation
-
-### Principe
-Les skills (`/mnt/skills/user/`) sont des documents vivants.
-Ils doivent évoluer après chaque session où un apprentissage significatif a eu lieu.
-Un skill qui ne s'améliore pas est un skill qui sera contourné.
-
-### Quand mettre à jour un skill
-
-| Événement | Skill à mettre à jour |
-|---|---|
-| Bug résolu après investigation | `debug` — ajouter le pattern et la règle absolue |
-| Nouvelle convention de code établie | `dev-code-prompt` — contraintes NON-NÉGOCIABLES |
-| Nouvelle règle iOS / Tailwind / Supabase | `dev-code-prompt` + `CLAUDE.md` |
-| Workflow de session amélioré | `start` ou `end` |
-| Nouveau type de PR ou conflit résolu | `deploy` |
-
-### Qui met à jour les skills
-Claude met à jour les skills en fin de session (via le skill `end`).
-Antoine valide et installe les fichiers dans `/mnt/skills/user/[skill]/SKILL.md`.
-
-### Format de versioning
-- `+0.0.1` : ajout d'un pattern ou correction mineure
-- `+0.1.0` : nouvelle règle absolue issue d'une expérience terrain
-- `+1.0.0` : restructuration majeure
-
----
-
-## Règles capitalisées — expérience terrain
-
-Ces règles complètent les NON-NÉGOCIABLES. Elles ont été apprises en production.
-
-**[2026-04-18] Initialisation de store React partagé :**
-Tout store partagé entre N composants (useSyncExternalStore) doit être initialisé
-au niveau module, pas dans un useEffect. Un useEffect d'initialisation appelé par
-N composants crée une race condition si tous montent dans le même tick React.
-Fichier concerné : `hooks/use-stock-overrides.ts`.
-
-**[2026-04-18] Rebases et conflits de merge :**
-Ne jamais utiliser `git rebase` pour résoudre un conflit de merge sur une PR.
-Ouvrir une nouvelle branche propre depuis develop et y réécrire le fix.
-Un rebase mal exécuté peut produire une PR avec 0 commits et se fermer automatiquement.
-
-**[2026-04-18] Validation fonctionnelle vs typecheck :**
-`pnpm tsc --noEmit` valide les types mais pas le comportement runtime.
-Tout fix de bug doit être validé sur le preview Vercel avec un test
-utilisateur concret (cliquer le bouton, observer le résultat) avant merge.
-
-**[2026-04-18] Nommage des branches de bug :**
-Les branches de fix doivent nommer la CAUSE, pas le symptôme.
-OK : `fix/emitchange-race-condition-mount`
-KO : `fix/freeze-bouton-consommer`
+- [ ] `pnpm check` vert
+- [ ] Double quotes, `sanitizeWineName()`, safe-area, tokens Synthèse v1
+- [ ] Aucun fichier interdit touché (ou `[OVERRIDE]` justifié)
+- [ ] Lockfile commité si `package.json` a changé
+- [ ] Migration versionnée si le schéma a changé
+- [ ] PR cible `develop`
+- [ ] Si `CLAUDE.md` modifié : `cp CLAUDE.md .cursorrules` dans le même commit
+- [ ] Leçon généralisable → `docs/superpowers/pipeline-lessons.md`
