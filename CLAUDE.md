@@ -25,7 +25,7 @@ App web mobile-first de gestion de cave à vin, freemium (Gratuit / Amateur / Co
 | IA | Anthropic SDK : Claude Vision (`/api/scan-label`), enrichissement avec `web_search` natif (`/api/enrich-wine`) |
 | Déploiement | Vercel : `main` → prod, `develop` → preview staging, chaque branche → preview |
 | Tests | Vitest 4 (`tests/*.test.ts`, 35 tests) + Playwright (`tests/e2e/`, 2 specs) |
-| Tracking | Linear (linear.app/ma-cave-a-vin), 100 % des tickets. Notion : roadmap/business uniquement |
+| Tracking | Ardoise (connecteur MCP maison, interface https://ardoise-eta-one.vercel.app), 100 % des tickets. Notion : roadmap/business uniquement |
 
 ---
 
@@ -53,7 +53,7 @@ Chaque ligne de code produite. Aucune exception.
 ## Flux de travail
 
 ```
-Ticket Linear cadré → branche → code → pnpm check (typecheck + lint + test + build)
+Ticket Ardoise cadré → branche → code → pnpm check (typecheck + lint + test + build)
 → push → PR develop → preview Vercel (lien _vercel_share) → test iPhone par Antoine
 → merge develop → (batch) PR develop → main
 ```
@@ -194,8 +194,8 @@ Jamais `if (!user) return []` sans vérifier `loading`.
 | GitHub | `antoinerivaud1/v0-ma-cave-a-vins` (public) |
 | Vercel project / team | `prj_rnbCuyK7DTuLbC8bfur8ChwyFgtd` / `team_FgcRiCPgsJtFfNccJM50aWnT` |
 | Preview develop | `v0-ma-cave-a-vins-git-develop-antoinerivaud1-1029s-projects.vercel.app` |
-| Supabase | `chriywwlnihmclbrjmta` (ne jamais toucher `drmmgwchoowggpsppilo`, autre projet) |
-| Linear | team « Ma cave à vin », projet « Ma Cave à Vins », tickets `MA-n` |
+| Supabase | `chriywwlnihmclbrjmta` (ne jamais toucher `drmmgwchoowggpsppilo` : il héberge Coach en Muscu et les tables `tracker_*` d'Ardoise, manipulées uniquement via le connecteur) |
+| Ardoise | team `MA`, projet « Ma Cave à Vins », tickets `MA-n`. Session de dev : `summary` d'abord ; statuts `backlog` → `todo` → `in_progress` → `in_review` (PR) → `done` (mergé) ; commentaires datés `[CADRAGE]` / `[QA]` / `[MERGE]`, liens PR et preview en pièces jointes |
 
 ---
 
