@@ -21,3 +21,18 @@ Règles :
 
 Tables en prod (12/09/2026) : `profiles`, `caves`, `wines`, `tastings`, `stock_overrides`,
 `wine_enrichments`, `api_rate_limits`. RLS activé partout.
+
+## Fonctions SECURITY DEFINER (MA-114, 29/10/2026)
+
+Les privilèges par défaut du schéma `public` donnent EXECUTE à `anon` et `authenticated` sur
+toute nouvelle fonction. Une fonction SECURITY DEFINER est donc appelable par n'importe qui via
+`/rest/v1/rpc/<nom>` tant qu'on ne retire pas ce droit.
+
+Règle : toute fonction SECURITY DEFINER créée ici est suivie, dans le même fichier, de
+`SET search_path = ''` et de `REVOKE EXECUTE ... FROM PUBLIC, anon, authenticated` (puis
+`GRANT EXECUTE ... TO service_role` si le serveur l'appelle). Exemple :
+`20261029000000_revoke_security_definer_from_clients.sql`.
+
+- `increment_rate_limit` : service_role uniquement (`lib/rate-limit.ts`, routes API serveur).
+- `rls_auto_enable` : fonction de l'event trigger `ensure_rls`, créée par le dashboard Supabase
+  (absente de ce dossier). Le trigger fonctionne sans EXECUTE pour l'utilisateur qui lance le DDL.
