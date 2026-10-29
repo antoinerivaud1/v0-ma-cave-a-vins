@@ -16,6 +16,11 @@ export const CAVE_STORAGE_KEYS = {
 // elle ne doit PAS être effacée par clearAllLocalCaveData (qui est appelée après import).
 export const MIGRATION_DONE_KEY = "cave-migration-done"
 
+// Métadonnées de synchro du stock (MA-113) : propriétaire du cache, horodatages, file d'attente.
+// Séparée de CAVE_STORAGE_KEYS : gérée uniquement par hooks/use-stock-overrides.ts
+// (clearAllStockOverrides), pour que clearAllLocalCaveData ne vide jamais la file d'attente seule.
+export const STOCK_SYNC_META_KEY = "cave-stock-sync"
+
 export const ALL_CAVE_STORAGE_KEYS = Object.values(CAVE_STORAGE_KEYS)
 
 export function clearAllLocalCaveData(): void {

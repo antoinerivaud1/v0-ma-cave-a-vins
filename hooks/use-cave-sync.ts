@@ -3,8 +3,8 @@
 import { createClient } from "@/lib/supabase/client"
 import { CAVE_STORAGE_KEYS, MIGRATION_DONE_KEY } from "@/lib/cave-storage"
 import { getPersistedWineRowIdentityKey, mergeLocalWineSources } from "@/lib/wine-sync"
+import { startStockOverridesSync } from "@/hooks/use-stock-overrides"
 import type { Wine } from "@/data/apogee"
-import type { StockOverride } from "@/lib/stock-overrides"
 
 // ---------------------------------------------------------------------------
 // Types publics
@@ -49,20 +49,6 @@ function parseStoredWines(key: string): Wine[] {
     return Array.isArray(parsed) ? (parsed as Wine[]) : []
   } catch {
     return []
-  }
-}
-
-function parseStoredOverrides(key: string): Record<string, StockOverride> {
-  if (typeof window === "undefined") return {}
-  const raw = localStorage.getItem(key)
-  if (!raw) return {}
-  try {
-    const parsed = JSON.parse(raw)
-    return typeof parsed === "object" && parsed !== null
-      ? (parsed as Record<string, StockOverride>)
-      : {}
-  } catch {
-    return {}
   }
 }
 
@@ -182,45 +168,22 @@ async function upsertWinesByIdentity(
 }
 
 // ---------------------------------------------------------------------------
-// Migration des surcharges de stock → table stock_overrides
-// ---------------------------------------------------------------------------
-
-async function migrateStockOverrides(
-  userId: string,
-  overrides: Record<string, StockOverride>
-): Promise<void> {
-  const entries = Object.entries(overrides)
-  if (entries.length === 0) return
-
-  const supabase = createClient()
-
-  const rows = entries.map(([key, override]) => ({
-    user_id: userId,
-    wine_identity_key: key,
-    quantity: override.quantity ?? null,
-    archived: override.archived ?? false,
-    deleted: override.deleted ?? false,
-  }))
-
-  const { error } = await supabase
-    .from("stock_overrides")
-    .upsert(rows, { onConflict: "user_id,wine_identity_key" })
-
-  if (error) throw error
-}
-
-// ---------------------------------------------------------------------------
-// Point d'entrée principal — appelé depuis auth-provider.tsx au SIGNED_IN
+// Point d'entrée principal : appelé depuis auth-provider.tsx au SIGNED_IN
 // ---------------------------------------------------------------------------
 
 /**
  * Migre les données localStorage vers Supabase de manière idempotente.
  *
- * Données migrées :
+ * Données migrées une seule fois (flag MIGRATION_DONE_KEY) :
  *   - cave-user-profile     → profiles.first_name
  *   - cave_data             → wines (upsert par identité)
  *   - cave-manual-wines     → wines (upsert par identité, fusionné avec cave_data)
- *   - cave-stock-overrides  → stock_overrides (upsert par user_id + wine_identity_key)
+ *
+ * Stock (MA-113) : hors du flag one-shot. À chaque connexion, startStockOverridesSync
+ * rattache les surcharges locales au compte et les met en file d'attente ; elles ne sortent
+ * de la file qu'une fois confirmées par Supabase (upsert user_id + wine_identity_key).
+ * Un échec (réseau, schéma pas encore migré) laisse la file intacte et la synchro est
+ * retentée : le stock n'est jamais marqué « migré » à tort.
  *
  * Données NON migrées (intentionnel) :
  *   - cave-wine-enrichments : cache API éphémère (TTL 7j), pas de valeur à persister
@@ -229,6 +192,11 @@ async function migrateStockOverrides(
  *   - cave-offline-cache    : cache lecture seule reconstruit depuis Supabase
  */
 export async function migrateLocalToSupabase(userId: string): Promise<MigrationResult> {
+  // Stock : avant le retour anticipé, pour que les comptes déjà migrés (flag posé alors que
+  // l'ancien upsert stock_overrides échouait en silence) envoient enfin leurs surcharges.
+  // Synchrone et local : l'envoi réseau part hors de ce callback d'auth.
+  startStockOverridesSync(userId)
+
   // Idempotence : ne pas rejouer si déjà migré avec succès
   if (
     typeof window !== "undefined" &&
@@ -297,22 +265,10 @@ export async function migrateLocalToSupabase(userId: string): Promise<MigrationR
     const message = err instanceof Error ? err.message : String(err)
     console.error("[cave-sync] Wine migration error:", message)
     errors.push(`wines: ${message}`)
-    // On continue pour tenter les stock overrides
   }
 
-  // 4. Migrer les surcharges de stock → stock_overrides
-  try {
-    const overrides = parseStoredOverrides(CAVE_STORAGE_KEYS.stockOverrides)
-    await migrateStockOverrides(userId, overrides)
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error("[cave-sync] Stock overrides migration error:", message)
-    errors.push(`stock_overrides: ${message}`)
-  }
-
-  // 5. Marquer la migration comme terminée si aucune erreur critique
-  // On marque même en cas d'erreur sur les overrides (données non-critiques),
-  // tant que les vins ont bien été migrés (ou qu'il n'y en avait aucun à migrer).
+  // 4. Marquer la migration (profil, cave, vins) comme terminée si aucune erreur critique.
+  // Le stock n'entre pas dans ce flag : sa file d'attente persiste jusqu'à confirmation cloud.
   const wineErrors = errors.filter((e) => e.startsWith("wines:"))
   const caveErrors = errors.filter((e) => e.startsWith("cave:"))
   if (wineErrors.length === 0 && caveErrors.length === 0) {
