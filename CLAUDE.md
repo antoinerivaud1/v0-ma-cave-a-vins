@@ -104,9 +104,9 @@ components/cave/
 hooks/
   use-auth.ts               → useAuth(), isPremium, rawPlan, role
   use-cloud-cave.ts         → Lecture/écriture vins Supabase
-  use-cave-sync.ts          → Migration one-shot localStorage → Supabase au SIGNED_IN
+  use-cave-sync.ts          → Migration one-shot localStorage → Supabase au SIGNED_IN (vins, profil) + démarrage synchro stock
   use-caves.ts              → Multi-cave. Instancier UNE fois au niveau shell (N+1 sinon)
-  use-stock-overrides.ts    → Stock (consommation/archivage). localStorage, clé getWineIdentityKey(). Voir MA-113
+  use-stock-overrides.ts    → Stock (consommation/archivage). Supabase source de vérité, cache localStorage, file d'attente, dernier écrit gagne (MA-113). Clé getWineIdentityKey()
   use-wine-enrichment.ts    → useWineEnrichment + useWineEnrichmentsBatch (1 requête .in())
   use-tastings.ts, use-user-profile.ts, use-manual-wines.ts, use-file-parser.ts
 
@@ -114,6 +114,7 @@ lib/
   apogee-unified.ts         → getUnifiedApogee (IA prioritaire, fallback heuristique « estimé »)
   wine-helpers.ts           → sanitizeWineName()
   stock-overrides.ts        → getWineIdentityKey()
+  stock-sync.ts             → fusion pure local / cloud du stock (MA-113)
   rate-limit.ts             → checkRateLimit (table api_rate_limits, fonction increment_rate_limit)
   feature-flags.ts          → SCAN_LABEL, ENRICH_WINE (enabled)
   supabase/client.ts, server.ts
@@ -136,7 +137,7 @@ docs/superpowers/           → specs Synthèse v1, plans par ticket, pipeline-l
 | `wines` | vins de l'utilisateur | `wine_type`, `classification`, apogée, `enriched_at` |
 | `wine_enrichments` | cache enrichissement IA | unique `(wine_id, user_id)`, `apogee_status` |
 | `tastings` | Carnet de dégustation | `stars` 1-5, `cave_wine_ref` |
-| `stock_overrides` | surcharges de stock | colonnes `wine_identity_key`, `stock`. **Non alimentée** (MA-113) |
+| `stock_overrides` | surcharges de stock | `wine_identity_key`, `stock` (NULL = pas de surcharge), `archived`, `deleted`, `updated_at` (horodatage client, dernier écrit gagne). Alimentée depuis MA-113 |
 | `api_rate_limits` | rate limiting par user/route/fenêtre | écriture via `increment_rate_limit` SECURITY DEFINER |
 
 RLS sur toutes les tables : `user_id = auth.uid()`. Les FK vers `auth.users` sont vérifiées même dans les fonctions SECURITY DEFINER : les UUID de test doivent être de vrais users.

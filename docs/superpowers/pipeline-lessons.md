@@ -37,3 +37,8 @@ Règle : au CHECKPOINT, toujours fournir l'URL via `get_access_to_vercel_url` (l
 
 ## 2026-07-17 - MA-74
 Leçon positive (à conserver) : le ticket datait du 5 mai, la refonte Synthèse v1 (juin) avait changé le fond du bug — la cause décrite (getApogee legacy) n'existait plus, remplacée par des appels `getUnifiedApogee(wine)` sans enrichissement. La règle "re-valider le diagnostic d'un ticket >1 mois contre le code actuel avant de planifier" a évité un plan faux. La maintenir systématiquement en Phase 2.
+
+## 2026-10-29 - MA-113 / MA-114
+Erreur : `pnpm check:conventions` lancé avant le commit a donné PASS partout ; relancé après le commit, A1 passait en REVIEW (faux positifs) et A6 en FAIL (fichier interdit sous `[OVERRIDE]`). Un premier rapport QA et une PR affirmaient à tort « A6 ne le signale pas ».
+Cause : `scripts/checks-a.sh` compare `origin/develop...HEAD` : il ne voit que les commits, jamais les fichiers modifiés ou indexés non commités.
+Règle : lancer `pnpm check:conventions` après `git commit`, sur le HEAD qui sera poussé, et recopier la sortie complète (pas seulement la dernière ligne) dans le rapport QA.
