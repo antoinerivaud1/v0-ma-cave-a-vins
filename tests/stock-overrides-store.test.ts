@@ -24,6 +24,7 @@ const { cloud, fakeClient } = vi.hoisted(() => {
     calls: [] as string[],
     lastOnConflict: null as string | null,
     upsertGate: null as Promise<void> | null,
+    selectGate: null as Promise<void> | null,
   }
 
   const fail = (message: string) => ({ data: null, error: { message } })
@@ -42,11 +43,13 @@ const { cloud, fakeClient } = vi.hoisted(() => {
             order: () => ({
               range: async (from: number, to: number) => {
                 state.calls.push("select")
+                const snapshot = state.rows.map((r) => ({ ...r }))
+                if (state.selectGate) await state.selectGate
                 if (state.offline) return fail("TypeError: Failed to fetch")
                 if (!state.schemaReady && columns.includes("archived")) {
                   return fail("column stock_overrides.archived does not exist")
                 }
-                const data = state.rows
+                const data = snapshot
                   .filter((r) => r.user_id === userId)
                   .sort((a, b) => a.wine_identity_key.localeCompare(b.wine_identity_key))
                   .slice(from, to + 1)
@@ -187,6 +190,7 @@ describe("useStockOverrides : stock cloud avec cache local (MA-113)", () => {
     cloud.calls = []
     cloud.lastOnConflict = null
     cloud.upsertGate = null
+    cloud.selectGate = null
   })
 
   afterEach(async () => {
@@ -414,6 +418,32 @@ describe("useStockOverrides : stock cloud avec cache local (MA-113)", () => {
     expect(cloud.rows).toEqual([cloudRow({ wine_identity_key: "id:b1", stock: 6, user_id: "user-b" })])
     expect(ctx.store.getStockSyncSnapshot().clearPending).toBe(false)
     expect(ctx.hook().overrides).toEqual({})
+  })
+
+  it("un vidage pendant la lecture cloud ne réinjecte pas les anciennes valeurs", async () => {
+    cloud.rows = [cloudRow({ wine_identity_key: KEY, stock: 1 })]
+    const { store, hook, sync, run } = await mount()
+    store.startStockOverridesSync("user-a")
+
+    let release: () => void = () => {}
+    cloud.selectGate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const inFlight = store.syncStockOverridesNow()
+    await vi.waitFor(() => expect(cloud.calls).toContain("select"))
+
+    // Import Excel pendant la lecture
+    vi.setSystemTime(new Date("2026-10-29T10:30:00.000Z"))
+    await run(() => store.clearAllStockOverrides())
+    release()
+    cloud.selectGate = null
+    await inFlight
+
+    expect(hook().overrides).toEqual({})
+    await sync()
+    expect(cloud.rows).toEqual([])
+    expect(hook().overrides).toEqual({})
+    expect(store.getStockSyncSnapshot().clearPending).toBe(false)
   })
 
   it("garde la lecture des anciennes clés nom_millésime et les nettoie à l'écriture", async () => {

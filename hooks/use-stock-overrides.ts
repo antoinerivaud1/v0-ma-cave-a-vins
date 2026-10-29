@@ -422,6 +422,9 @@ async function runStockSync(): Promise<void> {
   // 2. Lecture cloud (source de vérité)
   const cloudRows = await fetchCloudRows(supabase, userId)
   if (syncUserId !== userId || meta.owner !== userId) return
+  // Vidage demandé pendant la lecture : ces lignes sont périmées. La synchro suivante
+  // (relancée par clearAllStockOverrides) applique d'abord le vidage.
+  if (meta.clearAt !== null) return
 
   // 3. Fusion, appliquée sans await intermédiaire : aucune écriture locale ne peut s'intercaler
   const pendingAtMerge = new Set(meta.pending)
