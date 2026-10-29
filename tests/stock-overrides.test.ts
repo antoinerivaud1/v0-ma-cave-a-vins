@@ -3,9 +3,11 @@ import { getWineIdentityKey, getEffectiveWineState } from "@/lib/stock-overrides
 import {
   STOCK_SYNC_EPOCH,
   mergeStockOverrides,
+  normalizeTimestamp,
   overrideToRow,
   parseStockOverrideRows,
   rowToOverride,
+  toTime,
   type StockOverrideRow,
 } from "@/lib/stock-sync"
 
@@ -93,6 +95,12 @@ describe("mapping stock_overrides", () => {
       ])
     ).toEqual([row({ wine_identity_key: "id:w1", stock: 1 })])
     expect(parseStockOverrideRows(null)).toEqual([])
+  })
+
+  it("lit les horodatages Postgres en microsecondes sans perdre l'ordre", () => {
+    expect(toTime("2026-10-29T10:00:00.123456+00:00")).toBe(Date.parse("2026-10-29T10:00:00.123Z"))
+    expect(normalizeTimestamp("2026-10-29T12:00:00.5+02:00")).toBe("2026-10-29T10:00:00.500Z")
+    expect(toTime("pas une date")).toBe(0)
   })
 })
 

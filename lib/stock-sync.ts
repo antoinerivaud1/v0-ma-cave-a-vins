@@ -40,7 +40,9 @@ export interface StockMergeResult {
 
 export function toTime(value: string | null | undefined): number {
   if (!value) return 0
-  const time = Date.parse(value)
+  // Postgres peut renvoyer des microsecondes (2026-10-29T10:00:00.123456+00:00) : on garde
+  // 3 décimales, le seul format garanti par Date.parse sur tous les navigateurs (Safari iOS).
+  const time = Date.parse(value.replace(/(\.\d{3})\d+/, "$1"))
   return Number.isFinite(time) ? time : 0
 }
 
