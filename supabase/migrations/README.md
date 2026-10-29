@@ -18,6 +18,11 @@ Règles :
   (schéma obsolète avec `domain_info`) a été supprimé le 12/09/2026 (MA-111) :
   il s'exécutait avant `20260414_create_wine_enrichments.sql` sur une base vierge
   et produisait un schéma divergent de la prod.
+- `stock_overrides` (MA-113, 29/10/2026) : `20261029100000_stock_overrides_cloud.sql` aligne la
+  table sur `hooks/use-stock-overrides.ts` (`stock` facultatif, NULL = pas de surcharge ; ajout de
+  `archived` et `deleted` ; trigger `stock_overrides_keep_latest` qui ignore une mise à jour plus
+  ancienne que la ligne en base). `updated_at` est l'horodatage client de la modification : ne pas
+  y brancher de trigger `now()`. Le code fonctionne aussi avant l'application de ce fichier.
 
 Tables en prod (12/09/2026) : `profiles`, `caves`, `wines`, `tastings`, `stock_overrides`,
 `wine_enrichments`, `api_rate_limits`. RLS activé partout.
